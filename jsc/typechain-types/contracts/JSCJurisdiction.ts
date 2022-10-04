@@ -90,12 +90,14 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
-export interface JSCBaseConfigurableInterface extends utils.Interface {
+export interface JSCJurisdictionInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
+    "getContractAddress(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
+    "init(string,string[],address[],string[])": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateParameters()": FunctionFragment;
@@ -115,8 +117,10 @@ export interface JSCBaseConfigurableInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "executeRevision"
       | "getAddressParameter"
+      | "getContractAddress"
       | "getNumberParameter"
       | "getStringParameter"
+      | "init"
       | "isValidParameterIterator"
       | "isValidRevisionIterator"
       | "iterateParameters"
@@ -141,12 +145,25 @@ export interface JSCBaseConfigurableInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getContractAddress",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getNumberParameter",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "getStringParameter",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "init",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>[],
+      PromiseOrValue<string>[],
+      PromiseOrValue<string>[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "isValidParameterIterator",
@@ -207,6 +224,10 @@ export interface JSCBaseConfigurableInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getContractAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getNumberParameter",
     data: BytesLike
   ): Result;
@@ -214,6 +235,7 @@ export interface JSCBaseConfigurableInterface extends utils.Interface {
     functionFragment: "getStringParameter",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isValidParameterIterator",
     data: BytesLike
@@ -268,6 +290,9 @@ export interface JSCBaseConfigurableInterface extends utils.Interface {
     "AddressParameterAdded(string,address)": EventFragment;
     "AddressParameterRemoved(string,address)": EventFragment;
     "AddressParameterUpdated(string,address)": EventFragment;
+    "ContractAdded(string,address)": EventFragment;
+    "ContractRemoved(string,string)": EventFragment;
+    "ContractReplaced(string,address)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -281,6 +306,9 @@ export interface JSCBaseConfigurableInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AddressParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AddressParameterRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AddressParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ContractAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ContractRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ContractReplaced"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
@@ -326,6 +354,40 @@ export type AddressParameterUpdatedEvent = TypedEvent<
 
 export type AddressParameterUpdatedEventFilter =
   TypedEventFilter<AddressParameterUpdatedEvent>;
+
+export interface ContractAddedEventObject {
+  name: string;
+  contractAddress: string;
+}
+export type ContractAddedEvent = TypedEvent<
+  [string, string],
+  ContractAddedEventObject
+>;
+
+export type ContractAddedEventFilter = TypedEventFilter<ContractAddedEvent>;
+
+export interface ContractRemovedEventObject {
+  name: string;
+  contractAddress: string;
+}
+export type ContractRemovedEvent = TypedEvent<
+  [string, string],
+  ContractRemovedEventObject
+>;
+
+export type ContractRemovedEventFilter = TypedEventFilter<ContractRemovedEvent>;
+
+export interface ContractReplacedEventObject {
+  name: string;
+  contractAddress: string;
+}
+export type ContractReplacedEvent = TypedEvent<
+  [string, string],
+  ContractReplacedEventObject
+>;
+
+export type ContractReplacedEventFilter =
+  TypedEventFilter<ContractReplacedEvent>;
 
 export interface NumberParameterAddedEventObject {
   name: string;
@@ -416,12 +478,12 @@ export type StringParameterUpdatedEvent = TypedEvent<
 export type StringParameterUpdatedEventFilter =
   TypedEventFilter<StringParameterUpdatedEvent>;
 
-export interface JSCBaseConfigurable extends BaseContract {
+export interface JSCJurisdiction extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCBaseConfigurableInterface;
+  interface: JSCJurisdictionInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -454,6 +516,11 @@ export interface JSCBaseConfigurable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getContractAddress(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -463,6 +530,14 @@ export interface JSCBaseConfigurable extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    init(
+      name: PromiseOrValue<string>,
+      contractKeys: PromiseOrValue<string>[],
+      contracts: PromiseOrValue<string>[],
+      descriptions: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     isValidParameterIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -529,6 +604,11 @@ export interface JSCBaseConfigurable extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getContractAddress(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -538,6 +618,14 @@ export interface JSCBaseConfigurable extends BaseContract {
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  init(
+    name: PromiseOrValue<string>,
+    contractKeys: PromiseOrValue<string>[],
+    contracts: PromiseOrValue<string>[],
+    descriptions: PromiseOrValue<string>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   isValidParameterIterator(
     i: PromiseOrValue<BigNumberish>,
@@ -600,6 +688,11 @@ export interface JSCBaseConfigurable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getContractAddress(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -609,6 +702,14 @@ export interface JSCBaseConfigurable extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    init(
+      name: PromiseOrValue<string>,
+      contractKeys: PromiseOrValue<string>[],
+      contracts: PromiseOrValue<string>[],
+      descriptions: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     isValidParameterIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -686,6 +787,33 @@ export interface JSCBaseConfigurable extends BaseContract {
       value?: null
     ): AddressParameterUpdatedEventFilter;
 
+    "ContractAdded(string,address)"(
+      name?: null,
+      contractAddress?: null
+    ): ContractAddedEventFilter;
+    ContractAdded(
+      name?: null,
+      contractAddress?: null
+    ): ContractAddedEventFilter;
+
+    "ContractRemoved(string,string)"(
+      name?: null,
+      contractAddress?: null
+    ): ContractRemovedEventFilter;
+    ContractRemoved(
+      name?: null,
+      contractAddress?: null
+    ): ContractRemovedEventFilter;
+
+    "ContractReplaced(string,address)"(
+      name?: null,
+      contractAddress?: null
+    ): ContractReplacedEventFilter;
+    ContractReplaced(
+      name?: null,
+      contractAddress?: null
+    ): ContractReplacedEventFilter;
+
     "NumberParameterAdded(string,uint256)"(
       name?: null,
       value?: null
@@ -756,6 +884,11 @@ export interface JSCBaseConfigurable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getContractAddress(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -764,6 +897,14 @@ export interface JSCBaseConfigurable extends BaseContract {
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    init(
+      name: PromiseOrValue<string>,
+      contractKeys: PromiseOrValue<string>[],
+      contracts: PromiseOrValue<string>[],
+      descriptions: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isValidParameterIterator(
@@ -828,6 +969,11 @@ export interface JSCBaseConfigurable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getContractAddress(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -836,6 +982,14 @@ export interface JSCBaseConfigurable extends BaseContract {
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    init(
+      name: PromiseOrValue<string>,
+      contractKeys: PromiseOrValue<string>[],
+      contracts: PromiseOrValue<string>[],
+      descriptions: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isValidParameterIterator(

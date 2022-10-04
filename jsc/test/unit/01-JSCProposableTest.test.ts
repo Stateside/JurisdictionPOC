@@ -40,22 +40,25 @@ describe("JSCProposableTest", async () => {
 
   it("executes string revision", async () => {
     await expect((await proposable.rev())).to.be.equal("none");
-    let tresponse = proposable.executeRevision("first", defaultAbiCoder.encode(["string"],["rev1"]));
-    await expect(tresponse).to.emit(proposable, "RevisionExecuted").withArgs("first");
+    let revArgs = defaultAbiCoder.encode(["string"],["rev1"]);
+    let tresponse = proposable.executeRevision("first", revArgs);
+    await expect(tresponse).to.emit(proposable, "RevisionExecuted").withArgs("first", revArgs);
     await expect((await proposable.rev())).to.be.equal("rev1")
   })
 
   it("executes number revision", async () => {
     await expect((await proposable.rev())).to.be.equal("none");
-    let tresponse = proposable.executeRevision("second", defaultAbiCoder.encode(["uint"],[1]));
-    await expect(tresponse).to.emit(proposable, "RevisionExecuted").withArgs("second");
+    let revArgs = defaultAbiCoder.encode(["uint"],[1]);
+    let tresponse = proposable.executeRevision("second", revArgs);
+    await expect(tresponse).to.emit(proposable, "RevisionExecuted").withArgs("second", revArgs);
     await expect((await proposable.rev())).to.be.equal("1")
   })
 
   it("executes address revision", async () => {
     await expect((await proposable.rev())).to.be.equal("none");
-    let tresponse = proposable.executeRevision("third", defaultAbiCoder.encode(["address"],["0x111122223333444455556666777788889999aaaa"]));
-    await expect(tresponse).to.emit(proposable, "RevisionExecuted").withArgs("third");
+    let revArgs = defaultAbiCoder.encode(["address"],["0x111122223333444455556666777788889999aaaa"]);
+    let tresponse = proposable.executeRevision("third", revArgs);
+    await expect(tresponse).to.emit(proposable, "RevisionExecuted").withArgs("third", revArgs);
     await expect((await proposable.rev())).to.be.equal("0x111122223333444455556666777788889999aaaa")
   })
 })

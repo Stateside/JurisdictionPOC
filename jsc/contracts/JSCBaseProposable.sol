@@ -45,7 +45,7 @@ abstract contract JSCBaseProposable is Ownable {
 
   event RevisionAdded(string name);
   event RevisionRemoved(string name);
-  event RevisionExecuted(string name);
+  event RevisionExecuted(string name, bytes pdata);
 
   function _addRevision(rlib.Revision memory r) internal {
     _revisions.insert(r);
@@ -86,7 +86,7 @@ abstract contract JSCBaseProposable is Ownable {
   function executeRevision(string memory name, bytes memory pdata) external virtual onlyOwner {
     require(_revisions.contains(name) && _handlers[name].exists);
     _handlers[name].handle(pdata);
-    emit RevisionExecuted(name);
+    emit RevisionExecuted(name, pdata);
   }
 
   /**

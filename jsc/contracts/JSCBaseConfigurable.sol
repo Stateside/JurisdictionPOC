@@ -37,10 +37,17 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
   event AddressParameterUpdated(string name, address value);
   event NumberParameterUpdated(string name, uint value);
   event StringParameterUpdated(string name, string value);
+  event AddressParameterRemoved(string name, address value);
 
   function _addAddressParameter(clib.AddressParameter memory p) internal {
     _parameters.insertAddress(p);
     emit AddressParameterAdded(p.name, p.value);
+  }
+
+  function _removeAddressParameter(string memory name) internal {
+    address a = _parameters.getAddress(name);
+    _parameters.remove(name);
+    emit AddressParameterRemoved(name, a);
   }
 
   function _addNumberParameter(clib.NumberParameter memory p) internal {
@@ -92,15 +99,15 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
       _addRevision(revs[i]);
       rlib.ParamType t = revs[i].paramTypes[1];
       if (t == rlib.ParamType.t_address)
-        _addHandler(revs[i].name, updateAddressParameter);
+        _addHandler(revs[i].name, _updateAddressParameter);
       else if (t == rlib.ParamType.t_number)
-        _addHandler(revs[i].name, updateNumberParameter);
+        _addHandler(revs[i].name, _updateNumberParameter);
       else if (t == rlib.ParamType.t_string)
-        _addHandler(revs[i].name, updateStringParameter);      
+        _addHandler(revs[i].name, _updateStringParameter);      
     }
   }
 
-  function updateAddressParameter(bytes memory pdata) internal {
+  function _updateAddressParameter(bytes memory pdata) internal {
       string memory name;
       address value; 
       (name, value) = abi.decode(pdata, (string, address));
@@ -108,7 +115,9 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
     emit AddressParameterUpdated(name, value);
   }
 
-  function updateNumberParameter(bytes memory pdata) internal {
+  function _onUpdateAddressParameter(string memory name, address value) internal virtual {}
+
+  function _updateNumberParameter(bytes memory pdata) internal {
       string memory name;
       uint value; 
       (name, value) = abi.decode(pdata, (string, uint));
@@ -116,7 +125,7 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
     emit NumberParameterUpdated(name, value);
   }
 
-  function updateStringParameter(bytes memory pdata) internal {
+  function _updateStringParameter(bytes memory pdata) internal {
       string memory name;
       string memory value; 
       (name, value) = abi.decode(pdata, (string, string));

@@ -4,4 +4,5 @@
 export { JSCBaseConfigurable__factory } from "./JSCBaseConfigurable__factory";
 export { JSCBaseProposable__factory } from "./JSCBaseProposable__factory";
 export { JSCConfigurableTest__factory } from "./JSCConfigurableTest__factory";
+export { JSCJurisdiction__factory } from "./JSCJurisdiction__factory";
 export { JSCProposableTest__factory } from "./JSCProposableTest__factory";

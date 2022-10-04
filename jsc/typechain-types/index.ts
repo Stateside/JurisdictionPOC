@@ -16,6 +16,8 @@ export type { JSCBaseProposable } from "./contracts/JSCBaseProposable";
 export { JSCBaseProposable__factory } from "./factories/contracts/JSCBaseProposable__factory";
 export type { JSCConfigurableTest } from "./contracts/JSCConfigurableTest";
 export { JSCConfigurableTest__factory } from "./factories/contracts/JSCConfigurableTest__factory";
+export type { JSCJurisdiction } from "./contracts/JSCJurisdiction";
+export { JSCJurisdiction__factory } from "./factories/contracts/JSCJurisdiction__factory";
 export type { JSCProposableTest } from "./contracts/JSCProposableTest";
 export { JSCProposableTest__factory } from "./factories/contracts/JSCProposableTest__factory";
 export type { JSCRevisionsLib } from "./libraries/JSCRevisionsLib";

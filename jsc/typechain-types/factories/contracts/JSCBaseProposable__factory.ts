@@ -51,6 +51,12 @@ const _abi = [
         name: "name",
         type: "string",
       },
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "pdata",
+        type: "bytes",
+      },
     ],
     name: "RevisionExecuted",
     type: "event",

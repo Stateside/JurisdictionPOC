@@ -198,7 +198,7 @@ export interface JSCProposableTestInterface extends utils.Interface {
   events: {
     "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
-    "RevisionExecuted(string)": EventFragment;
+    "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
   };
 
@@ -229,9 +229,10 @@ export type RevisionAddedEventFilter = TypedEventFilter<RevisionAddedEvent>;
 
 export interface RevisionExecutedEventObject {
   name: string;
+  pdata: string;
 }
 export type RevisionExecutedEvent = TypedEvent<
-  [string],
+  [string, string],
   RevisionExecutedEventObject
 >;
 
@@ -444,8 +445,11 @@ export interface JSCProposableTest extends BaseContract {
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
 
-    "RevisionExecuted(string)"(name?: null): RevisionExecutedEventFilter;
-    RevisionExecuted(name?: null): RevisionExecutedEventFilter;
+    "RevisionExecuted(string,bytes)"(
+      name?: null,
+      pdata?: null
+    ): RevisionExecutedEventFilter;
+    RevisionExecuted(name?: null, pdata?: null): RevisionExecutedEventFilter;
 
     "RevisionRemoved(string)"(name?: null): RevisionRemovedEventFilter;
     RevisionRemoved(name?: null): RevisionRemovedEventFilter;

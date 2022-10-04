@@ -266,18 +266,20 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
 
   events: {
     "AddressParameterAdded(string,address)": EventFragment;
+    "AddressParameterRemoved(string,address)": EventFragment;
     "AddressParameterUpdated(string,address)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
-    "RevisionExecuted(string)": EventFragment;
+    "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
     "StringParameterAdded(string,string)": EventFragment;
     "StringParameterUpdated(string,string)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AddressParameterAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AddressParameterRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AddressParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
@@ -300,6 +302,18 @@ export type AddressParameterAddedEvent = TypedEvent<
 
 export type AddressParameterAddedEventFilter =
   TypedEventFilter<AddressParameterAddedEvent>;
+
+export interface AddressParameterRemovedEventObject {
+  name: string;
+  value: string;
+}
+export type AddressParameterRemovedEvent = TypedEvent<
+  [string, string],
+  AddressParameterRemovedEventObject
+>;
+
+export type AddressParameterRemovedEventFilter =
+  TypedEventFilter<AddressParameterRemovedEvent>;
 
 export interface AddressParameterUpdatedEventObject {
   name: string;
@@ -358,9 +372,10 @@ export type RevisionAddedEventFilter = TypedEventFilter<RevisionAddedEvent>;
 
 export interface RevisionExecutedEventObject {
   name: string;
+  pdata: string;
 }
 export type RevisionExecutedEvent = TypedEvent<
-  [string],
+  [string, string],
   RevisionExecutedEventObject
 >;
 
@@ -653,6 +668,15 @@ export interface JSCConfigurableTest extends BaseContract {
       value?: null
     ): AddressParameterAddedEventFilter;
 
+    "AddressParameterRemoved(string,address)"(
+      name?: null,
+      value?: null
+    ): AddressParameterRemovedEventFilter;
+    AddressParameterRemoved(
+      name?: null,
+      value?: null
+    ): AddressParameterRemovedEventFilter;
+
     "AddressParameterUpdated(string,address)"(
       name?: null,
       value?: null
@@ -692,8 +716,11 @@ export interface JSCConfigurableTest extends BaseContract {
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
 
-    "RevisionExecuted(string)"(name?: null): RevisionExecutedEventFilter;
-    RevisionExecuted(name?: null): RevisionExecutedEventFilter;
+    "RevisionExecuted(string,bytes)"(
+      name?: null,
+      pdata?: null
+    ): RevisionExecutedEventFilter;
+    RevisionExecuted(name?: null, pdata?: null): RevisionExecutedEventFilter;
 
     "RevisionRemoved(string)"(name?: null): RevisionRemovedEventFilter;
     RevisionRemoved(name?: null): RevisionRemovedEventFilter;

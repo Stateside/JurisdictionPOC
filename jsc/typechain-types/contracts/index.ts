@@ -4,4 +4,5 @@
 export type { JSCBaseConfigurable } from "./JSCBaseConfigurable";
 export type { JSCBaseProposable } from "./JSCBaseProposable";
 export type { JSCConfigurableTest } from "./JSCConfigurableTest";
+export type { JSCJurisdiction } from "./JSCJurisdiction";
 export type { JSCProposableTest } from "./JSCProposableTest";

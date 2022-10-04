@@ -45,6 +45,25 @@ const _abi = [
         type: "address",
       },
     ],
+    name: "AddressParameterRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "value",
+        type: "address",
+      },
+    ],
     name: "AddressParameterUpdated",
     type: "event",
   },
@@ -126,6 +145,12 @@ const _abi = [
         internalType: "string",
         name: "name",
         type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "pdata",
+        type: "bytes",
       },
     ],
     name: "RevisionExecuted",

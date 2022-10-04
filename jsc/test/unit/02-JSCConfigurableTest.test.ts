@@ -41,7 +41,7 @@ describe("JSCConfigurableTest", async () => {
 
     i = await configurable.nextRevision(i)
     await expect(await configurable.isValidParameterIterator(i)).to.be.false;
-    await expect(configurable.revisionIteratorGet(i)).to.be.revertedWith("Invalid iterator")
+    await expect(configurable.parameterIteratorGet(i)).to.be.revertedWith("Invalid iterator")
   }
 
   const testRevision = async (r:any, name:string, description:string, type:number) => {
@@ -74,17 +74,17 @@ describe("JSCConfigurableTest", async () => {
     let i = await configurable.iterateRevisions();
     await expect(await configurable.isValidRevisionIterator(i)).to.be.true;
     let r = await configurable.revisionIteratorGet(i);
-    testRevision(r, "JSCConfigurableTest.address", "address param", 0);
+    await testRevision(r, "JSCConfigurableTest.address", "address param", 0);
     
     i = await configurable.nextRevision(i)
     await expect(await configurable.isValidRevisionIterator(i)).to.be.true;
     r = await configurable.revisionIteratorGet(i);
-    testRevision(r, "JSCConfigurableTest.number", "number param", 1);
+    await testRevision(r, "JSCConfigurableTest.number", "number param", 1);
     
     i = await configurable.nextRevision(i)
     await expect(await configurable.isValidRevisionIterator(i)).to.be.true;
     r = await configurable.revisionIteratorGet(i);
-    testRevision(r, "JSCConfigurableTest.string", "string param", 2);
+    await testRevision(r, "JSCConfigurableTest.string", "string param", 2);
     
     i = await configurable.nextRevision(i)
     await expect(await configurable.isValidRevisionIterator(i)).to.be.false;
@@ -92,23 +92,26 @@ describe("JSCConfigurableTest", async () => {
   })
 
   it("executes address parameter revision", async () => {
-    let tresponse = configurable.executeRevision("JSCConfigurableTest.address", defaultAbiCoder.encode(["string", "address"],["JSCConfigurableTest.address", "0x111122223333444455556666777788889999AaaB"]));
+    let revArgs = defaultAbiCoder.encode(["string", "address"],["JSCConfigurableTest.address", "0x111122223333444455556666777788889999AaaB"]);
+    let tresponse = configurable.executeRevision("JSCConfigurableTest.address", revArgs);
     await expect(tresponse).to.emit(configurable, "AddressParameterUpdated").withArgs("JSCConfigurableTest.address", "0x111122223333444455556666777788889999AaaB");
-    await expect(tresponse).to.emit(configurable, "RevisionExecuted").withArgs("JSCConfigurableTest.address");
+    await expect(tresponse).to.emit(configurable, "RevisionExecuted").withArgs("JSCConfigurableTest.address", revArgs);
     await testIterateParameters("0x111122223333444455556666777788889999AaaB", 1234, "string value");
   })
 
   it("executes number parameter revision", async () => {
-    let tresponse = configurable.executeRevision("JSCConfigurableTest.number", defaultAbiCoder.encode(["string", "uint"],["JSCConfigurableTest.number", "1235"]));
+    let revArgs = defaultAbiCoder.encode(["string", "uint"],["JSCConfigurableTest.number", "1235"]);
+    let tresponse = configurable.executeRevision("JSCConfigurableTest.number", revArgs);
     await expect(tresponse).to.emit(configurable, "NumberParameterUpdated").withArgs("JSCConfigurableTest.number", "1235");
-    await expect(tresponse).to.emit(configurable, "RevisionExecuted").withArgs("JSCConfigurableTest.number");
+    await expect(tresponse).to.emit(configurable, "RevisionExecuted").withArgs("JSCConfigurableTest.number", revArgs);
     await testIterateParameters("0x111122223333444455556666777788889999aAaa", 1235, "string value");
   })
 
   it("executes string parameter revision", async () => {
-    let tresponse = configurable.executeRevision("JSCConfigurableTest.string", defaultAbiCoder.encode(["string", "string"],["JSCConfigurableTest.string", "new string"]));
+    let revArgs = defaultAbiCoder.encode(["string", "string"],["JSCConfigurableTest.string", "new string"]);
+    let tresponse = configurable.executeRevision("JSCConfigurableTest.string", revArgs);
     await expect(tresponse).to.emit(configurable, "StringParameterUpdated").withArgs("JSCConfigurableTest.string", "new string");
-    await expect(tresponse).to.emit(configurable, "RevisionExecuted").withArgs("JSCConfigurableTest.string");
+    await expect(tresponse).to.emit(configurable, "RevisionExecuted").withArgs("JSCConfigurableTest.string", revArgs);
     await testIterateParameters("0x111122223333444455556666777788889999aAaa", 1234, "new string");
   })
 })
