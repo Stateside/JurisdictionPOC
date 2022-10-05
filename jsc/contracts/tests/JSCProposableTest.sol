@@ -2,8 +2,8 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./JSCBaseProposable.sol";
-import { JSCRevisionsLib as rlib } from "../libraries/JSCRevisionsLib.sol";
+import "contracts/production/JSCBaseProposable.sol";
+import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 
 /**
   This contract is for testing the JSCBaseProposable abstract contract.

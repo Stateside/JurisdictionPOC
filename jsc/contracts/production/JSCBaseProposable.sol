@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import { JSCRevisionsLib as rlib } from "../libraries/JSCRevisionsLib.sol";
+import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**

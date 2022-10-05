@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import { JSCConfigurableLib as clib } from "../libraries/JSCConfigurableLib.sol";
-import { JSCRevisionsLib as rlib } from "../libraries/JSCRevisionsLib.sol";
+import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
+import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 import "./JSCBaseConfigurable.sol";
 
 /**
