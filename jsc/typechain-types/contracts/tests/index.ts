@@ -3,3 +3,5 @@
 /* eslint-disable */
 export type { JSCConfigurableTest } from "./JSCConfigurableTest";
 export type { JSCProposableTest } from "./JSCProposableTest";
+export type { JSCTitleTokenReceiverTest } from "./JSCTitleTokenReceiverTest";
+export type { JSCTitleTokenTest } from "./JSCTitleTokenTest";

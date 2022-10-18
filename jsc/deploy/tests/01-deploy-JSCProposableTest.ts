@@ -1,11 +1,11 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../helper-functions"
-import { networkConfig, developmentChains } from "../helper-hardhat-config"
+import verify from "../../helper-functions"
+import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
-const deployJSCRevisionsLib: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
@@ -13,8 +13,8 @@ const deployJSCRevisionsLib: DeployFunction = async function (hre: HardhatRuntim
   const jscRevisionsLib = await get("JSCRevisionsLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCConfigurableLib and waiting for confirmations...")
-  const jscConfigurableLib = await deploy("JSCConfigurableLib", {
+  log("Deploying JSCProposableTest and waiting for confirmations...")
+  const jscProposableTest = await deploy("JSCProposableTest", {
     from: deployer,
     args: [],
     log: true,
@@ -24,11 +24,8 @@ const deployJSCRevisionsLib: DeployFunction = async function (hre: HardhatRuntim
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCConfigurableLib at ${jscConfigurableLib.address}`)
-  if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    await verify(jscConfigurableLib.address, [])
-  }
+  log(`JSCProposableTest at ${jscProposableTest.address}`)
 }
 
-export default deployJSCRevisionsLib
-deployJSCRevisionsLib.tags = ["all", "production", "jscConfigurableLib"]
+export default deployJSCProposableTest
+deployJSCProposableTest.tags = ["all", "jscProposableTest"]

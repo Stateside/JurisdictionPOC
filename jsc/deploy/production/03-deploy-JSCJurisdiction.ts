@@ -1,11 +1,11 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../helper-functions"
-import { networkConfig, developmentChains } from "../helper-hardhat-config"
+import verify from "../../helper-functions"
+import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
-const deployJSCConfigurableTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCJurisdiction: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
@@ -14,8 +14,8 @@ const deployJSCConfigurableTest: DeployFunction = async function (hre: HardhatRu
   const jscConfigurableLib = await get("JSCConfigurableLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCConfigurableTest and waiting for confirmations...")
-  const jscConfigurableTest = await deploy("JSCConfigurableTest", {
+  log("Deploying JSCJurisdiction and waiting for confirmations...")
+  const jscJurisdiction = await deploy("JSCJurisdiction", {
     from: deployer,
     args: [],
     log: true,
@@ -26,11 +26,11 @@ const deployJSCConfigurableTest: DeployFunction = async function (hre: HardhatRu
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCConfigurableTest at ${jscConfigurableTest.address}`)
+  log(`JSCJurisdiction at ${jscJurisdiction.address}`)
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    await verify(jscConfigurableTest.address, [])
+    await verify(jscJurisdiction.address, [])
   }
 }
 
-export default deployJSCConfigurableTest
-deployJSCConfigurableTest.tags = ["all", "jscConfigurableTest"]
+export default deployJSCJurisdiction
+deployJSCJurisdiction.tags = ["all", "production", "jscJurisdiction"]

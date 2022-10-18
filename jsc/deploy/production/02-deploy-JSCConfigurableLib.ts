@@ -1,11 +1,11 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../helper-functions"
-import { networkConfig, developmentChains } from "../helper-hardhat-config"
+import verify from "../../helper-functions"
+import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
-const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCConfigurableLib: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
@@ -13,8 +13,8 @@ const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRunt
   const jscRevisionsLib = await get("JSCRevisionsLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCProposableTest and waiting for confirmations...")
-  const jscProposableTest = await deploy("JSCProposableTest", {
+  log("Deploying JSCConfigurableLib and waiting for confirmations...")
+  const jscConfigurableLib = await deploy("JSCConfigurableLib", {
     from: deployer,
     args: [],
     log: true,
@@ -24,11 +24,11 @@ const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRunt
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCProposableTest at ${jscProposableTest.address}`)
+  log(`JSCConfigurableLib at ${jscConfigurableLib.address}`)
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    await verify(jscProposableTest.address, [])
+    await verify(jscConfigurableLib.address, [])
   }
 }
 
-export default deployJSCProposableTest
-deployJSCProposableTest.tags = ["all", "jscProposableTest"]
+export default deployJSCConfigurableLib
+deployJSCConfigurableLib.tags = ["all", "production", "jscConfigurableLib"]

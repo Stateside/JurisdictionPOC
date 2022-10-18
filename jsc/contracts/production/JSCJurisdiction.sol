@@ -24,8 +24,9 @@ contract JSCJurisdiction is JSCBaseConfigurable {
     string calldata name,
     string[] calldata contractKeys, 
     address[] calldata contracts, 
-    string[] calldata descriptions) external {
+    string[] calldata descriptions) external onlyOwner {
     require(contractKeys.length == contracts.length, "Inconsistent argument lengths");
+    require(bytes(jurisdictionName).length == 0, "init() cannot be called twice");
 
     jurisdictionName = name;
     for (uint i = 0; i < contracts.length; i++)

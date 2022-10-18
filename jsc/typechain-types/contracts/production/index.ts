@@ -4,3 +4,4 @@
 export type { JSCBaseConfigurable } from "./JSCBaseConfigurable";
 export type { JSCBaseProposable } from "./JSCBaseProposable";
 export type { JSCJurisdiction } from "./JSCJurisdiction";
+export type { JSCTitleToken } from "./JSCTitleToken";

@@ -192,7 +192,7 @@ library JSCConfigurableLib {
     hints[1] = "New value for the parameter";
 
     return rlib.Revision({
-      name: pi.name,
+      name: string(abi.encodePacked("ChangeConfig:", pi.name)),
       description: pi.description,
       paramNames: names,
       paramTypes: types,
