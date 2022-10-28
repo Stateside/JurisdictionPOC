@@ -458,6 +458,25 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable 
         emit OwnerFrozen(owner, frozen);
     }
 
+    /** Returns count of offers to buy from other addresses */
+    function countOffersToBuy(
+        uint tokenId
+    ) external view returns(uint) {
+        _requireMinted(tokenId);
+        return _tokens[tokenId].offersToBuy.arr.length;
+    }
+
+    /** Returns count of offers to buy from other addresses */
+    function offerToBuyAtIndex(
+        uint tokenId,
+        uint index
+    ) external view returns(tlib.Offer memory) {
+        _requireMinted(tokenId);
+        require(index < _tokens[tokenId].offersToBuy.arr.length, "unknown offer to buy");
+        tlib.Offer storage o = _tokens[tokenId].offersToBuy.arr[index];
+        return o;
+    }
+
     /** Adds an offer to buy the given token for the given amount */
     function offerToBuy(uint tokenId, uint amount) external {
         _requireMinted(tokenId);
@@ -468,15 +487,46 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable 
         require(buyer != t.owner, "owner cannot buy their own token");
 
         t.offersToBuy.addOffer(buyer, amount);
+        emit OfferToBuy(tokenId, buyer, amount);
+    }
+
+    /** Accepts an existing offer to buy from the given buyer */
+    function acceptOfferToBuy(uint tokenId, address buyer) external {
+        _cancelOfferToBuyFrom(tokenId, buyer);
+        safeTransferFrom(msg.sender, buyer, tokenId);
+    }
+
+    /** Cancels my offer to buy the given token. Fails if no such offer exists */
+    function cancelOfferToBuy(uint tokenId) external {
+        _cancelOfferToBuyFrom(tokenId, msg.sender);
     }
 
     /** Cancels an offer to buy the given token. Fails if no such offer exists */
-    function cancelOfferToBuy(uint tokenId) external {
+    function _cancelOfferToBuyFrom(uint tokenId, address buyer) internal {
         _requireMinted(tokenId);
 
-        address buyer = msg.sender;
         tlib.TitleToken storage t = _tokens[tokenId];
         t.offersToBuy.removeOffer(buyer);
+        emit OfferToBuyCancelled(tokenId, buyer);
+    }
+
+    /** Returns count of offers to sell to other addresses */
+    function countOffersToSell(
+        uint tokenId
+    ) external view returns(uint) {
+        _requireMinted(tokenId);
+        return _tokens[tokenId].offersToSell.arr.length;
+    }
+
+    /** Returns count of offers to sell from other addresses */
+    function offerToSellAtIndex(
+        uint tokenId,
+        uint index
+    ) external view returns(tlib.Offer memory) {
+        _requireMinted(tokenId);
+        require(index < _tokens[tokenId].offersToSell.arr.length, "unknown offer to sell");
+        tlib.Offer storage o = _tokens[tokenId].offersToSell.arr[index];
+        return o;
     }
 
     /** Adds an offer to sell the given token to the given buyer for the given amount */
@@ -490,14 +540,23 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable 
         _requireFrozenOwner(t.owner, false);
         
         t.offersToSell.addOffer(buyer, amount);
+        emit OfferToSell(tokenId, buyer, amount);
+    }
+
+    /** Accepts an existing offer to sell the given */
+    function acceptOfferToSell(uint tokenId) external {
+        address buyer = msg.sender;
+        _safeTransfer(ownerOf(tokenId), buyer, tokenId, "");
+        cancelOfferToSell(tokenId, buyer);
     }
 
     /** Cancels an offer to sell the given token to the given buyer. Fails if no such offer exists */
-    function cancelOfferToSell(uint tokenId, address buyer) external {
+    function cancelOfferToSell(uint tokenId, address buyer) public {
         _requireMinted(tokenId);
 
         tlib.TitleToken storage t = _tokens[tokenId];
         require(msg.sender == t.owner, "caller is not token owner");
         t.offersToSell.removeOffer(buyer);
+        emit OfferToSellCancelled(tokenId, buyer);
     }
 }

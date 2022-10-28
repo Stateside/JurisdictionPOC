@@ -98,7 +98,7 @@ library JSCTitleTokenLib {
   }
 
 
-  /** Maintains an list of offers. Does not guarantee the order of the items in the list. In particular, removing an item can change the order */
+  /** Maintains a list of offers. Does not guarantee the order of the items in the list. In particular, removing an item can change the order */
   struct OfferList {
     Offer[] arr;
     mapping(address => uint) indexes; // map of buyer addresses to index in arr
@@ -116,7 +116,8 @@ library JSCTitleTokenLib {
       self.indexes[buyer] = self.arr.length;
     }
   }
-  /** Removes the offer from the given offer. Fails if the offer doesn not exist in the list */
+
+  /** Removes the offer from the given offer. Fails if the offer does not exist in the list */
   function removeOffer(OfferList storage self, address buyer) public {
     require(self.indexes[buyer] > 0, "No offer found");
 

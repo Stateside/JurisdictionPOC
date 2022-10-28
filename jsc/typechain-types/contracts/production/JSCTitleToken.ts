@@ -27,6 +27,20 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
+export declare namespace JSCTitleTokenLib {
+  export type OfferStruct = {
+    buyer: PromiseOrValue<string>;
+    amount: PromiseOrValue<BigNumberish>;
+    offeredOn: PromiseOrValue<BigNumberish>;
+  };
+
+  export type OfferStructOutput = [string, BigNumber, BigNumber] & {
+    buyer: string;
+    amount: BigNumber;
+    offeredOn: BigNumber;
+  };
+}
+
 export declare namespace JSCConfigurableLib {
   export type ParameterInfoStruct = {
     name: PromiseOrValue<string>;
@@ -92,11 +106,15 @@ export declare namespace JSCRevisionsLib {
 
 export interface JSCTitleTokenInterface extends utils.Interface {
   functions: {
+    "acceptOfferToBuy(uint256,address)": FunctionFragment;
+    "acceptOfferToSell(uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
     "cancelOfferToBuy(uint256)": FunctionFragment;
     "cancelOfferToSell(uint256,address)": FunctionFragment;
+    "countOffersToBuy(uint256)": FunctionFragment;
+    "countOffersToSell(uint256)": FunctionFragment;
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
@@ -113,7 +131,9 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     "nextParameter(uint256)": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
     "offerToBuy(uint256,uint256)": FunctionFragment;
+    "offerToBuyAtIndex(uint256,uint256)": FunctionFragment;
     "offerToSell(uint256,address,uint256)": FunctionFragment;
+    "offerToSellAtIndex(uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "parameterCount()": FunctionFragment;
@@ -135,11 +155,15 @@ export interface JSCTitleTokenInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "acceptOfferToBuy"
+      | "acceptOfferToSell"
       | "approve"
       | "balanceOf"
       | "burn"
       | "cancelOfferToBuy"
       | "cancelOfferToSell"
+      | "countOffersToBuy"
+      | "countOffersToSell"
       | "executeRevision"
       | "getAddressParameter"
       | "getApproved"
@@ -156,7 +180,9 @@ export interface JSCTitleTokenInterface extends utils.Interface {
       | "nextParameter"
       | "nextRevision"
       | "offerToBuy"
+      | "offerToBuyAtIndex"
       | "offerToSell"
+      | "offerToSellAtIndex"
       | "owner"
       | "ownerOf"
       | "parameterCount"
@@ -177,6 +203,14 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
+    functionFragment: "acceptOfferToBuy",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "acceptOfferToSell",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "approve",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -195,6 +229,14 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "cancelOfferToSell",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "countOffersToBuy",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "countOffersToSell",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "executeRevision",
@@ -262,12 +304,20 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "offerToBuyAtIndex",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "offerToSell",
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "offerToSellAtIndex",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -345,6 +395,14 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "acceptOfferToBuy",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "acceptOfferToSell",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
@@ -354,6 +412,14 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "cancelOfferToSell",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "countOffersToBuy",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "countOffersToSell",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -409,7 +475,15 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "offerToBuy", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "offerToBuyAtIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "offerToSell",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "offerToSellAtIndex",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -772,6 +846,17 @@ export interface JSCTitleToken extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -798,6 +883,16 @@ export interface JSCTitleToken extends BaseContract {
       buyer: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     executeRevision(
       name: PromiseOrValue<string>,
@@ -876,12 +971,24 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[JSCTitleTokenLib.OfferStructOutput]>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[JSCTitleTokenLib.OfferStructOutput]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -969,6 +1076,17 @@ export interface JSCTitleToken extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  acceptOfferToBuy(
+    tokenId: PromiseOrValue<BigNumberish>,
+    buyer: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  acceptOfferToSell(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   approve(
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
@@ -995,6 +1113,16 @@ export interface JSCTitleToken extends BaseContract {
     buyer: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  countOffersToBuy(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  countOffersToSell(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   executeRevision(
     name: PromiseOrValue<string>,
@@ -1073,12 +1201,24 @@ export interface JSCTitleToken extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  offerToBuyAtIndex(
+    tokenId: PromiseOrValue<BigNumberish>,
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<JSCTitleTokenLib.OfferStructOutput>;
+
   offerToSell(
     tokenId: PromiseOrValue<BigNumberish>,
     buyer: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  offerToSellAtIndex(
+    tokenId: PromiseOrValue<BigNumberish>,
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<JSCTitleTokenLib.OfferStructOutput>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1162,6 +1302,17 @@ export interface JSCTitleToken extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1188,6 +1339,16 @@ export interface JSCTitleToken extends BaseContract {
       buyer: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     executeRevision(
       name: PromiseOrValue<string>,
@@ -1266,12 +1427,24 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<JSCTitleTokenLib.OfferStructOutput>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<JSCTitleTokenLib.OfferStructOutput>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1525,6 +1698,17 @@ export interface JSCTitleToken extends BaseContract {
   };
 
   estimateGas: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1550,6 +1734,16 @@ export interface JSCTitleToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     executeRevision(
@@ -1629,11 +1823,23 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1719,6 +1925,17 @@ export interface JSCTitleToken extends BaseContract {
   };
 
   populateTransaction: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1744,6 +1961,16 @@ export interface JSCTitleToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     executeRevision(
@@ -1823,11 +2050,23 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
