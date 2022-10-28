@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { JSCRevisionsLib } from "./JSCRevisionsLib";
+export type { JSCTitleTokenLib } from "./JSCTitleTokenLib";

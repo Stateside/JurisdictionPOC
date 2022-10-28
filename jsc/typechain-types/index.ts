@@ -40,3 +40,5 @@ export type { JSCTitleTokenTest } from "./contracts/tests/JSCTitleTokenTest";
 export { JSCTitleTokenTest__factory } from "./factories/contracts/tests/JSCTitleTokenTest__factory";
 export type { JSCRevisionsLib } from "./libraries/JSCRevisionsLib";
 export { JSCRevisionsLib__factory } from "./factories/libraries/JSCRevisionsLib__factory";
+export type { JSCTitleTokenLib } from "./libraries/JSCTitleTokenLib";
+export { JSCTitleTokenLib__factory } from "./factories/libraries/JSCTitleTokenLib__factory";

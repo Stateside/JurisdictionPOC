@@ -415,7 +415,8 @@ describe("JSCTitleToken", async () => {
 
   /**
    * Pending:
-   *   Add parameters and revisions
+   *   Add parameters and revisions, 
+   *     age of ownership
    *   
    *   Test no transfer to frozen account
    *   Create freezable abstract contract. Add frozen flag, revisions, and events to jurisdiction and titletokens

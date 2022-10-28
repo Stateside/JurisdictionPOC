@@ -11,6 +11,40 @@ import "@openzeppelin/contracts/utils/Address.sol";
 library JSCTitleTokenLib {
   using Address for address;
 
+  /**
+    * @dev Copied from IERC721 so that it can be emitted from this library
+    */
+  event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+
+  /**
+    * @dev Copied from IERC721 so that it can be emitted from this library
+    */
+  event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+
+  /** Storage struct for the JSCTitleToken */
+  struct Storage {
+      // Base URI for token metadata
+      string baseURI;
+
+      // Token name
+      string name;
+
+      // Token symbol
+      string symbol;
+
+      // Mapping from token ID to owner address
+      mapping(uint => TitleToken) tokens;
+
+      // Mapping owner address to tokenIds
+      mapping(address => TokenIdList) tokensByOwner;
+
+      // Mapping from owner to operator approvals
+      mapping(address => mapping(address => bool)) operatorApprovals;
+
+      // Mapping owner address to boolean value indicating frozen and cannot sell their tokens
+      mapping(address => bool) frozenOwners;
+  }
+
   // Offer Struct
   struct Offer {
       address buyer;
@@ -137,4 +171,124 @@ library JSCTitleTokenLib {
     require(index < self.arr.length, "index out of bounds");
     return self.arr[index];
   }
+
+  /**
+    * @dev Reverts if the `tokenId` has not been minted yet.
+    */
+  function requireMinted(Storage storage self, uint tokenId) public view {
+    require(exists(self, tokenId), "invalid token ID");
+  }
+
+  /**
+    * @dev Returns whether `tokenId` exists.
+    *
+    * Tokens can be managed by their owner or approved accounts via {approve} or {setApprovalForAll}.
+    *
+    * Tokens start existing when they are minted (`_mint`),
+    * and stop existing when they are burned (`_burn`).
+    */
+  function exists(Storage storage self, uint tokenId) public view returns (bool) {
+    return self.tokens[tokenId].owner != address(0);
+  }
+
+  /**
+    * @dev Reverts if the frozen state of owner does not match the given state
+    */
+  function requireFrozenOwner(Storage storage self, address owner, bool frozen) public view {
+      require(self.frozenOwners[owner] == frozen, !frozen?"token owner account is frozen":"token owner account is not frozen");
+  }
+
+  /**
+    * @dev Reverts if the frozen state of tokenId does not match the given state
+    */
+  function requireFrozenToken(Storage storage self, uint tokenId, bool frozen) public view {
+      require(self.tokens[tokenId].frozen == frozen, !frozen?"token is frozen":"token is not frozen");
+  }
+  
+  /**
+    * @dev Creates a new title token and transfers it to `owner`.
+    *
+    * Requirements:
+    *
+    * - If `owner` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+    * - `titleId` must not already exist.
+    * - Owner of minted token must not be frozen
+    *
+    * Emits a {Transfer} event.
+    */
+  function mint(Storage storage self, address owner, string memory titleId, uint tokenId) public {
+      require(owner != address(0), "mint to the zero address");
+      requireFrozenOwner(self, owner, false);
+      
+      addTokenId(self.tokensByOwner[owner], tokenId);
+      self.tokens[tokenId].titleId = titleId;
+      self.tokens[tokenId].owner = owner;
+
+      emit Transfer(address(0), owner, tokenId);
+      
+      require(
+          checkOnERC721Received(address(0), owner, tokenId, ""),
+          "transfer to non ERC721Receiver implementer"
+      );
+  }
+    
+  /**
+    * @dev Destroys `tokenId`.
+    * The approval is cleared when the token is burned.
+    *
+    * Requirements:
+    *
+    * - `tokenId` must exist.
+    *
+    * Emits a {Transfer} event.
+    */
+  function burn(Storage storage self, uint tokenId, address owner) public {
+    removeTokenId(self.tokensByOwner[owner], tokenId);
+    delete self.tokens[tokenId];
+    emit Transfer(owner, address(0), tokenId);
+  }
+
+  /**
+    * @dev Transfers `tokenId` from `from` to `to`.
+    *  As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
+    *
+    * Requirements:
+    *
+    * - `to` cannot be the zero address.
+    * - `tokenId` token must be owned by `from`.
+    *
+    * Emits a {Transfer} event.
+    */
+  function transfer(
+    Storage storage self, 
+    address from,
+    address to,
+    uint tokenId
+  ) public {
+    require(to != address(0), "transfer to the zero address");
+    requireFrozenToken(self, tokenId, false);
+    requireFrozenOwner(self, from, false);
+    requireFrozenOwner(self, to, false);
+
+    removeTokenId(self.tokensByOwner[from], tokenId);
+    addTokenId(self.tokensByOwner[to], tokenId);
+    self.tokens[tokenId].owner = to;
+    approve(self, address(0), tokenId);
+
+    emit Transfer(from, to, tokenId);
+  }
+
+  /**
+    * @dev Approve `to` to operate on `tokenId`
+    *
+    * Emits an {Approval} event.
+    */
+  function approve(Storage storage self, address to, uint tokenId) internal {
+    requireFrozenToken(self, tokenId, false);
+    TitleToken storage t = self.tokens[tokenId];
+    requireFrozenOwner(self, t.owner, false);
+    t.approval = to;
+    emit Approval(t.owner, to, tokenId);
+  }
+
 }
