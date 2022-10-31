@@ -3,11 +3,11 @@ pragma solidity ^0.8.9;
 
 import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
-import "./JSCBaseProposable.sol";
+import "./JSCFreezable.sol";
 
 /**
   This is the base class for all smart contracts that contain configurable parameters that must be
-  made available for update using the revisions mechanism. Supported parameter types are: address, uint, and string.
+  made available for update using the revisions mechanism. Supported parameter types are: address, bool, uint, and string.
 
   This base class maintains a list of parameters, their current values, and provides functionality to allow the 
   governor to modify the values of the parameters using the Jurisdictions governance protocol.
@@ -24,7 +24,7 @@ import "./JSCBaseProposable.sol";
   3. Always access these parameters using the get() method to ensure you are using their current values which may 
      change over the life of the contract
  */
-abstract contract JSCBaseConfigurable is JSCBaseProposable {
+abstract contract JSCBaseConfigurable is JSCFreezable {
   using clib for clib.ParameterMap;
 
   clib.ParameterMap internal _parameters;
@@ -32,13 +32,24 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
   rlib.VotingRules internal _paramRules = rlib.VotingRules(0,0,0,0,new string[](0));
 
   event AddressParameterAdded(string name, address value);
+  event BoolParameterAdded(string name, bool value);
   event NumberParameterAdded(string name, uint value);
   event StringParameterAdded(string name, string value);
+
   event AddressParameterUpdated(string name, address value);
+  event BoolParameterUpdated(string name, bool value);
   event NumberParameterUpdated(string name, uint value);
   event StringParameterUpdated(string name, string value);
+
   event AddressParameterRemoved(string name, address value);
 
+  /**
+   * @dev Initializes this contract
+   */
+  function _init() internal override onlyOwner {
+    JSCFreezable._init();
+  }
+  
   function _addAddressParameter(clib.AddressParameter memory p) internal {
     _parameters.insertAddress(p);
     emit AddressParameterAdded(p.name, p.value);
@@ -48,6 +59,11 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
     address a = _parameters.getAddress(name);
     _parameters.remove(name);
     emit AddressParameterRemoved(name, a);
+  }
+
+  function _addBoolParameter(clib.BoolParameter memory p) internal {
+    _parameters.insertBool(p);
+    emit BoolParameterAdded(p.name, p.value);
   }
 
   function _addNumberParameter(clib.NumberParameter memory p) internal {
@@ -62,6 +78,10 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
 
   function getAddressParameter(string memory name) public view returns (address) {
     return _parameters.getAddress(name);
+  }
+
+  function getBoolParameter(string memory name) public view returns (bool) {
+    return _parameters.getBool(name);
   }
 
   function getNumberParameter(string memory name) public view returns (uint) {
@@ -100,6 +120,8 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
       rlib.ParamType t = revs[i].paramTypes[1];
       if (t == rlib.ParamType.t_address)
         _addHandler(revs[i].name, _updateAddressParameter);
+      else if (t == rlib.ParamType.t_bool)
+        _addHandler(revs[i].name, _updateBoolParameter);
       else if (t == rlib.ParamType.t_number)
         _addHandler(revs[i].name, _updateNumberParameter);
       else if (t == rlib.ParamType.t_string)
@@ -116,6 +138,14 @@ abstract contract JSCBaseConfigurable is JSCBaseProposable {
   }
 
   function _onUpdateAddressParameter(string memory name, address value) internal virtual {}
+
+  function _updateBoolParameter(bytes memory pdata) internal {
+      string memory name;
+      bool value; 
+      (name, value) = abi.decode(pdata, (string, bool));
+      _parameters.setBool(name, value);
+    emit BoolParameterUpdated(name, value);
+  }
 
   function _updateNumberParameter(bytes memory pdata) internal {
       string memory name;

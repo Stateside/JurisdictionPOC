@@ -1,4 +1,4 @@
-import { JSCTitleToken, JSCTitleTokenTest, JSCTitleTokenReceiverTest } from "../../typechain-types"
+import * as tc from "../../typechain-types"
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
 import { expect, use as chaiuse } from "chai"
@@ -13,9 +13,14 @@ chaiuse(solidity);
  * Includes tests for ERC-721 compliance.
  */
 describe("JSCTitleToken", async () => {
-  let titleToken: JSCTitleToken
-  let titleTokenTest: JSCTitleTokenTest
-  let tokenReceiver: JSCTitleTokenReceiverTest
+  let titleToken: tc.JSCTitleToken
+  let titleTokenTest: tc.JSCTitleTokenTest
+  let tokenReceiver: tc.JSCTitleTokenReceiverTest
+  let jurisdiction: tc.JSCJurisdiction
+  let revisionsLib: tc.JSCRevisionsLib
+  let configurableLib: any
+  let titleTokenLib: tc.JSCTitleTokenLib
+
   let owner, bob, jane, sara;
 
   const zeroAddress = '0x0000000000000000000000000000000000000000';
@@ -43,11 +48,28 @@ describe("JSCTitleToken", async () => {
     titleToken = await ethers.getContract("JSCTitleToken");
     titleTokenTest = await ethers.getContract("JSCTitleTokenTest");
     tokenReceiver = await ethers.getContract("JSCTitleTokenReceiverTest");
+    jurisdiction = await ethers.getContract("JSCJurisdiction");
+    revisionsLib = await ethers.getContract("JSCRevisionsLib");
+    configurableLib = await ethers.getContract("JSCConfigurableLib");
+    titleTokenLib = await ethers.getContract("JSCTitleTokenLib");
     [owner, bob, jane, sara] = await ethers.getSigners();
   });
 
-  it('Fails on second init()', async function() {
-    await expect(titleToken.init("name", "symbol", "uri")).to.be.revertedWith('init() cannot be called twice');
+  it('remains frozen until initialized', async function() {
+    const contract = await ethers.getContractFactory("JSCTitleToken", {
+      libraries: {
+        JSCRevisionsLib: revisionsLib.address,
+        JSCConfigurableLib: configurableLib.address,
+        JSCTitleTokenLib: titleTokenLib.address
+      },
+    });
+    const deployedContract = await contract.deploy();
+    await expect(await deployedContract.isFrozen()).to.equal(true);
+  });
+
+  it('fails on second init()', async function() {
+    await expect(await titleToken.isFrozen()).to.equal(false);
+    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address)).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('(ERC721) correctly checks all the supported interfaces', async function() {
@@ -413,20 +435,145 @@ describe("JSCTitleToken", async () => {
     await expect(await titleToken.connect(sara).countOffersToSell(tokenId1)).to.equal(0);
   });
 
+  it('accepts revision to freeze contract', async function() {
+    await expect(await titleToken.isFrozen()).to.equal(false);
+    let revArgs = defaultAbiCoder.encode(["bool"],[true]);
+    let tresponse = titleToken.executeRevision("FreezeContract", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("FreezeContract", revArgs)
+      .to.emit(titleToken, "ContractFrozen").withArgs(titleToken.address, true);
+    await expect(await titleToken.isFrozen()).to.equal(true);
+    revArgs = defaultAbiCoder.encode(["bool"],[false]);
+    tresponse = titleToken.executeRevision("FreezeContract", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("FreezeContract", revArgs)
+      .to.emit(titleToken, "ContractFrozen").withArgs(titleToken.address, false);
+    await expect(await titleToken.isFrozen()).to.equal(false);
+  });
+
+  it('accepts revision to freeze token', async function() {
+    await titleToken.mint(bob.address, titleId1);
+    let tokenId1 = await titleToken.titleToTokenId(titleId1);
+
+    await expect(await titleToken.isFrozenToken(tokenId1)).to.equal(false);
+    let revArgs = defaultAbiCoder.encode(["uint", "bool"],[tokenId1, true]);
+    let tresponse = titleToken.executeRevision("FreezeToken", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("FreezeToken", revArgs)
+      .to.emit(titleToken, "TokenFrozen").withArgs(tokenId1, true);
+    await expect(await titleToken.isFrozenToken(tokenId1)).to.equal(true);
+    revArgs = defaultAbiCoder.encode(["uint", "bool"],[tokenId1, false]);
+    tresponse = titleToken.executeRevision("FreezeToken", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("FreezeToken", revArgs)
+      .to.emit(titleToken, "TokenFrozen").withArgs(tokenId1, false);
+    await expect(await titleToken.isFrozenToken(tokenId1)).to.equal(false);
+  });
+
+  it('accepts revision to freeze owner', async function() {
+    await titleToken.mint(bob.address, titleId1);
+
+    await expect(await titleToken.isFrozenOwner(bob.address)).to.equal(false);
+    let revArgs = defaultAbiCoder.encode(["address", "bool"],[bob.address, true]);
+    let tresponse = titleToken.executeRevision("FreezeOwner", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("FreezeOwner", revArgs)
+      .to.emit(titleToken, "OwnerFrozen").withArgs(bob.address, true);
+    await expect(await titleToken.isFrozenOwner(bob.address)).to.equal(true);
+    revArgs = defaultAbiCoder.encode(["address", "bool"],[bob.address, false]);
+    tresponse = titleToken.executeRevision("FreezeOwner", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("FreezeOwner", revArgs)
+      .to.emit(titleToken, "OwnerFrozen").withArgs(bob.address, false);
+    await expect(await titleToken.isFrozenOwner(bob.address)).to.equal(false);
+  });
+
+  it('accepts revision to change owner', async function() {
+    await titleToken.mint(bob.address, titleId1);
+    let tokenId1 = await titleToken.titleToTokenId(titleId1);
+
+    await expect(await titleToken.ownerOf(tokenId1)).to.equal(bob.address);
+    let revArgs = defaultAbiCoder.encode(["uint", "address"],[tokenId1, sara.address]);
+    let tresponse = titleToken.executeRevision("ChangeOwner", revArgs);
+    await expect(tresponse)
+      .to.emit(titleToken, "RevisionExecuted").withArgs("ChangeOwner", revArgs)
+      .to.emit(titleToken, "Transfer").withArgs(bob.address, sara.address, tokenId1);
+      await expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
+  });
+
+  const testPublicWriteOperations = async (contract:tc.JSCTitleToken, expectRevert?:boolean) => {
+    const checkRevert = async (op:Chai.Assertion) => expectRevert ? await op.to.be.reverted : await op.to.not.be.reverted;
+
+    await contract.mint(bob.address, titleId1); // mint() is onlyOwner and should work regardless of whether the contract is frozen
+    let tokenId = await contract.titleToTokenId(titleId1);
+
+    await checkRevert(expect(contract.connect(bob).approve(sara.address, tokenId), "approve sara"));
+    await checkRevert(expect(contract.connect(bob).approve(zeroAddress, tokenId), "approve no one"));
+
+    await checkRevert(expect(contract.connect(bob).setApprovalForAll(sara.address, true), "add sara as operator"));
+    await checkRevert(expect(contract.connect(bob).setApprovalForAll(sara.address, false), "remove sara as operator"));
+
+    await checkRevert(expect(contract.connect(bob).transferFrom(bob.address, sara.address, tokenId), "transfer from bob to sara"));
+    if (!expectRevert) await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob"));
+
+    await checkRevert(expect(contract.connect(bob)['safeTransferFrom(address,address,uint256)'](bob.address, sara.address, tokenId), "safe transfer from bob to sara"));
+    if (!expectRevert) await checkRevert(expect(contract.connect(sara)['safeTransferFrom(address,address,uint256)'](sara.address, bob.address, tokenId), "safe transfer from sara to bob"));
+
+    await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy"));
+    if (!expectRevert) await checkRevert(expect(contract.connect(sara).cancelOfferToBuy(tokenId), "sara cancels offer to buy"));
+
+    await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy again"));
+    if (!expectRevert) {
+      await checkRevert(expect(contract.connect(bob).acceptOfferToBuy(tokenId, sara.address), "accepts sara's offer to buy"));
+      await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob after accepting offer to uy"));
+    }
+
+    await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara"));
+    if (!expectRevert) await checkRevert(expect(contract.connect(bob).cancelOfferToSell(tokenId, sara.address), "cancel offer to sell to sara"));
+
+    await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara again"));
+    if (!expectRevert) {
+      await checkRevert(expect(contract.connect(sara).acceptOfferToSell(tokenId), "accepts bob's offer to sell"));
+      await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob after accepting offer to sell"));
+    }
+
+    await contract.burn(tokenId); // burn() is onlyOwner and should work regardless of whether the contract is frozen
+  }
+
+  it('allows write operations when not frozen', async function() {
+    await testPublicWriteOperations(titleToken);
+  });
+
+  it('reverts write operations when frozen', async function() {
+    const factory = await ethers.getContractFactory("JSCTitleToken", {
+      libraries: {
+        JSCRevisionsLib: revisionsLib.address,
+        JSCConfigurableLib: configurableLib.address,
+        JSCTitleTokenLib: titleTokenLib.address
+      },
+    });
+    const contract:tc.JSCTitleToken = await factory.deploy();
+
+    // Contract is fozen because we have not initialized it
+    await testPublicWriteOperations(contract, true);
+
+    // We can also freeze an initialized contract
+    await expect(await titleTokenTest.connect(owner).setFrozenContract(true)).to.emit(titleTokenTest, 'ContractFrozen').withArgs(titleTokenTest.address, true);
+    await testPublicWriteOperations(titleTokenTest, true);
+  });
+
   /**
    * Pending:
-   *   Add parameters and revisions, 
-   *     age of ownership
+   *   Add payment to offers
    *   
    *   Test no transfer to frozen account
-   *   Create freezable abstract contract. Add frozen flag, revisions, and events to jurisdiction and titletokens
    *   Test if approval clear after transfer
    *   Test if approval can transfer ownership after cancelling
    *   Test if operator can transfer ownership after cancelling
-   *   Add payment to offers
    *   Clear offers when token transferred and create unit tests
    *   Make unit tests as focused as possible
    *   Check of wrong person can accept offers
+   * Add tests to revisions while contract is frozen - they should be allowed
    *   Fix documentation
    */
 })

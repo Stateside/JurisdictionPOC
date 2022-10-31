@@ -5,10 +5,17 @@ import type {
   BaseContract,
   BigNumber,
   BigNumberish,
+  BytesLike,
+  CallOverrides,
+  PopulatedTransaction,
   Signer,
   utils,
 } from "ethers";
-import type { EventFragment } from "@ethersproject/abi";
+import type {
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -18,8 +25,104 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export declare namespace JSCRevisionsLib {
+  export type VotingRulesStruct = {
+    votingPeriod: PromiseOrValue<BigNumberish>;
+    approvals: PromiseOrValue<BigNumberish>;
+    quorumPercentage: PromiseOrValue<BigNumberish>;
+    majority: PromiseOrValue<BigNumberish>;
+    roles: PromiseOrValue<string>[];
+  };
+
+  export type VotingRulesStructOutput = [
+    number,
+    number,
+    number,
+    number,
+    string[]
+  ] & {
+    votingPeriod: number;
+    approvals: number;
+    quorumPercentage: number;
+    majority: number;
+    roles: string[];
+  };
+
+  export type RevisionStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    paramNames: PromiseOrValue<string>[];
+    paramTypes: PromiseOrValue<BigNumberish>[];
+    paramHints: PromiseOrValue<string>[];
+    rules: JSCRevisionsLib.VotingRulesStruct;
+  };
+
+  export type RevisionStructOutput = [
+    string,
+    string,
+    string[],
+    number[],
+    string[],
+    JSCRevisionsLib.VotingRulesStructOutput
+  ] & {
+    name: string;
+    description: string;
+    paramNames: string[];
+    paramTypes: number[];
+    paramHints: string[];
+    rules: JSCRevisionsLib.VotingRulesStructOutput;
+  };
+}
+
 export interface JSCTitleTokenLibInterface extends utils.Interface {
-  functions: {};
+  functions: {
+    "getChangeOwnerRevision()": FunctionFragment;
+    "getFreezeOwnerRevision()": FunctionFragment;
+    "getFreezeTokenRevision()": FunctionFragment;
+    "getRevisions()": FunctionFragment;
+  };
+
+  getFunction(
+    nameOrSignatureOrTopic:
+      | "getChangeOwnerRevision"
+      | "getFreezeOwnerRevision"
+      | "getFreezeTokenRevision"
+      | "getRevisions"
+  ): FunctionFragment;
+
+  encodeFunctionData(
+    functionFragment: "getChangeOwnerRevision",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFreezeOwnerRevision",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFreezeTokenRevision",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRevisions",
+    values?: undefined
+  ): string;
+
+  decodeFunctionResult(
+    functionFragment: "getChangeOwnerRevision",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFreezeOwnerRevision",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFreezeTokenRevision",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevisions",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
@@ -80,9 +183,61 @@ export interface JSCTitleTokenLib extends BaseContract {
   once: OnEvent<this>;
   removeListener: OnEvent<this>;
 
-  functions: {};
+  functions: {
+    getChangeOwnerRevision(
+      overrides?: CallOverrides
+    ): Promise<[JSCRevisionsLib.RevisionStructOutput]>;
 
-  callStatic: {};
+    getFreezeOwnerRevision(
+      overrides?: CallOverrides
+    ): Promise<[JSCRevisionsLib.RevisionStructOutput]>;
+
+    getFreezeTokenRevision(
+      overrides?: CallOverrides
+    ): Promise<[JSCRevisionsLib.RevisionStructOutput]>;
+
+    getRevisions(
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput[]] & {
+        result: JSCRevisionsLib.RevisionStructOutput[];
+      }
+    >;
+  };
+
+  getChangeOwnerRevision(
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+  getFreezeOwnerRevision(
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+  getFreezeTokenRevision(
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+  getRevisions(
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput[]>;
+
+  callStatic: {
+    getChangeOwnerRevision(
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    getFreezeOwnerRevision(
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    getFreezeTokenRevision(
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    getRevisions(
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput[]>;
+  };
 
   filters: {
     "Approval(address,address,uint256)"(
@@ -108,7 +263,29 @@ export interface JSCTitleTokenLib extends BaseContract {
     ): TransferEventFilter;
   };
 
-  estimateGas: {};
+  estimateGas: {
+    getChangeOwnerRevision(overrides?: CallOverrides): Promise<BigNumber>;
 
-  populateTransaction: {};
+    getFreezeOwnerRevision(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFreezeTokenRevision(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getRevisions(overrides?: CallOverrides): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    getChangeOwnerRevision(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFreezeOwnerRevision(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFreezeTokenRevision(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRevisions(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+  };
 }

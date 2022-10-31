@@ -9,10 +9,12 @@ chaiuse(solidity);
 
 describe("JSCProposableTest", async () => {
   let proposable: JSCProposableTest
+  let owner, bob, jane, sara;
 
   beforeEach(async () => {
     await deployments.fixture(["all"])
-    proposable = await ethers.getContract("JSCProposableTest")
+    proposable = await ethers.getContract("JSCProposableTest");
+    [owner, bob, jane, sara] = await ethers.getSigners();
   })
 
   it("iterates revisions", async () => {
@@ -36,6 +38,11 @@ describe("JSCProposableTest", async () => {
     await expect(tresponse).to.not.be.reverted;
     await expect(tresponse).to.emit(proposable, "RevisionRemoved").withArgs("first");
     await expect((await proposable.first()).name).to.be.equal("second")
+  })
+
+  it("fails to execute revision if not owner", async () => {
+    let revArgs = defaultAbiCoder.encode(["string"],["rev1"]);
+    await expect(proposable.connect(bob).executeRevision("first", revArgs)).to.be.revertedWith('Ownable: caller is not the owner');
   })
 
   it("executes string revision", async () => {

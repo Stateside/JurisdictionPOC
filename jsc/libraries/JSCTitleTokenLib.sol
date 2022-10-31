@@ -3,12 +3,14 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 
 /**
   This library contains code for use by the JSCTitleToken smart contract. It's purpose is primarily to reduce the size of 
   smart contracts that use this contract as a base class and centralize the type and functionality definitions.
  */
 library JSCTitleTokenLib {
+  using rlib for rlib.RevisionMap;
   using Address for address;
 
   /**
@@ -23,6 +25,12 @@ library JSCTitleTokenLib {
 
   /** Storage struct for the JSCTitleToken */
   struct Storage {
+      // Owning Jurisdiciton contract address
+      address jurisdiction;
+
+      // Flag indicating if this contract is unfrozen and operational
+      bool unfrozen;
+
       // Base URI for token metadata
       string baseURI;
 
@@ -218,7 +226,6 @@ library JSCTitleTokenLib {
     */
   function mint(Storage storage self, address owner, string memory titleId, uint tokenId) public {
       require(owner != address(0), "mint to the zero address");
-      requireFrozenOwner(self, owner, false);
       
       addTokenId(self.tokensByOwner[owner], tokenId);
       self.tokens[tokenId].titleId = titleId;
@@ -291,4 +298,82 @@ library JSCTitleTokenLib {
     emit Approval(t.owner, to, tokenId);
   }
 
+  function getRevisions() pure public returns (rlib.Revision[] memory result) {
+    result = new rlib.Revision[](3);
+    result[0] = getChangeOwnerRevision();
+    result[1] = getFreezeTokenRevision();
+    result[2] = getFreezeOwnerRevision();
+  }
+
+  function getChangeOwnerRevision() pure public returns (rlib.Revision memory) {
+    string[] memory names = new string[](2);
+    names[0] = "token";
+    names[1] = "newOwner";
+    rlib.ParamType[] memory types = new rlib.ParamType[](2);
+    types[0] = rlib.ParamType.t_number;
+    types[1] = rlib.ParamType.t_address;
+    string[] memory hints = new string[](2);
+    hints[0] = "ID of selected token";
+    hints[1] = "Address of new owner";
+    string[] memory roles = new string[](2);
+    roles[0] = "Judicial";
+    roles[1] = "Judicial";
+
+    return rlib.Revision({
+        name: "ChangeOwner",
+        description: "Change the owner of a token",
+        paramNames: names,
+        paramTypes: types,
+        paramHints: hints,
+        rules: rlib.VotingRules(0,0,0,0,roles)
+      });
+  }
+
+  function getFreezeTokenRevision() pure public returns (rlib.Revision memory) {
+    string[] memory names = new string[](2);
+    names[0] = "token";
+    names[1] = "freeze";
+    rlib.ParamType[] memory types = new rlib.ParamType[](2);
+    types[0] = rlib.ParamType.t_number;
+    types[1] = rlib.ParamType.t_bool;
+    string[] memory hints = new string[](2);
+    hints[0] = "ID of selected token";
+    hints[1] = "Freeze token?";
+    string[] memory roles = new string[](2);
+    roles[0] = "Judicial";
+    roles[1] = "Judicial";
+
+    return rlib.Revision({
+        name: "FreezeToken",
+        description: "Freeze or unfreeze a token",
+        paramNames: names,
+        paramTypes: types,
+        paramHints: hints,
+        rules: rlib.VotingRules(0,0,0,0,roles)
+      });
+  }
+
+  function getFreezeOwnerRevision() pure public returns (rlib.Revision memory) {
+    string[] memory names = new string[](2);
+    names[0] = "owner";
+    names[1] = "freeze";
+    rlib.ParamType[] memory types = new rlib.ParamType[](2);
+    types[0] = rlib.ParamType.t_address;
+    types[1] = rlib.ParamType.t_bool;
+    string[] memory hints = new string[](2);
+    hints[0] = "Address of selected owner";
+    hints[1] = "Freeze owner?";
+    string[] memory roles = new string[](2);
+    roles[0] = "Judicial";
+    roles[1] = "Judicial";
+
+    return rlib.Revision({
+        name: "FreezeOwner",
+        description: "Freeze or unfreeze a property owner",
+        paramNames: names,
+        paramTypes: types,
+        paramHints: hints,
+        rules: rlib.VotingRules(0,0,0,0,roles)
+      });
+  }
 }

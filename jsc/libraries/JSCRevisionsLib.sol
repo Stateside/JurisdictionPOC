@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
   smart contracts that use this contract as a base class and centralize the type and functionality definitions.
  */
 library JSCRevisionsLib {
-  enum ParamType { t_address, t_number, t_string }
+  enum ParamType { t_address, t_bool, t_number, t_string }
   struct VotingRules {
     /** How long voting lasts in number of blocks */
     uint16 votingPeriod;

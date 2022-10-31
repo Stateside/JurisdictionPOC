@@ -78,6 +78,63 @@ const _abi = [
       },
       {
         indexed: false,
+        internalType: "bool",
+        name: "value",
+        type: "bool",
+      },
+    ],
+    name: "BoolParameterAdded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "value",
+        type: "bool",
+      },
+    ],
+    name: "BoolParameterUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "con",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "frozen",
+        type: "bool",
+      },
+    ],
+    name: "ContractFrozen",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
         internalType: "uint256",
         name: "value",
         type: "uint256",
@@ -252,6 +309,25 @@ const _abi = [
         type: "string",
       },
     ],
+    name: "getBoolParameter",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
     name: "getNumberParameter",
     outputs: [
       {
@@ -277,6 +353,19 @@ const _abi = [
         internalType: "string",
         name: "",
         type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isFrozen",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",

@@ -29,6 +29,8 @@ contract JSCJurisdiction is JSCBaseConfigurable {
     require(bytes(jurisdictionName).length == 0, "init() cannot be called twice");
 
     jurisdictionName = name;
+    JSCBaseConfigurable._init();
+    
     for (uint i = 0; i < contracts.length; i++)
       _addAddressParameter(clib.AddressParameter(contractKeys[i], descriptions[i], contracts[i]));
     _addParameterRevisions();

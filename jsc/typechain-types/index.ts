@@ -26,6 +26,8 @@ export type { JSCBaseConfigurable } from "./contracts/production/JSCBaseConfigur
 export { JSCBaseConfigurable__factory } from "./factories/contracts/production/JSCBaseConfigurable__factory";
 export type { JSCBaseProposable } from "./contracts/production/JSCBaseProposable";
 export { JSCBaseProposable__factory } from "./factories/contracts/production/JSCBaseProposable__factory";
+export type { JSCFreezable } from "./contracts/production/JSCFreezable";
+export { JSCFreezable__factory } from "./factories/contracts/production/JSCFreezable__factory";
 export type { JSCJurisdiction } from "./contracts/production/JSCJurisdiction";
 export { JSCJurisdiction__factory } from "./factories/contracts/production/JSCJurisdiction__factory";
 export type { JSCTitleToken } from "./contracts/production/JSCTitleToken";

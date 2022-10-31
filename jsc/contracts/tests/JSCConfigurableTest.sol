@@ -22,6 +22,11 @@ contract JSCConfigurableTest is JSCBaseConfigurable {
         value: 0x111122223333444455556666777788889999aAaa,
         description: "address param"
       }));
+    _addBoolParameter(clib.BoolParameter({
+        name: "JSCConfigurableTest.bool",
+        value: false,
+        description: "bool param"
+      }));
     _addNumberParameter(clib.NumberParameter({
         name: "JSCConfigurableTest.number",
         value: 1234,

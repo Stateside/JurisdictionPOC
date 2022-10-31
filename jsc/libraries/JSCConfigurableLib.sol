@@ -18,6 +18,14 @@ library JSCConfigurableLib {
     /** Holds current value of this parameter */
     address value;
   }
+  struct BoolParameter {
+    /** Name of this parameter */
+    string name;
+    /** Description of this parameter */
+    string description;
+    /** Holds current value of this parameter */
+    bool value;
+  }
   struct NumberParameter {
     /** Name of this parameter */
     string name;
@@ -49,6 +57,7 @@ library JSCConfigurableLib {
   struct ParameterMap {
     mapping(string => IndexInfoValue) paramInfos;
     mapping(string => address) addressValues;
+    mapping(string => bool) boolValues;
     mapping(string => uint) numberValues;
     mapping(string => string) stringValues;
     KeyFlag[] keys;
@@ -61,6 +70,13 @@ library JSCConfigurableLib {
     checkCanAdd(self, r.name);
     self.addressValues[r.name] = r.value;
     _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_address));
+  }
+
+  /** Adds the given bool parameter. Fails if another bool parameter with the same name already exists */
+  function insertBool(ParameterMap storage self, BoolParameter calldata r) public {
+    checkCanAdd(self, r.name);
+    self.boolValues[r.name] = r.value;
+    _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_bool));
   }
 
   /** Adds the given number parameter. Fails if another number parameter with the same name already exists */
@@ -108,6 +124,11 @@ library JSCConfigurableLib {
     return self.addressValues[name];
   }
 
+  function getBool(ParameterMap storage self, string calldata name) public view returns (bool value) {
+    require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
+    return self.boolValues[name];
+  }
+
   function getNumber(ParameterMap storage self, string calldata name) public view returns (uint value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.numberValues[name];
@@ -121,6 +142,11 @@ library JSCConfigurableLib {
   function setAddress(ParameterMap storage self, string memory name, address value) internal {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     self.addressValues[name] = value;
+  }
+
+  function setBool(ParameterMap storage self, string memory name, bool value) internal {
+    require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
+    self.boolValues[name] = value;
   }
 
   function setNumber(ParameterMap storage self, string memory name, uint value) internal {
@@ -169,7 +195,7 @@ library JSCConfigurableLib {
   }
 
   /** Create revisions and handlers for all existing parameters */
-  function getRevisions(ParameterMap storage self, rlib.VotingRules storage rules) view public returns (rlib.Revision[] memory result) {
+  function getRevisions(ParameterMap storage self, rlib.VotingRules storage rules) public view returns (rlib.Revision[] memory result) {
     result = new rlib.Revision[](self.size);
     uint r = 0;
     Iterator i = iterateStart(self);

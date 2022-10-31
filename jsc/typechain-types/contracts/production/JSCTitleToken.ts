@@ -118,10 +118,14 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getBoolParameter(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
-    "init(string,string,string)": FunctionFragment;
+    "init(string,string,string,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "isFrozen()": FunctionFragment;
+    "isFrozenOwner(address)": FunctionFragment;
+    "isFrozenToken(uint256)": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateParameters()": FunctionFragment;
@@ -167,10 +171,14 @@ export interface JSCTitleTokenInterface extends utils.Interface {
       | "executeRevision"
       | "getAddressParameter"
       | "getApproved"
+      | "getBoolParameter"
       | "getNumberParameter"
       | "getStringParameter"
       | "init"
       | "isApprovedForAll"
+      | "isFrozen"
+      | "isFrozenOwner"
+      | "isFrozenToken"
       | "isValidParameterIterator"
       | "isValidRevisionIterator"
       | "iterateParameters"
@@ -251,6 +259,10 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getBoolParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getNumberParameter",
     values: [PromiseOrValue<string>]
   ): string;
@@ -263,12 +275,22 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<string>,
       PromiseOrValue<string>
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "isFrozenOwner",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isFrozenToken",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "isValidParameterIterator",
@@ -435,6 +457,10 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getBoolParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getNumberParameter",
     data: BytesLike
   ): Result;
@@ -445,6 +471,15 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "isFrozen", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isFrozenOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isFrozenToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -549,6 +584,9 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     "AddressParameterUpdated(string,address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "BoolParameterAdded(string,bool)": EventFragment;
+    "BoolParameterUpdated(string,bool)": EventFragment;
+    "ContractFrozen(address,bool)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
     "OfferToBuy(uint256,address,uint256)": EventFragment;
@@ -571,6 +609,9 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AddressParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoolParameterAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoolParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OfferToBuy"): EventFragment;
@@ -647,6 +688,41 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface BoolParameterAddedEventObject {
+  name: string;
+  value: boolean;
+}
+export type BoolParameterAddedEvent = TypedEvent<
+  [string, boolean],
+  BoolParameterAddedEventObject
+>;
+
+export type BoolParameterAddedEventFilter =
+  TypedEventFilter<BoolParameterAddedEvent>;
+
+export interface BoolParameterUpdatedEventObject {
+  name: string;
+  value: boolean;
+}
+export type BoolParameterUpdatedEvent = TypedEvent<
+  [string, boolean],
+  BoolParameterUpdatedEventObject
+>;
+
+export type BoolParameterUpdatedEventFilter =
+  TypedEventFilter<BoolParameterUpdatedEvent>;
+
+export interface ContractFrozenEventObject {
+  con: string;
+  frozen: boolean;
+}
+export type ContractFrozenEvent = TypedEvent<
+  [string, boolean],
+  ContractFrozenEventObject
+>;
+
+export type ContractFrozenEventFilter = TypedEventFilter<ContractFrozenEvent>;
 
 export interface NumberParameterAddedEventObject {
   name: string;
@@ -910,6 +986,11 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -924,12 +1005,25 @@ export interface JSCTitleToken extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    isFrozen(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -1140,6 +1234,11 @@ export interface JSCTitleToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getBoolParameter(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1154,12 +1253,25 @@ export interface JSCTitleToken extends BaseContract {
     name_: PromiseOrValue<string>,
     symbol_: PromiseOrValue<string>,
     baseURI_: PromiseOrValue<string>,
+    jurisdiction_: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   isApprovedForAll(
     owner: PromiseOrValue<string>,
     operator: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isFrozen(overrides?: CallOverrides): Promise<boolean>;
+
+  isFrozenOwner(
+    owner: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isFrozenToken(
+    tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -1366,6 +1478,11 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1380,12 +1497,25 @@ export interface JSCTitleToken extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isFrozen(overrides?: CallOverrides): Promise<boolean>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -1576,6 +1706,30 @@ export interface JSCTitleToken extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
+    "BoolParameterAdded(string,bool)"(
+      name?: null,
+      value?: null
+    ): BoolParameterAddedEventFilter;
+    BoolParameterAdded(
+      name?: null,
+      value?: null
+    ): BoolParameterAddedEventFilter;
+
+    "BoolParameterUpdated(string,bool)"(
+      name?: null,
+      value?: null
+    ): BoolParameterUpdatedEventFilter;
+    BoolParameterUpdated(
+      name?: null,
+      value?: null
+    ): BoolParameterUpdatedEventFilter;
+
+    "ContractFrozen(address,bool)"(
+      con?: null,
+      frozen?: null
+    ): ContractFrozenEventFilter;
+    ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
+
     "NumberParameterAdded(string,uint256)"(
       name?: null,
       value?: null
@@ -1762,6 +1916,11 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1776,12 +1935,25 @@ export interface JSCTitleToken extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isFrozen(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1989,6 +2161,11 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2003,12 +2180,25 @@ export interface JSCTitleToken extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isFrozen(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
