@@ -344,8 +344,11 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable
   function offerToBuy(uint256 tokenId, uint256 amount) external unfrozenContract {
     _storage.requireMinted(tokenId);
     _storage.requireFrozenToken(tokenId, false);
+    _storage.requireFrozenOwner(ownerOf(tokenId), false);
 
     address buyer = msg.sender;
+    _storage.requireFrozenOwner(buyer, false);
+
     tlib.TitleToken storage t = _storage.tokens[tokenId];
     require(buyer != t.owner, "owner cannot buy their own token");
 
@@ -395,6 +398,7 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable
     require(msg.sender != buyer, "owners cannot sell to themselves");
     _storage.requireMinted(tokenId);
     _storage.requireFrozenToken(tokenId, false);
+    _storage.requireFrozenOwner(buyer, false);
 
     tlib.TitleToken storage t = _storage.tokens[tokenId];
     require(msg.sender == t.owner, "caller is not token owner");
