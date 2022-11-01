@@ -410,7 +410,7 @@ describe("JSCTitleToken", async () => {
     await expect(await titleToken.isFrozen()).to.equal(false);
   });
 
-  it('accepts revision to freeze token', async function() {
+  it('accepts revisions to freeze & unfreeze token', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
 
@@ -429,7 +429,7 @@ describe("JSCTitleToken", async () => {
     await expect(await titleToken.isFrozenToken(tokenId1)).to.equal(false);
   });
 
-  it('accepts revision to freeze owner', async function() {
+  it('accepts revisions to freeze & unfreeze owner', async function() {
     await titleToken.mint(bob.address, titleId1);
 
     await expect(await titleToken.isFrozenOwner(bob.address)).to.equal(false);
@@ -457,7 +457,7 @@ describe("JSCTitleToken", async () => {
     await expect(tresponse)
       .to.emit(titleToken, "RevisionExecuted").withArgs("ChangeOwner", revArgs)
       .to.emit(titleToken, "Transfer").withArgs(bob.address, sara.address, tokenId1);
-      await expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
+    await expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
   });
 
   /** Tests the given contract using functions that should work if not frozen, and revert if frozen */
@@ -535,8 +535,14 @@ describe("JSCTitleToken", async () => {
     await checkRevert(expect(titleTokenTest.connect(targetAccount).approve(sara.address, tokenId1), "approve sara"));
     await checkRevert(expect(titleTokenTest.connect(targetAccount).approve(zeroAddress, tokenId1), "approve no one"));
 
+    await checkRevert(expect(titleTokenTest.connect(bob).approve(targetAccount.address, tokenId2), "approve target on bobs token"));
+    await expect(titleTokenTest.connect(bob).approve(zeroAddress, tokenId2)).to.not.be.reverted;
+
     await checkRevert(expect(titleTokenTest.connect(targetAccount).setApprovalForAll(sara.address, true), "add sara as operator"));
     await checkRevert(expect(titleTokenTest.connect(targetAccount).setApprovalForAll(sara.address, false), "remove sara as operator"));
+
+    await checkRevert(expect(titleTokenTest.connect(bob).setApprovalForAll(targetAccount.address, true), "add target as operator to bob's account"));
+    await expect(titleTokenTest.connect(bob).setApprovalForAll(targetAccount.address, false)).to.not.be.reverted;
 
     await checkRevert(expect(titleTokenTest.connect(targetAccount).transferFrom(targetAccount.address, sara.address, tokenId1), "transfer from target to sara"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, targetAccount.address, tokenId1), "transfer from sara to target"));
@@ -675,6 +681,15 @@ describe("JSCTitleToken", async () => {
       await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
     await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId), "accepts target's offer to sell"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, account.address, tokenId), "transfer from sara to target after accepting offer to sell"));
+
+    // Note: Revision for unfreezing token tested above in 'accepts revision to freeze token'
+
+    // Should allow revisions to change owner, even though tokens, owners, or contract are frozen
+    await expect(await titleTokenTest.ownerOf(tokenId)).to.equal(account.address);
+    let revArgs = defaultAbiCoder.encode(["uint", "address"],[tokenId, sara.address]);
+    await titleTokenTest.connect(owner).executeRevision("ChangeOwner", revArgs);
+    await expect(await titleTokenTest.ownerOf(tokenId)).to.equal(sara.address);
+
   }
 
   it('allows write operations when token not frozen', async function() {
@@ -695,7 +710,6 @@ describe("JSCTitleToken", async () => {
    *   Clear offers when token transferred and create unit tests
    *   Make unit tests as focused as possible
    *   Check of wrong person can accept offers
-   *   Add tests to revisions while contract is frozen - they should be allowed
    *   Fix documentation
    */
 })

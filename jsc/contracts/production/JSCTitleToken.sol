@@ -121,6 +121,7 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable
     require(to != owner, "approval to current owner");
     _storage.requireFrozenToken(tokenId, false);
     _storage.requireFrozenOwner(owner, false);
+    _storage.requireFrozenOwner(to, false);
 
     require(
       msg.sender == owner || isApprovedForAll(owner, msg.sender),
@@ -282,7 +283,7 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable
    */
   function _transfer(address from, address to, uint256 tokenId) internal {
     require(ownerOf(tokenId) == from, "transfer from incorrect owner");
-    _storage.transfer(from, to, tokenId);
+    _storage.transfer(owner(), from, to, tokenId);
   }
 
   /**
@@ -293,6 +294,8 @@ contract JSCTitleToken is ERC165, IERC721, IERC721Metadata, JSCBaseConfigurable
   function _setApprovalForAll(address owner, address operator, bool approved) internal {
     require(owner != operator, "approve to caller");
     _storage.requireFrozenOwner(owner, false);
+    if (approved) // Do not approve frozen accounts - be we can remove them
+      _storage.requireFrozenOwner(operator, false);
     _storage.operatorApprovals[owner][operator] = approved;
     emit ApprovalForAll(owner, operator, approved);
   }
