@@ -25,14 +25,14 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../../common";
+} from "../common";
 
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -45,8 +45,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 
@@ -76,30 +76,28 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
-export interface JSCBaseProposableInterface extends utils.Interface {
+export interface IJSCRevisionedInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
+    "getRevisionByName(string)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateRevisions()": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "executeRevision"
+      | "getRevisionByName"
       | "isValidRevisionIterator"
       | "iterateRevisions"
       | "nextRevision"
-      | "owner"
-      | "renounceOwnership"
       | "revisionCount"
       | "revisionIteratorGet"
-      | "transferOwnership"
+      | "supportsInterface"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -107,6 +105,10 @@ export interface JSCBaseProposableInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getRevisionByName",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isValidRevisionIterator",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -118,11 +120,6 @@ export interface JSCBaseProposableInterface extends utils.Interface {
     functionFragment: "nextRevision",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "revisionCount",
     values?: undefined
@@ -132,8 +129,8 @@ export interface JSCBaseProposableInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [PromiseOrValue<string>]
+    functionFragment: "supportsInterface",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
 
   decodeFunctionResult(
@@ -141,6 +138,10 @@ export interface JSCBaseProposableInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getRevisionByName",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isValidRevisionIterator",
     data: BytesLike
   ): Result;
@@ -152,11 +153,6 @@ export interface JSCBaseProposableInterface extends utils.Interface {
     functionFragment: "nextRevision",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "revisionCount",
     data: BytesLike
@@ -166,34 +162,20 @@ export interface JSCBaseProposableInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferOwnership",
+    functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
 
   events: {
-    "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
     "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionRemoved"): EventFragment;
 }
-
-export interface OwnershipTransferredEventObject {
-  previousOwner: string;
-  newOwner: string;
-}
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  OwnershipTransferredEventObject
->;
-
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface RevisionAddedEventObject {
   name: string;
@@ -224,12 +206,12 @@ export type RevisionRemovedEvent = TypedEvent<
 
 export type RevisionRemovedEventFilter = TypedEventFilter<RevisionRemovedEvent>;
 
-export interface JSCBaseProposable extends BaseContract {
+export interface IJSCRevisioned extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCBaseProposableInterface;
+  interface: IJSCRevisionedInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -257,6 +239,15 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput] & {
+        value: JSCRevisionsLib.RevisionStructOutput;
+      }
+    >;
+
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -269,12 +260,6 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     revisionCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     revisionIteratorGet(
@@ -286,10 +271,10 @@ export interface JSCBaseProposable extends BaseContract {
       }
     >;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
   executeRevision(
@@ -297,6 +282,11 @@ export interface JSCBaseProposable extends BaseContract {
     pdata: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  getRevisionByName(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
   isValidRevisionIterator(
     i: PromiseOrValue<BigNumberish>,
@@ -310,12 +300,6 @@ export interface JSCBaseProposable extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   revisionIteratorGet(
@@ -323,10 +307,10 @@ export interface JSCBaseProposable extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  supportsInterface(
+    interfaceId: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   callStatic: {
     executeRevision(
@@ -334,6 +318,11 @@ export interface JSCBaseProposable extends BaseContract {
       pdata: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -347,10 +336,6 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     revisionIteratorGet(
@@ -358,22 +343,13 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<boolean>;
   };
 
   filters: {
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
 
@@ -394,6 +370,11 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -406,12 +387,6 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     revisionIteratorGet(
@@ -419,9 +394,9 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
@@ -430,6 +405,11 @@ export interface JSCBaseProposable extends BaseContract {
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isValidRevisionIterator(
@@ -444,12 +424,6 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     revisionCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     revisionIteratorGet(
@@ -457,9 +431,9 @@ export interface JSCBaseProposable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

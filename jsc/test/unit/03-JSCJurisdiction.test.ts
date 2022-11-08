@@ -1,4 +1,4 @@
-import { JSCJurisdiction } from "../../typechain-types"
+import { IJSCJurisdiction } from "../../typechain-types"
 import { JSCRevisionsLib } from "../../typechain-types/libraries"
 import { ParamType } from "../../utils/types"
 
@@ -11,7 +11,7 @@ import { defaultAbiCoder } from "ethers/lib/utils"
 chaiuse(solidity);
 
 describe("JSCJurisdiction", async () => {
-  let jurisdiction: JSCJurisdiction
+  let jurisdiction: IJSCJurisdiction
   let rlib: JSCRevisionsLib
 
   const testParameterRevision = async (r:any, name:string, description:string, type:ParamType) => {

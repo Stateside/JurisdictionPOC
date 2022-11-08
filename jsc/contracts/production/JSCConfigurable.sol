@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 import "./JSCFreezable.sol";
+import "../IJSCConfigurable.sol";
 
 /**
   This is the base class for all smart contracts that contain configurable parameters that must be
@@ -24,24 +25,12 @@ import "./JSCFreezable.sol";
   3. Always access these parameters using the get() method to ensure you are using their current values which may 
      change over the life of the contract
  */
-abstract contract JSCBaseConfigurable is JSCFreezable {
+abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
   using clib for clib.ParameterMap;
 
   clib.ParameterMap internal _parameters;
   /** Rules for creating revisions for changing parameter values. Same rules apply to all parameters for a given contract */
   rlib.VotingRules internal _paramRules = rlib.VotingRules(0,0,0,0,new string[](0));
-
-  event AddressParameterAdded(string name, address value);
-  event BoolParameterAdded(string name, bool value);
-  event NumberParameterAdded(string name, uint value);
-  event StringParameterAdded(string name, string value);
-
-  event AddressParameterUpdated(string name, address value);
-  event BoolParameterUpdated(string name, bool value);
-  event NumberParameterUpdated(string name, uint value);
-  event StringParameterUpdated(string name, string value);
-
-  event AddressParameterRemoved(string name, address value);
 
   /**
    * @dev Initializes this contract
@@ -50,6 +39,15 @@ abstract contract JSCBaseConfigurable is JSCFreezable {
     JSCFreezable._init();
   }
   
+  /**
+   * @dev See {IERC165-supportsInterface}.
+   */
+  function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, JSCFreezable) returns (bool) {
+    return
+      interfaceId == type(IJSCConfigurable).interfaceId ||
+      super.supportsInterface(interfaceId);
+  }
+
   function _addAddressParameter(clib.AddressParameter memory p) internal {
     _parameters.insertAddress(p);
     emit AddressParameterAdded(p.name, p.value);
@@ -76,39 +74,66 @@ abstract contract JSCBaseConfigurable is JSCFreezable {
     emit StringParameterAdded(p.name, p.value);
   }
 
-  function getAddressParameter(string memory name) public view returns (address) {
+  /**
+   * @dev See {IJSCConfigurable-getAddressParameter}.
+   */
+  function getAddressParameter(string memory name) public view override returns (address) {
     return _parameters.getAddress(name);
   }
 
-  function getBoolParameter(string memory name) public view returns (bool) {
+  /**
+   * @dev See {IJSCConfigurable-getBoolParameter}.
+   */
+  function getBoolParameter(string memory name) public view override returns (bool) {
     return _parameters.getBool(name);
   }
 
-  function getNumberParameter(string memory name) public view returns (uint) {
+  /**
+   * @dev See {IJSCConfigurable-getNumberParameter}.
+   */
+  function getNumberParameter(string memory name) public view override returns (uint) {
     return _parameters.getNumber(name);
   }
 
-  function getStringParameter(string memory name) public view returns (string memory) {
+  /**
+   * @dev See {IJSCConfigurable-getStringParameter}.
+   */
+  function getStringParameter(string memory name) public view override returns (string memory) {
     return _parameters.getString(name);
   }
 
-  function parameterCount() public view returns (uint) {
+  /**
+   * @dev See {IJSCConfigurable-parameterCount}.
+   */
+  function parameterCount() public view override returns (uint) {
     return _parameters.size;
   }
 
-  function iterateParameters() public view returns (clib.Iterator) {
+  /**
+   * @dev See {IJSCConfigurable-iterateParameters}.
+   */
+  function iterateParameters() public view override returns (clib.Iterator) {
     return _parameters.iterateStart();
   }
 
-  function isValidParameterIterator(clib.Iterator i) public view returns (bool) {
+  /**
+   * @dev See {IJSCConfigurable-isValidParameterIterator}.
+   */
+  function isValidParameterIterator(clib.Iterator i) public view override returns (bool) {
     return _parameters.iterateValid(i);
   }
 
-  function nextParameter(clib.Iterator i) public view returns (clib.Iterator) {
+  /**
+   * @dev See {IJSCConfigurable-nextParameter}.
+   */
+  function nextParameter(clib.Iterator i) public view override returns (clib.Iterator) {
     return _parameters.iterateNext(i);
   }
 
-  function parameterIteratorGet(clib.Iterator i) public view returns (clib.ParameterInfo memory) {
+  /**
+   * @dev See {IJSCConfigurable-parameterIteratorGet}.
+   */
+  function parameterIteratorGet(clib.Iterator i) public view override returns (clib.ParameterInfo memory) {
     return _parameters.iterateGet(i);
   }
 

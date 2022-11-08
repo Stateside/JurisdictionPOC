@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  JSCBaseProposable,
-  JSCBaseProposableInterface,
-} from "../../../contracts/production/JSCBaseProposable";
+  JSCRevisioned,
+  JSCRevisionedInterface,
+} from "../../../contracts/production/JSCRevisioned";
 
 const _abi = [
   {
@@ -90,6 +90,84 @@ const _abi = [
     name: "executeRevision",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
+    name: "getRevisionByName",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "description",
+            type: "string",
+          },
+          {
+            internalType: "string[]",
+            name: "paramNames",
+            type: "string[]",
+          },
+          {
+            internalType: "enum JSCRevisionsLib.ParamType[]",
+            name: "paramTypes",
+            type: "uint8[]",
+          },
+          {
+            internalType: "string[]",
+            name: "paramHints",
+            type: "string[]",
+          },
+          {
+            components: [
+              {
+                internalType: "uint16",
+                name: "votingPeriod",
+                type: "uint16",
+              },
+              {
+                internalType: "uint16",
+                name: "approvals",
+                type: "uint16",
+              },
+              {
+                internalType: "uint8",
+                name: "majority",
+                type: "uint8",
+              },
+              {
+                internalType: "uint8",
+                name: "quorum",
+                type: "uint8",
+              },
+              {
+                internalType: "string[]",
+                name: "roles",
+                type: "string[]",
+              },
+            ],
+            internalType: "struct JSCRevisionsLib.VotingRules",
+            name: "rules",
+            type: "tuple",
+          },
+        ],
+        internalType: "struct JSCRevisionsLib.Revision",
+        name: "value",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -227,12 +305,12 @@ const _abi = [
               },
               {
                 internalType: "uint8",
-                name: "quorumPercentage",
+                name: "majority",
                 type: "uint8",
               },
               {
                 internalType: "uint8",
-                name: "majority",
+                name: "quorum",
                 type: "uint8",
               },
               {
@@ -257,6 +335,25 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "newOwner",
         type: "address",
@@ -269,15 +366,15 @@ const _abi = [
   },
 ];
 
-export class JSCBaseProposable__factory {
+export class JSCRevisioned__factory {
   static readonly abi = _abi;
-  static createInterface(): JSCBaseProposableInterface {
-    return new utils.Interface(_abi) as JSCBaseProposableInterface;
+  static createInterface(): JSCRevisionedInterface {
+    return new utils.Interface(_abi) as JSCRevisionedInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): JSCBaseProposable {
-    return new Contract(address, _abi, signerOrProvider) as JSCBaseProposable;
+  ): JSCRevisioned {
+    return new Contract(address, _abi, signerOrProvider) as JSCRevisioned;
   }
 }

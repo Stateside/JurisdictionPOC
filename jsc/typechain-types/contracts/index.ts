@@ -5,3 +5,8 @@ import type * as production from "./production";
 export type { production };
 import type * as tests from "./tests";
 export type { tests };
+export type { IJSCConfigurable } from "./IJSCConfigurable";
+export type { IJSCFreezable } from "./IJSCFreezable";
+export type { IJSCJurisdiction } from "./IJSCJurisdiction";
+export type { IJSCRevisioned } from "./IJSCRevisioned";
+export type { IJSCTitleToken } from "./IJSCTitleToken";

@@ -27,40 +27,12 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export declare namespace JSCTitleTokenLib {
-  export type OfferStruct = {
-    buyer: PromiseOrValue<string>;
-    amount: PromiseOrValue<BigNumberish>;
-    offeredOn: PromiseOrValue<BigNumberish>;
-  };
-
-  export type OfferStructOutput = [string, BigNumber, BigNumber] & {
-    buyer: string;
-    amount: BigNumber;
-    offeredOn: BigNumber;
-  };
-}
-
-export declare namespace JSCConfigurableLib {
-  export type ParameterInfoStruct = {
-    name: PromiseOrValue<string>;
-    description: PromiseOrValue<string>;
-    ptype: PromiseOrValue<BigNumberish>;
-  };
-
-  export type ParameterInfoStructOutput = [string, string, number] & {
-    name: string;
-    description: string;
-    ptype: number;
-  };
-}
-
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -73,8 +45,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 
@@ -104,6 +76,34 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
+export declare namespace JSCTitleTokenLib {
+  export type OfferStruct = {
+    buyer: PromiseOrValue<string>;
+    amount: PromiseOrValue<BigNumberish>;
+    offeredOn: PromiseOrValue<BigNumberish>;
+  };
+
+  export type OfferStructOutput = [string, BigNumber, BigNumber] & {
+    buyer: string;
+    amount: BigNumber;
+    offeredOn: BigNumber;
+  };
+}
+
+export declare namespace JSCConfigurableLib {
+  export type ParameterInfoStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    ptype: PromiseOrValue<BigNumberish>;
+  };
+
+  export type ParameterInfoStructOutput = [string, string, number] & {
+    name: string;
+    description: string;
+    ptype: number;
+  };
+}
+
 export interface JSCTitleTokenInterface extends utils.Interface {
   functions: {
     "acceptOfferToBuy(uint256,address)": FunctionFragment;
@@ -120,6 +120,7 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     "getApproved(uint256)": FunctionFragment;
     "getBoolParameter(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
+    "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
     "init(string,string,string,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
@@ -173,6 +174,7 @@ export interface JSCTitleTokenInterface extends utils.Interface {
       | "getApproved"
       | "getBoolParameter"
       | "getNumberParameter"
+      | "getRevisionByName"
       | "getStringParameter"
       | "init"
       | "isApprovedForAll"
@@ -264,6 +266,10 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getNumberParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRevisionByName",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -462,6 +468,10 @@ export interface JSCTitleTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getNumberParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevisionByName",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -996,6 +1006,15 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput] & {
+        value: JSCRevisionsLib.RevisionStructOutput;
+      }
+    >;
+
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1244,6 +1263,11 @@ export interface JSCTitleToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getRevisionByName(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
   getStringParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1487,6 +1511,11 @@ export interface JSCTitleToken extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
     getStringParameter(
       name: PromiseOrValue<string>,
@@ -1926,6 +1955,11 @@ export interface JSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2167,6 +2201,11 @@ export interface JSCTitleToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getNumberParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRevisionByName(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "contracts/production/JSCBaseConfigurable.sol";
+import "contracts/production/JSCConfigurable.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 
 /**
-  This contract is for testing the JSCBaseConfigurable abstract contract.
+  This contract is for testing the JSCConfigurable abstract contract.
  */
-contract JSCConfigurableTest is JSCBaseConfigurable {
+contract JSCConfigurableTest is JSCConfigurable {
   using rlib for rlib.RevisionMap;
 
   constructor() {

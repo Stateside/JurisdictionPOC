@@ -14,10 +14,10 @@ chaiuse(solidity);
  * Includes tests for ERC-721 compliance.
  */
 describe("JSCTitleToken", async () => {
-  let titleToken: tc.JSCTitleToken
+  let titleToken: tc.IJSCTitleToken
   let titleTokenTest: tc.JSCTitleTokenTest
   let tokenReceiver: tc.JSCTitleTokenReceiverTest
-  let jurisdiction: tc.JSCJurisdiction
+  let jurisdiction: tc.IJSCJurisdiction
   let revisionsLib: tc.JSCRevisionsLib
   let configurableLib: any
   let titleTokenLib: tc.JSCTitleTokenLib
@@ -64,7 +64,7 @@ describe("JSCTitleToken", async () => {
         JSCTitleTokenLib: titleTokenLib.address
       },
     });
-    const deployedContract = await contract.deploy();
+    const deployedContract:tc.IJSCTitleToken = await contract.deploy() as tc.IJSCTitleToken;
     await expect(await deployedContract.isFrozen()).to.equal(true);
   });
 
@@ -461,7 +461,7 @@ describe("JSCTitleToken", async () => {
   });
 
   /** Tests the given contract using functions that should work if not frozen, and revert if frozen */
-  const testFrozenContract = async (contract:tc.JSCTitleToken, expectRevert?:boolean) => {
+  const testFrozenContract = async (contract:tc.IJSCTitleToken, expectRevert?:boolean) => {
     const checkRevert = async (op:Chai.Assertion) => expectRevert ? await op.to.be.reverted : await op.to.not.be.reverted;
 
     await contract.mint(bob.address, titleId1); // mint() is onlyOwner and should work regardless of whether the contract is frozen or not
@@ -512,14 +512,14 @@ describe("JSCTitleToken", async () => {
         JSCTitleTokenLib: titleTokenLib.address
       },
     });
-    const contract:tc.JSCTitleToken = await factory.deploy();
+    const contract:tc.IJSCTitleToken = await factory.deploy() as tc.IJSCTitleToken;
 
     // Contract is fozen because we have not initialized it
     await testFrozenContract(contract, true);
 
     // We can also freeze an initialized contract
     await expect(await titleTokenTest.connect(owner).setFrozenContract(true)).to.emit(titleTokenTest, 'ContractFrozen').withArgs(titleTokenTest.address, true);
-    await testFrozenContract(titleTokenTest, true);
+    await testFrozenContract(titleTokenTest as any as tc.IJSCTitleToken, true);
   });
 
   /** Tests the given account using functions that should work if not frozen, and revert if frozen. targetAccount must not be owner, bob, jane, or sara */
@@ -711,5 +711,6 @@ describe("JSCTitleToken", async () => {
    *   Make unit tests as focused as possible
    *   Check of wrong person can accept offers
    *   Fix documentation
+   *   Add support for ERC165
    */
 })

@@ -31,8 +31,8 @@ export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -45,8 +45,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 
@@ -76,11 +76,12 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
-export interface JSCProposableTestInterface extends utils.Interface {
+export interface JSCRevisionedTestInterface extends utils.Interface {
   functions: {
     "addDuplicate()": FunctionFragment;
     "executeRevision(string,bytes)": FunctionFragment;
     "first()": FunctionFragment;
+    "getRevisionByName(string)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateRevisions()": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
@@ -90,6 +91,7 @@ export interface JSCProposableTestInterface extends utils.Interface {
     "rev()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
@@ -98,6 +100,7 @@ export interface JSCProposableTestInterface extends utils.Interface {
       | "addDuplicate"
       | "executeRevision"
       | "first"
+      | "getRevisionByName"
       | "isValidRevisionIterator"
       | "iterateRevisions"
       | "nextRevision"
@@ -107,6 +110,7 @@ export interface JSCProposableTestInterface extends utils.Interface {
       | "rev"
       | "revisionCount"
       | "revisionIteratorGet"
+      | "supportsInterface"
       | "transferOwnership"
   ): FunctionFragment;
 
@@ -119,6 +123,10 @@ export interface JSCProposableTestInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(functionFragment: "first", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getRevisionByName",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(
     functionFragment: "isValidRevisionIterator",
     values: [PromiseOrValue<BigNumberish>]
@@ -150,6 +158,10 @@ export interface JSCProposableTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
@@ -163,6 +175,10 @@ export interface JSCProposableTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "first", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevisionByName",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "isValidRevisionIterator",
     data: BytesLike
@@ -188,6 +204,10 @@ export interface JSCProposableTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "revisionIteratorGet",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -249,12 +269,12 @@ export type RevisionRemovedEvent = TypedEvent<
 
 export type RevisionRemovedEventFilter = TypedEventFilter<RevisionRemovedEvent>;
 
-export interface JSCProposableTest extends BaseContract {
+export interface JSCRevisionedTest extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCProposableTestInterface;
+  interface: JSCRevisionedTestInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -289,6 +309,15 @@ export interface JSCProposableTest extends BaseContract {
     first(
       overrides?: CallOverrides
     ): Promise<[JSCRevisionsLib.RevisionStructOutput]>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput] & {
+        value: JSCRevisionsLib.RevisionStructOutput;
+      }
+    >;
 
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -326,6 +355,11 @@ export interface JSCProposableTest extends BaseContract {
       }
     >;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -343,6 +377,11 @@ export interface JSCProposableTest extends BaseContract {
   ): Promise<ContractTransaction>;
 
   first(
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+  getRevisionByName(
+    name: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
@@ -378,6 +417,11 @@ export interface JSCProposableTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+  supportsInterface(
+    interfaceId: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -393,6 +437,11 @@ export interface JSCProposableTest extends BaseContract {
     ): Promise<void>;
 
     first(
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
@@ -425,6 +474,11 @@ export interface JSCProposableTest extends BaseContract {
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
@@ -468,6 +522,11 @@ export interface JSCProposableTest extends BaseContract {
 
     first(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -500,6 +559,11 @@ export interface JSCProposableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -518,6 +582,11 @@ export interface JSCProposableTest extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     first(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -548,6 +617,11 @@ export interface JSCProposableTest extends BaseContract {
 
     revisionIteratorGet(
       i: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

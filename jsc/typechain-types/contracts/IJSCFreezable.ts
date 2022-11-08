@@ -25,7 +25,7 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../../common";
+} from "../common";
 
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
@@ -76,7 +76,7 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
-export interface JSCFreezableInterface extends utils.Interface {
+export interface IJSCFreezableInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
@@ -84,12 +84,9 @@ export interface JSCFreezableInterface extends utils.Interface {
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateRevisions()": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
@@ -100,12 +97,9 @@ export interface JSCFreezableInterface extends utils.Interface {
       | "isValidRevisionIterator"
       | "iterateRevisions"
       | "nextRevision"
-      | "owner"
-      | "renounceOwnership"
       | "revisionCount"
       | "revisionIteratorGet"
       | "supportsInterface"
-      | "transferOwnership"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -129,11 +123,6 @@ export interface JSCFreezableInterface extends utils.Interface {
     functionFragment: "nextRevision",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "revisionCount",
     values?: undefined
@@ -145,10 +134,6 @@ export interface JSCFreezableInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -172,11 +157,6 @@ export interface JSCFreezableInterface extends utils.Interface {
     functionFragment: "nextRevision",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "revisionCount",
     data: BytesLike
@@ -189,21 +169,15 @@ export interface JSCFreezableInterface extends utils.Interface {
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
 
   events: {
     "ContractFrozen(address,bool)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
     "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionRemoved"): EventFragment;
@@ -219,18 +193,6 @@ export type ContractFrozenEvent = TypedEvent<
 >;
 
 export type ContractFrozenEventFilter = TypedEventFilter<ContractFrozenEvent>;
-
-export interface OwnershipTransferredEventObject {
-  previousOwner: string;
-  newOwner: string;
-}
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  OwnershipTransferredEventObject
->;
-
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface RevisionAddedEventObject {
   name: string;
@@ -261,12 +223,12 @@ export type RevisionRemovedEvent = TypedEvent<
 
 export type RevisionRemovedEventFilter = TypedEventFilter<RevisionRemovedEvent>;
 
-export interface JSCFreezable extends BaseContract {
+export interface IJSCFreezable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCFreezableInterface;
+  interface: IJSCFreezableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -317,12 +279,6 @@ export interface JSCFreezable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     revisionCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     revisionIteratorGet(
@@ -338,11 +294,6 @@ export interface JSCFreezable extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   executeRevision(
@@ -370,12 +321,6 @@ export interface JSCFreezable extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   revisionIteratorGet(
@@ -387,11 +332,6 @@ export interface JSCFreezable extends BaseContract {
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   callStatic: {
     executeRevision(
@@ -419,10 +359,6 @@ export interface JSCFreezable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     revisionIteratorGet(
@@ -434,11 +370,6 @@ export interface JSCFreezable extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {
@@ -447,15 +378,6 @@ export interface JSCFreezable extends BaseContract {
       frozen?: null
     ): ContractFrozenEventFilter;
     ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
-
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
 
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
@@ -496,12 +418,6 @@ export interface JSCFreezable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     revisionIteratorGet(
@@ -512,11 +428,6 @@ export interface JSCFreezable extends BaseContract {
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -546,12 +457,6 @@ export interface JSCFreezable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     revisionCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     revisionIteratorGet(
@@ -562,11 +467,6 @@ export interface JSCFreezable extends BaseContract {
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

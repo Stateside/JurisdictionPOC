@@ -3,6 +3,8 @@ pragma solidity ^0.8.9;
 
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "../IJSCRevisioned.sol";
 
 /**
   This is the base class that all smart contracts that want to take part in Jurisdiction governance should inherit from.
@@ -37,22 +39,30 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
   3. Make the governor contract the owner of this contract so that only the governor can execute revisions
  */
-abstract contract JSCBaseProposable is Ownable {
+abstract contract JSCRevisioned is Ownable, IJSCRevisioned, ERC165 {
   using rlib for rlib.RevisionMap;
 
   rlib.RevisionMap private _revisions;
   mapping(string => rlib.RevisionHandler) private _handlers;
 
-  event RevisionAdded(string name);
-  event RevisionRemoved(string name);
-  event RevisionExecuted(string name, bytes pdata);
+  /**
+   * @dev See {IERC165-supportsInterface}.
+   */
+  function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+    return
+      interfaceId == type(IJSCRevisioned).interfaceId ||
+      super.supportsInterface(interfaceId);
+  }
 
   function _addRevision(rlib.Revision memory r) internal {
     _revisions.insert(r);
     emit RevisionAdded(r.name);
   }
 
-  function revisionCount() public view returns (uint) {
+  /** 
+   * @dev See {IJSCRevisioned.revisionCount} 
+   */
+  function revisionCount() public view override returns (uint) {
     return _revisions.size;
   }
 
@@ -61,20 +71,39 @@ abstract contract JSCBaseProposable is Ownable {
     emit RevisionRemoved(name);
   }
 
-  function iterateRevisions() public view returns (rlib.Iterator) {
+  /** 
+   * @dev See {IJSCRevisioned.iterateRevisions} 
+   */
+  function iterateRevisions() public view override returns (rlib.Iterator) {
     return _revisions.iterateStart();
   }
 
-  function isValidRevisionIterator(rlib.Iterator i) public view returns (bool) {
+  /** 
+   * @dev See {IJSCRevisioned.isValidRevisionIterator} 
+   */
+  function isValidRevisionIterator(rlib.Iterator i) public view override returns (bool) {
     return _revisions.iterateValid(i);
   }
 
-  function nextRevision(rlib.Iterator i) public view returns (rlib.Iterator) {
+  /** 
+   * @dev See {IJSCRevisioned.nextRevision} 
+   */
+  function nextRevision(rlib.Iterator i) public view override returns (rlib.Iterator) {
     return _revisions.iterateNext(i);
   }
 
-  function revisionIteratorGet(rlib.Iterator i) public view returns (rlib.Revision memory value) {
+  /** 
+   * @dev See {IJSCRevisioned.revisionIteratorGet} 
+   */
+  function revisionIteratorGet(rlib.Iterator i) public view override returns (rlib.Revision memory value) {
     (,value) = _revisions.iterateGet(i);
+  }
+
+  /** 
+   * @dev See {IJSCRevisioned.getRevisionByName} 
+   */
+  function getRevisionByName(string memory name) public view override returns (rlib.Revision memory value) {
+    return _revisions.get(name);
   }
 
   /** 
@@ -83,7 +112,7 @@ abstract contract JSCBaseProposable is Ownable {
 
     This function will fail if the given revision does not exist or a handler has not been registered for the revision.
   */
-  function executeRevision(string memory name, bytes memory pdata) external virtual onlyOwner {
+  function executeRevision(string memory name, bytes memory pdata) external virtual override onlyOwner {
     require(_revisions.contains(name) && _handlers[name].exists);
     _handlers[name].handle(pdata);
     emit RevisionExecuted(name, pdata);

@@ -1,4 +1,4 @@
-import { JSCProposableTest } from "../../typechain-types"
+import { JSCRevisionedTest } from "../../typechain-types"
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
 import { expect, use as chaiuse } from "chai"
@@ -7,13 +7,13 @@ import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
 chaiuse(solidity);
 
-describe("JSCProposableTest", async () => {
-  let proposable: JSCProposableTest
+describe("JSCRevisionedTest", async () => {
+  let proposable: JSCRevisionedTest
   let owner, bob, jane, sara;
 
   beforeEach(async () => {
     await deployments.fixture(["all"])
-    proposable = await ethers.getContract("JSCProposableTest");
+    proposable = await ethers.getContract("JSCRevisionedTest");
     [owner, bob, jane, sara] = await ethers.getSigners();
   })
 
