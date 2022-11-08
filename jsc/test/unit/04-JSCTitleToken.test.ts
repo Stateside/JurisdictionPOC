@@ -6,6 +6,7 @@ import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
+import { BigNumber } from "ethers";
 chaiuse(solidity);
 
 /**
@@ -21,7 +22,7 @@ describe("JSCTitleToken", async () => {
   let configurableLib: any
   let titleTokenLib: tc.JSCTitleTokenLib
 
-  let owner, bob, jane, sara;
+  let owner, bob, jane, sara, otherAccounts;
 
   const zeroAddress = '0x0000000000000000000000000000000000000000';
   const badTokenId1 = 12345;
@@ -52,7 +53,7 @@ describe("JSCTitleToken", async () => {
     revisionsLib = await ethers.getContract("JSCRevisionsLib");
     configurableLib = await ethers.getContract("JSCConfigurableLib");
     titleTokenLib = await ethers.getContract("JSCTitleTokenLib");
-    [owner, bob, jane, sara] = await ethers.getSigners();
+    [owner, bob, jane, sara, ...otherAccounts] = await ethers.getSigners();
   });
 
   it('remains frozen until initialized', async function() {
@@ -281,48 +282,6 @@ describe("JSCTitleToken", async () => {
     await expect(titleToken.tokenAtIndex(sara.address, 1)).to.be.revertedWith('index out of bounds');
   });
 
-  it('prevents owner from using frozen tokens', async function() {
-    await titleTokenTest.mint(bob.address, titleId1);
-    let tokenId = await titleTokenTest.titleToTokenId(titleId1);
-    expect(await titleTokenTest.connect(bob).transferFrom(bob.address, sara.address, tokenId)).to.emit(titleTokenTest, 'Transfer').withArgs(bob.address, sara.address, tokenId);
-
-    await expect(await titleTokenTest.connect(owner).setFrozenToken(tokenId, true)).to.emit(titleTokenTest, 'TokenFrozen').withArgs(tokenId, true);
-    await expect(titleTokenTest.connect(sara).transferFrom(sara.address, jane.address, tokenId), "transferFrom() did not revert").to.be.revertedWith('token is frozen');
-    await expect(titleTokenTest.connect(sara).approve(jane.address, tokenId), "approve() did not revert").to.be.revertedWith('token is frozen');
-    await expect(titleTokenTest.connect(sara)['safeTransferFrom(address,address,uint256)'](sara.address, tokenReceiver.address, tokenId), "safeTransferFrom() did not revert").to.be.revertedWith('token is frozen');
-    await expect(titleTokenTest.connect(sara)['safeTransferFrom(address,address,uint256,bytes)'](sara.address, tokenReceiver.address, tokenId, '0x01'), "safeTransferFrom(with data) did not revert").to.be.revertedWith('token is frozen');
-
-    await expect(await titleTokenTest.connect(owner).setFrozenToken(tokenId, false)).to.emit(titleTokenTest, 'TokenFrozen').withArgs(tokenId, false);
-    await expect(titleTokenTest.connect(sara).transferFrom(sara.address, jane.address, tokenId), "transferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(jane).approve(bob.address, tokenId), "approve() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(jane)['safeTransferFrom(address,address,uint256)'](jane.address, tokenReceiver.address, tokenId), "safeTransferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(owner).transferFrom(tokenReceiver.address, sara.address, tokenId), "transferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(sara)['safeTransferFrom(address,address,uint256,bytes)'](sara.address, tokenReceiver.address, tokenId, '0x01'), "safeTransferFrom(with data) reverted").not.to.be.reverted;
-  });
-
-  it('prevents frozen owner from using tokens', async function() {
-    await titleTokenTest.mint(bob.address, titleId1);
-    let tokenId = await titleTokenTest.titleToTokenId(titleId1);
-
-    await expect(await titleTokenTest.connect(owner).setFrozenOwner(bob.address, true)).to.emit(titleTokenTest, 'OwnerFrozen').withArgs(bob.address, true);
-    await expect(titleTokenTest.connect(bob).transferFrom(bob.address, jane.address, tokenId), "transferFrom() did not revert").to.be.revertedWith('token owner account is frozen');
-    await expect(titleTokenTest.connect(bob).approve(jane.address, tokenId), "approve() did not revert").to.be.revertedWith('token owner account is frozen');
-    await expect(titleTokenTest.connect(bob).setApprovalForAll(jane.address, true), "setApprovalForAll() did not revert").to.be.revertedWith('token owner account is frozen');
-    await expect(titleTokenTest.connect(bob).setApprovalForAll(jane.address, false), "setApprovalForAll() did not revert").to.be.revertedWith('token owner account is frozen');
-    await expect(titleTokenTest.connect(bob)['safeTransferFrom(address,address,uint256)'](bob.address, tokenReceiver.address, tokenId), "safeTransferFrom() did not revert").to.be.revertedWith('token owner account is frozen');
-    await expect(titleTokenTest.connect(bob)['safeTransferFrom(address,address,uint256,bytes)'](bob.address, tokenReceiver.address, tokenId, '0x01'), "safeTransferFrom(with data) did not revert").to.be.revertedWith('token owner account is frozen');
-
-    await expect(await titleTokenTest.connect(owner).setFrozenOwner(bob.address, false)).to.emit(titleTokenTest, 'OwnerFrozen').withArgs(bob.address, false);
-    await expect(titleTokenTest.connect(bob).transferFrom(bob.address, jane.address, tokenId), "transferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(jane).transferFrom(jane.address, bob.address, tokenId), "transferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(bob).approve(sara.address, tokenId), "approve() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(bob).setApprovalForAll(jane.address, true), "setApprovalForAll() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(bob).setApprovalForAll(jane.address, false), "setApprovalForAll() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(bob)['safeTransferFrom(address,address,uint256)'](bob.address, tokenReceiver.address, tokenId), "safeTransferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(owner).transferFrom(tokenReceiver.address, bob.address, tokenId), "transferFrom() reverted").not.to.be.reverted;
-    await expect(titleTokenTest.connect(bob)['safeTransferFrom(address,address,uint256,bytes)'](bob.address, tokenReceiver.address, tokenId, '0x01'), "safeTransferFrom(with data) reverted").not.to.be.reverted;
-  });
-
   it('receives and iterates offers to buy', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
@@ -451,7 +410,7 @@ describe("JSCTitleToken", async () => {
     await expect(await titleToken.isFrozen()).to.equal(false);
   });
 
-  it('accepts revision to freeze token', async function() {
+  it('accepts revisions to freeze & unfreeze token', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
 
@@ -470,7 +429,7 @@ describe("JSCTitleToken", async () => {
     await expect(await titleToken.isFrozenToken(tokenId1)).to.equal(false);
   });
 
-  it('accepts revision to freeze owner', async function() {
+  it('accepts revisions to freeze & unfreeze owner', async function() {
     await titleToken.mint(bob.address, titleId1);
 
     await expect(await titleToken.isFrozenOwner(bob.address)).to.equal(false);
@@ -498,13 +457,14 @@ describe("JSCTitleToken", async () => {
     await expect(tresponse)
       .to.emit(titleToken, "RevisionExecuted").withArgs("ChangeOwner", revArgs)
       .to.emit(titleToken, "Transfer").withArgs(bob.address, sara.address, tokenId1);
-      await expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
+    await expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
   });
 
-  const testPublicWriteOperations = async (contract:tc.JSCTitleToken, expectRevert?:boolean) => {
+  /** Tests the given contract using functions that should work if not frozen, and revert if frozen */
+  const testFrozenContract = async (contract:tc.JSCTitleToken, expectRevert?:boolean) => {
     const checkRevert = async (op:Chai.Assertion) => expectRevert ? await op.to.be.reverted : await op.to.not.be.reverted;
 
-    await contract.mint(bob.address, titleId1); // mint() is onlyOwner and should work regardless of whether the contract is frozen
+    await contract.mint(bob.address, titleId1); // mint() is onlyOwner and should work regardless of whether the contract is frozen or not
     let tokenId = await contract.titleToTokenId(titleId1);
 
     await checkRevert(expect(contract.connect(bob).approve(sara.address, tokenId), "approve sara"));
@@ -525,7 +485,7 @@ describe("JSCTitleToken", async () => {
     await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy again"));
     if (!expectRevert) {
       await checkRevert(expect(contract.connect(bob).acceptOfferToBuy(tokenId, sara.address), "accepts sara's offer to buy"));
-      await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob after accepting offer to uy"));
+      await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob after accepting offer to buy"));
     }
 
     await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara"));
@@ -540,11 +500,11 @@ describe("JSCTitleToken", async () => {
     await contract.burn(tokenId); // burn() is onlyOwner and should work regardless of whether the contract is frozen
   }
 
-  it('allows write operations when not frozen', async function() {
-    await testPublicWriteOperations(titleToken);
+  it('allows write operations when contract not frozen', async function() {
+    await testFrozenContract(titleToken);
   });
 
-  it('reverts write operations when frozen', async function() {
+  it('reverts write operations when contract frozen', async function() {
     const factory = await ethers.getContractFactory("JSCTitleToken", {
       libraries: {
         JSCRevisionsLib: revisionsLib.address,
@@ -555,25 +515,201 @@ describe("JSCTitleToken", async () => {
     const contract:tc.JSCTitleToken = await factory.deploy();
 
     // Contract is fozen because we have not initialized it
-    await testPublicWriteOperations(contract, true);
+    await testFrozenContract(contract, true);
 
     // We can also freeze an initialized contract
     await expect(await titleTokenTest.connect(owner).setFrozenContract(true)).to.emit(titleTokenTest, 'ContractFrozen').withArgs(titleTokenTest.address, true);
-    await testPublicWriteOperations(titleTokenTest, true);
+    await testFrozenContract(titleTokenTest, true);
+  });
+
+  /** Tests the given account using functions that should work if not frozen, and revert if frozen. targetAccount must not be owner, bob, jane, or sara */
+  const testFrozenAccount = async (targetAccount:any, expectRevert?:boolean) => {
+    const checkRevert = async (op:Chai.Assertion) => expectRevert ? await op.to.be.reverted : await op.to.not.be.reverted;
+
+    await titleTokenTest.mint(targetAccount.address, titleId1); // mint() is onlyOwner and should work regardless of whether the account is frozen or not
+    let tokenId1 = await titleTokenTest.titleToTokenId(titleId1);
+
+    await titleTokenTest.mint(bob.address, titleId2);
+    let tokenId2 = await titleTokenTest.titleToTokenId(titleId2);
+
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).approve(sara.address, tokenId1), "approve sara"));
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).approve(zeroAddress, tokenId1), "approve no one"));
+
+    await checkRevert(expect(titleTokenTest.connect(bob).approve(targetAccount.address, tokenId2), "approve target on bobs token"));
+    await expect(titleTokenTest.connect(bob).approve(zeroAddress, tokenId2)).to.not.be.reverted;
+
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).setApprovalForAll(sara.address, true), "add sara as operator"));
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).setApprovalForAll(sara.address, false), "remove sara as operator"));
+
+    await checkRevert(expect(titleTokenTest.connect(bob).setApprovalForAll(targetAccount.address, true), "add target as operator to bob's account"));
+    await expect(titleTokenTest.connect(bob).setApprovalForAll(targetAccount.address, false)).to.not.be.reverted;
+
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).transferFrom(targetAccount.address, sara.address, tokenId1), "transfer from target to sara"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, targetAccount.address, tokenId1), "transfer from sara to target"));
+
+    await checkRevert(expect(titleTokenTest.connect(bob).transferFrom(bob.address, targetAccount.address, tokenId2), "transfer from bob to target"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(targetAccount).transferFrom(targetAccount.address, bob.address, tokenId2), "transfer from target to bob"));
+
+    await checkRevert(expect(titleTokenTest.connect(targetAccount)['safeTransferFrom(address,address,uint256)'](targetAccount.address, sara.address, tokenId1), "safe transfer from target to sara"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara)['safeTransferFrom(address,address,uint256)'](sara.address, targetAccount.address, tokenId1), "safe transfer from sara to target"));
+
+    await checkRevert(expect(titleTokenTest.connect(bob)['safeTransferFrom(address,address,uint256)'](bob.address, targetAccount.address, tokenId2), "safe transfer from bob to target"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(targetAccount)['safeTransferFrom(address,address,uint256)'](targetAccount.address, bob.address, tokenId2), "safe transfer from target to bob"));
+
+    await checkRevert(expect(titleTokenTest.connect(sara).offerToBuy(tokenId1, 1000), "sara offers to buy target's token"));
+    if (!expectRevert) await expect(titleTokenTest.connect(sara).cancelOfferToBuy(tokenId1)).not.to.be.reverted; // CancelOffer always works even if owner of token is frozen
+
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).offerToBuy(tokenId2, 1000), "target offers to buy bob's token"));
+    if (!expectRevert) await expect(titleTokenTest.connect(targetAccount).cancelOfferToBuy(tokenId2), "target cancels offer to buy bob's token").not.to.be.reverted; // CancelOffer always works even if offerer is frozen
+
+    // To test cancelOfferToBuy() when offerer is frozen, they must have made an offer before being frozen
+    let targetFrozenState = await titleTokenTest.isFrozenOwner(targetAccount.address);
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).offerToBuy(tokenId2, 1000), "target offers to buy sara's token").not.to.be.reverted;
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).cancelOfferToBuy(tokenId2), "target cancels offer to buy sara's token").not.to.be.reverted;
+
+    // To test acceptOfferToBuy(), someone must have made an offer to the targetAccount before it was frozen
+    targetFrozenState = await titleTokenTest.isFrozenOwner(targetAccount.address);
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(sara).offerToBuy(tokenId1, 1000), "sara offers to buy again").not.to.be.reverted;
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).acceptOfferToBuy(tokenId1, sara.address), "accepts sara's offer to buy"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, targetAccount.address, tokenId1), "transfer from sara to target after accepting offer to buy"));
+
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, 1000), "offer to sell to sara"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(targetAccount).cancelOfferToSell(tokenId1, sara.address), "cancel offer to sell to sara"));
+
+    // To test cancelOfferToSell() when offerer is frozen, they must have made an offer before being frozen
+    targetFrozenState = await titleTokenTest.isFrozenOwner(targetAccount.address);
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, 1000), "target offers to sell token to sara").not.to.be.reverted;
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).cancelOfferToSell(tokenId1, sara.address), "target cancels offer to sell token to sara").not.to.be.reverted;
+
+    // To test acceptOfferToSell(), someone must have made an offer to sell to the targetAccount before it was frozen
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, 1000)).not.to.be.reverted;
+    if (targetFrozenState)
+      await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
+    await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId1), "accepts target's offer to sell"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, targetAccount.address, tokenId1), "transfer from sara to target after accepting offer to sell"));
+
+    await titleTokenTest.burn(tokenId1); // burn() is onlyOwner and should work regardless of whether the contract is frozen
+  }
+  
+  it('allows write operations when account not frozen', async function() {
+    let targetAccount = otherAccounts[0];
+    await testFrozenAccount(targetAccount, false);
+  });
+
+  it('reverts write operations when account frozen', async function() {
+    let targetAccount = otherAccounts[0];
+    await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
+    await testFrozenAccount(targetAccount, true);
+  });
+
+  /** Tests the given token using functions that should work if not frozen, and revert if frozen. tokenId must not be from titleId2. account must not be owner, bob, jane, or sara */
+  const testFrozenToken = async (frozen?:boolean) => {
+    const account:any = otherAccounts[0];
+    const expectRevert:boolean = frozen||false;
+    const checkRevert = async (op:Chai.Assertion) => expectRevert ? await op.to.be.reverted : await op.to.not.be.reverted;
+
+    await titleTokenTest.mint(account.address, titleId1);
+    let tokenId = await titleTokenTest.titleToTokenId(titleId1);
+    if (frozen)
+      await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
+
+    await titleTokenTest.mint(sara.address, titleId2);
+    let tokenId2 = await titleTokenTest.titleToTokenId(titleId2);
+
+    await checkRevert(expect(titleTokenTest.connect(account).approve(sara.address, tokenId), "approve sara"));
+    await checkRevert(expect(titleTokenTest.connect(account).approve(zeroAddress, tokenId), "approve no one"));
+
+    await checkRevert(expect(titleTokenTest.connect(account).transferFrom(account.address, sara.address, tokenId), "transfer from target to sara"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, account.address, tokenId), "transfer from sara to target"));
+
+    await checkRevert(expect(titleTokenTest.connect(account)['safeTransferFrom(address,address,uint256)'](account.address, sara.address, tokenId), "safe transfer from target to sara"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara)['safeTransferFrom(address,address,uint256)'](sara.address, account.address, tokenId), "safe transfer from sara to target"));
+
+    await checkRevert(expect(titleTokenTest.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy target's token"));
+    if (!expectRevert) await expect(titleTokenTest.connect(sara).cancelOfferToBuy(tokenId)).not.to.be.reverted; // CancelOffer always works even if token is frozen
+  
+    // To test cancelOfferToBuy() when token is frozen, you must have made an offer before is was frozen
+    let tokenFrozenState = await titleTokenTest.isFrozenToken(tokenId);
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).offerToBuy(tokenId2, 1000), "target offers to buy sara's token").not.to.be.reverted;
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).cancelOfferToBuy(tokenId2), "target cancels offer to buy sara's token").not.to.be.reverted;
+
+    // To test acceptOfferToBuy(), someone must have made an offer for your token before it was frozen
+    tokenFrozenState = await titleTokenTest.isFrozenToken(tokenId);
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy again").not.to.be.reverted;
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
+    await checkRevert(expect(titleTokenTest.connect(account).acceptOfferToBuy(tokenId, sara.address), "accepts sara's offer to buy"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, account.address, tokenId), "transfer from sara to target after accepting offer to buy"));
+
+    await checkRevert(expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(account).cancelOfferToSell(tokenId, sara.address), "cancel offer to sell to sara"));
+
+    // To test cancelOfferToSell() when token is frozen, you must have made an offer before it was frozen
+    tokenFrozenState = await titleTokenTest.isFrozenToken(tokenId);
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, 1000), "target offers to sell token to sara").not.to.be.reverted;
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).cancelOfferToSell(tokenId, sara.address), "target cancels offer to sell token to sara").not.to.be.reverted;
+
+    // To test acceptOfferToSell(), someone must have made an offer to sell to the targetAccount before it was frozen
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, 1000)).not.to.be.reverted;
+    if (tokenFrozenState)
+      await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
+    await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId), "accepts target's offer to sell"));
+    if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, account.address, tokenId), "transfer from sara to target after accepting offer to sell"));
+
+    // Note: Revision for unfreezing token tested above in 'accepts revision to freeze token'
+
+    // Should allow revisions to change owner, even though tokens, owners, or contract are frozen
+    await expect(await titleTokenTest.ownerOf(tokenId)).to.equal(account.address);
+    let revArgs = defaultAbiCoder.encode(["uint", "address"],[tokenId, sara.address]);
+    await titleTokenTest.connect(owner).executeRevision("ChangeOwner", revArgs);
+    await expect(await titleTokenTest.ownerOf(tokenId)).to.equal(sara.address);
+
+  }
+
+  it('allows write operations when token not frozen', async function() {
+    await testFrozenToken(false);
+  });
+
+  it('reverts write operations when token frozen', async function() {
+    await testFrozenToken(true);
   });
 
   /**
    * Pending:
    *   Add payment to offers
    *   
-   *   Test no transfer to frozen account
    *   Test if approval clear after transfer
    *   Test if approval can transfer ownership after cancelling
    *   Test if operator can transfer ownership after cancelling
    *   Clear offers when token transferred and create unit tests
    *   Make unit tests as focused as possible
    *   Check of wrong person can accept offers
-   * Add tests to revisions while contract is frozen - they should be allowed
    *   Fix documentation
    */
 })

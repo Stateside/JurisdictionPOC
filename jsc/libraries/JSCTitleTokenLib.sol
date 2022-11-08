@@ -268,19 +268,23 @@ library JSCTitleTokenLib {
     */
   function transfer(
     Storage storage self, 
+    address contractOwner,
     address from,
     address to,
     uint tokenId
   ) public {
     require(to != address(0), "transfer to the zero address");
-    requireFrozenToken(self, tokenId, false);
-    requireFrozenOwner(self, from, false);
-    requireFrozenOwner(self, to, false);
+    if (msg.sender != contractOwner) {
+      requireFrozenToken(self, tokenId, false);
+      requireFrozenOwner(self, from, false);
+      requireFrozenOwner(self, to, false);
+    }
 
     removeTokenId(self.tokensByOwner[from], tokenId);
     addTokenId(self.tokensByOwner[to], tokenId);
     self.tokens[tokenId].owner = to;
-    approve(self, address(0), tokenId);
+    if (self.tokens[tokenId].approval != address(0))
+      approve(self, address(0), tokenId);
 
     emit Transfer(from, to, tokenId);
   }
@@ -290,10 +294,8 @@ library JSCTitleTokenLib {
     *
     * Emits an {Approval} event.
     */
-  function approve(Storage storage self, address to, uint tokenId) internal {
-    requireFrozenToken(self, tokenId, false);
+  function approve(Storage storage self, address to, uint tokenId) public {
     TitleToken storage t = self.tokens[tokenId];
-    requireFrozenOwner(self, t.owner, false);
     t.approval = to;
     emit Approval(t.owner, to, tokenId);
   }
