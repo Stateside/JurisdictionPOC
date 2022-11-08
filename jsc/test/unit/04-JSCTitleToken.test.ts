@@ -6,7 +6,9 @@ import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
-import { BigNumber } from "ethers";
+
+import * as iid from "../../utils/getInterfaceId"
+
 chaiuse(solidity);
 
 /**
@@ -29,10 +31,6 @@ describe("JSCTitleToken", async () => {
   const titleId1 = "title-1";
   const titleId2 = "title-2";
   const titleId3 = "title-3";
-
-  const INTERFACE_ID_ERC721 = '0x80ac58cd';
-  const INTERFACE_ID_ERC721_METADATA = '0x5b5e139f';
-  const INTERFACE_ID_ERC165 = '0x01ffc9a7';
 
   const ONE_MINUTE = 60;
 
@@ -73,11 +71,16 @@ describe("JSCTitleToken", async () => {
     await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address)).to.be.revertedWith('init() cannot be called twice');
   });
 
-  it('(ERC721) correctly checks all the supported interfaces', async function() {
-    expect(await titleToken.supportsInterface(INTERFACE_ID_ERC721)).to.equal(true);
-    expect(await titleToken.supportsInterface(INTERFACE_ID_ERC165)).to.equal(true);
-    expect(await titleToken.supportsInterface(INTERFACE_ID_ERC721_METADATA)).to.equal(true);
+  it('correctly checks interfaces IDs', async function() {
     expect(await titleToken.supportsInterface("0xffffffff")).to.equal(false);
+    expect(await titleToken.supportsInterface(iid.IID_IERC165)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IERC721)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IERC721Metadata)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
   });
 
   it('(ERC721) correctly mints an NFT', async function() {

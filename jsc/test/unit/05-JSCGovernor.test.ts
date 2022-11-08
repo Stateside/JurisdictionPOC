@@ -14,7 +14,7 @@ chaiuse(solidity);
  * Includes tests for ERC-721 compliance.
  */
 describe("JSCGovernor", async () => {
-  let governor: tc.JSCGovernor
+  //let governor: tc.JSCGovernor
   let revisionsLib: tc.JSCRevisionsLib
   let configurableLib: any
 
@@ -27,7 +27,7 @@ describe("JSCGovernor", async () => {
 
   beforeEach(async () => {
     await deployments.fixture(["all"]);
-    governor = await ethers.getContract("JSCGovernor");
+//    governor = await ethers.getContract("JSCGovernor");
     revisionsLib = await ethers.getContract("JSCRevisionsLib");
     configurableLib = await ethers.getContract("JSCConfigurableLib");
     [owner, bob, jane, sara, ...otherAccounts] = await ethers.getSigners();
