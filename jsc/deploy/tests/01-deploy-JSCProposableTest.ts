@@ -5,7 +5,7 @@ import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
-const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCRevisionedTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
@@ -13,8 +13,8 @@ const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRunt
   const jscRevisionsLib = await get("JSCRevisionsLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCProposableTest and waiting for confirmations...")
-  const jscProposableTest = await deploy("JSCProposableTest", {
+  log("Deploying JSCRevisionedTest and waiting for confirmations...")
+  const jscRevisionedTest = await deploy("JSCRevisionedTest", {
     from: deployer,
     args: [],
     log: true,
@@ -24,8 +24,8 @@ const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRunt
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCProposableTest at ${jscProposableTest.address}`)
+  log(`JSCRevisionedTest at ${jscRevisionedTest.address}`)
 }
 
-export default deployJSCProposableTest
-deployJSCProposableTest.tags = ["all", "jscProposableTest"]
+export default deployJSCRevisionedTest
+deployJSCRevisionedTest.tags = ["all", "jscRevisionedTest"]

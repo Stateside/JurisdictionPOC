@@ -6,7 +6,9 @@ import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
-import { BigNumber } from "ethers";
+
+import * as iid from "../../utils/getInterfaceId"
+
 chaiuse(solidity);
 
 /**
@@ -14,10 +16,10 @@ chaiuse(solidity);
  * Includes tests for ERC-721 compliance.
  */
 describe("JSCTitleToken", async () => {
-  let titleToken: tc.JSCTitleToken
+  let titleToken: tc.IJSCTitleToken
   let titleTokenTest: tc.JSCTitleTokenTest
   let tokenReceiver: tc.JSCTitleTokenReceiverTest
-  let jurisdiction: tc.JSCJurisdiction
+  let jurisdiction: tc.IJSCJurisdiction
   let revisionsLib: tc.JSCRevisionsLib
   let configurableLib: any
   let titleTokenLib: tc.JSCTitleTokenLib
@@ -29,10 +31,6 @@ describe("JSCTitleToken", async () => {
   const titleId1 = "title-1";
   const titleId2 = "title-2";
   const titleId3 = "title-3";
-
-  const INTERFACE_ID_ERC721 = '0x80ac58cd';
-  const INTERFACE_ID_ERC721_METADATA = '0x5b5e139f';
-  const INTERFACE_ID_ERC165 = '0x01ffc9a7';
 
   const ONE_MINUTE = 60;
 
@@ -64,7 +62,7 @@ describe("JSCTitleToken", async () => {
         JSCTitleTokenLib: titleTokenLib.address
       },
     });
-    const deployedContract = await contract.deploy();
+    const deployedContract:tc.IJSCTitleToken = await contract.deploy() as tc.IJSCTitleToken;
     await expect(await deployedContract.isFrozen()).to.equal(true);
   });
 
@@ -73,11 +71,16 @@ describe("JSCTitleToken", async () => {
     await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address)).to.be.revertedWith('init() cannot be called twice');
   });
 
-  it('(ERC721) correctly checks all the supported interfaces', async function() {
-    expect(await titleToken.supportsInterface(INTERFACE_ID_ERC721)).to.equal(true);
-    expect(await titleToken.supportsInterface(INTERFACE_ID_ERC165)).to.equal(true);
-    expect(await titleToken.supportsInterface(INTERFACE_ID_ERC721_METADATA)).to.equal(true);
+  it('correctly checks interfaces IDs', async function() {
     expect(await titleToken.supportsInterface("0xffffffff")).to.equal(false);
+    expect(await titleToken.supportsInterface(iid.IID_IERC165)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IERC721)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IERC721Metadata)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
   });
 
   it('(ERC721) correctly mints an NFT', async function() {
@@ -461,7 +464,7 @@ describe("JSCTitleToken", async () => {
   });
 
   /** Tests the given contract using functions that should work if not frozen, and revert if frozen */
-  const testFrozenContract = async (contract:tc.JSCTitleToken, expectRevert?:boolean) => {
+  const testFrozenContract = async (contract:tc.IJSCTitleToken, expectRevert?:boolean) => {
     const checkRevert = async (op:Chai.Assertion) => expectRevert ? await op.to.be.reverted : await op.to.not.be.reverted;
 
     await contract.mint(bob.address, titleId1); // mint() is onlyOwner and should work regardless of whether the contract is frozen or not
@@ -512,14 +515,14 @@ describe("JSCTitleToken", async () => {
         JSCTitleTokenLib: titleTokenLib.address
       },
     });
-    const contract:tc.JSCTitleToken = await factory.deploy();
+    const contract:tc.IJSCTitleToken = await factory.deploy() as tc.IJSCTitleToken;
 
     // Contract is fozen because we have not initialized it
     await testFrozenContract(contract, true);
 
     // We can also freeze an initialized contract
     await expect(await titleTokenTest.connect(owner).setFrozenContract(true)).to.emit(titleTokenTest, 'ContractFrozen').withArgs(titleTokenTest.address, true);
-    await testFrozenContract(titleTokenTest, true);
+    await testFrozenContract(titleTokenTest as any as tc.IJSCTitleToken, true);
   });
 
   /** Tests the given account using functions that should work if not frozen, and revert if frozen. targetAccount must not be owner, bob, jane, or sara */
@@ -711,5 +714,6 @@ describe("JSCTitleToken", async () => {
    *   Make unit tests as focused as possible
    *   Check of wrong person can accept offers
    *   Fix documentation
+   *   Add support for ERC165
    */
 })

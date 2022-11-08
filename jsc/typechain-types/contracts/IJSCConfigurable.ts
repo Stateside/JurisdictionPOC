@@ -25,7 +25,7 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../../common";
+} from "../common";
 
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
@@ -90,7 +90,7 @@ export declare namespace JSCConfigurableLib {
   };
 }
 
-export interface JSCConfigurableTestInterface extends utils.Interface {
+export interface IJSCConfigurableInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
@@ -105,14 +105,11 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     "iterateRevisions()": FunctionFragment;
     "nextParameter(uint256)": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
     "parameterCount()": FunctionFragment;
     "parameterIteratorGet(uint256)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
@@ -130,14 +127,11 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
       | "iterateRevisions"
       | "nextParameter"
       | "nextRevision"
-      | "owner"
       | "parameterCount"
       | "parameterIteratorGet"
-      | "renounceOwnership"
       | "revisionCount"
       | "revisionIteratorGet"
       | "supportsInterface"
-      | "transferOwnership"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -189,7 +183,6 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     functionFragment: "nextRevision",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "parameterCount",
     values?: undefined
@@ -197,10 +190,6 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "parameterIteratorGet",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "revisionCount",
@@ -213,10 +202,6 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -268,17 +253,12 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     functionFragment: "nextRevision",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "parameterCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "parameterIteratorGet",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -293,10 +273,6 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
 
   events: {
     "AddressParameterAdded(string,address)": EventFragment;
@@ -307,7 +283,6 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     "ContractFrozen(address,bool)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
     "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
@@ -323,7 +298,6 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionRemoved"): EventFragment;
@@ -426,18 +400,6 @@ export type NumberParameterUpdatedEvent = TypedEvent<
 export type NumberParameterUpdatedEventFilter =
   TypedEventFilter<NumberParameterUpdatedEvent>;
 
-export interface OwnershipTransferredEventObject {
-  previousOwner: string;
-  newOwner: string;
-}
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  OwnershipTransferredEventObject
->;
-
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
-
 export interface RevisionAddedEventObject {
   name: string;
 }
@@ -491,12 +453,12 @@ export type StringParameterUpdatedEvent = TypedEvent<
 export type StringParameterUpdatedEventFilter =
   TypedEventFilter<StringParameterUpdatedEvent>;
 
-export interface JSCConfigurableTest extends BaseContract {
+export interface IJSCConfigurable extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCConfigurableTestInterface;
+  interface: IJSCConfigurableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -579,18 +541,12 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
     parameterCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     parameterIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[JSCConfigurableLib.ParameterInfoStructOutput]>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     revisionCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -607,11 +563,6 @@ export interface JSCConfigurableTest extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   executeRevision(
@@ -671,18 +622,12 @@ export interface JSCConfigurableTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
-
   parameterCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   parameterIteratorGet(
     i: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -695,11 +640,6 @@ export interface JSCConfigurableTest extends BaseContract {
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   callStatic: {
     executeRevision(
@@ -759,16 +699,12 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
-
     parameterCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     parameterIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -781,11 +717,6 @@ export interface JSCConfigurableTest extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {
@@ -857,15 +788,6 @@ export interface JSCConfigurableTest extends BaseContract {
       name?: null,
       value?: null
     ): NumberParameterUpdatedEventFilter;
-
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
 
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
@@ -956,17 +878,11 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
     parameterCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     parameterIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
@@ -979,11 +895,6 @@ export interface JSCConfigurableTest extends BaseContract {
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -1045,17 +956,11 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     parameterCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     parameterIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     revisionCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1068,11 +973,6 @@ export interface JSCConfigurableTest extends BaseContract {
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

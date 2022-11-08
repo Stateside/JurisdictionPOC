@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import { JSCRevisionsLib as rlib } from "../libraries/JSCRevisionsLib.sol";
 
 /**
-  This library contains code for use by the JSCBaseConfigurable smart contract. It's purpose is primarily to reduce the size of 
+  This library contains code for use by the JSCConfigurable smart contract. It's purpose is primarily to reduce the size of 
   smart contracts that use this contract as a base class and centralize the type and functionality definitions.
 
   Supported parameter types are: address, uint, and string.

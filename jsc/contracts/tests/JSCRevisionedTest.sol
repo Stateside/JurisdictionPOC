@@ -2,13 +2,13 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "contracts/production/JSCBaseProposable.sol";
+import "contracts/production/JSCRevisioned.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 
 /**
-  This contract is for testing the JSCBaseProposable abstract contract.
+  This contract is for testing the JSCRevisioned abstract contract.
  */
-contract JSCProposableTest is JSCBaseProposable {
+contract JSCRevisionedTest is JSCRevisioned {
   using rlib for rlib.RevisionMap;
   
   string public rev = "none";

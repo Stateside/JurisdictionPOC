@@ -10,34 +10,19 @@ In this proof of concept we will have 4 smart contracts
 
 We will also have several abstract contracts that act as base classes
 
-- JSCBaseConfigurable which gives them the ability to have configurable settings that can be changed using revisions and proposals
-- JSCBaseProposable which provides functionality for registering Revisions and executing them.
+- JSCConfigurable which gives them the ability to have configurable settings that can be changed using revisions and proposals
+- JSCRevisioned which provides functionality for registering Revisions and executing them.
 - UUPSUpgradeable (or something similar) to allow the smart contract to be upgradeable. 
 
 Tasks
 
-- Create JSCBaseProposable
-- Create JSCBaseConfigurable
+- Create JSCRevisioned
+- Create JSCConfigurable
 - Create JSCJurisdiction
 - Create JSCTitleTokens
 - Create JSCGovernor
 - Create JSCCabinet
 - Create UUPSUpgradeable
-
-Contracts have parameters that affect their operation
-For example Contract A has votingPeriod for each revision
-Changing that parameter can be done using revisions too
-Revisions for changing parameters all use the same rules defined at the level of the contract
-
-Governance Notes
-- Do we need the ERC20 implementation for voting rights? 
-  - Only if different members have different voting power
-  - Or we want to allow members to delegate their vote
-  - No, not in the PoC
-- Do we need the checkpoints?
-  - No because votes cannot be delegated
-- Do we need the timelock code?
-  - No unless we need to separate logic if the governor contract is too big
 - Who pays for everything?
   - Proposals and Voting? Can we allow members to vote using transactions paid for by the jurisdiction?
     - For example, can the jurisdiction operate even if members have no ETH?
@@ -48,3 +33,22 @@ Governance Notes
     - In this case the EIP-2612 mechanism might be useful too
     - It would allow the member to sign a message that let's the website submit vote for them and pay the gas fees
 
+TODO
+
+Add interfaces to all contracts
+Implement supportsInterface() fully
+Use _msgSender(), _checkOwner(), 
+Check imports
+Check comments in interfaces and add refs to implementations
+
+Fix deployment scripts and tests
+Use interfaces in tests
+Add tests for all supportsInterface() calls
+
+Commit changes without governor
+
+Add payments to the offer transactions in JSCTitleToken
+Make sure operators and approvers do not have more permissins than required
+Add a parameter to the title token to disable NFT support
+Add a boolean to the individual tokens to enable NFT support
+Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html

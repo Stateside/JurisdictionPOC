@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./JSCBaseProposable.sol";
+import "./JSCRevisioned.sol";
+import "../IJSCFreezable.sol";
 
 /**
- * This is the title token smart contract.
- *
- * Includes implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard.
+ * This is a base contract that implements a frozen state which can only be changed using "revisions"
  */
-contract JSCFreezable is JSCBaseProposable {
+contract JSCFreezable is IJSCFreezable, JSCRevisioned {
   bool private _frozen = true;
-
-  event ContractFrozen(address con, bool frozen);
 
   /**
    * @dev Initializes the contract by setting frozen to false
@@ -23,14 +20,25 @@ contract JSCFreezable is JSCBaseProposable {
     _addFreezableHandlers();
   }
   
+  /**
+   * @dev See {IERC165-supportsInterface}.
+   */
+  function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, JSCRevisioned) returns (bool) {
+    return
+      interfaceId == type(IJSCFreezable).interfaceId ||
+      super.supportsInterface(interfaceId);
+  }
+
   /** Modifier to prevent operation if contract is frozen */
   modifier unfrozenContract {
     require(!_frozen, "This contract is currently frozen");
     _;
   }
 
-  /** Indicates if this contract is frozen or not */
-  function isFrozen() public view returns (bool) {
+  /**
+   * @dev See {IJSCFreezable-isFrozen}.
+   */
+  function isFrozen() public view override returns (bool) {
     return _frozen;
   }
   
