@@ -7,6 +7,7 @@ import type * as tests from "./tests";
 export type { tests };
 export type { IJSCConfigurable } from "./IJSCConfigurable";
 export type { IJSCFreezable } from "./IJSCFreezable";
+export type { IJSCGovernor } from "./IJSCGovernor";
 export type { IJSCJurisdiction } from "./IJSCJurisdiction";
 export type { IJSCRevisioned } from "./IJSCRevisioned";
 export type { IJSCTitleToken } from "./IJSCTitleToken";

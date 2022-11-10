@@ -35,20 +35,10 @@ Tasks
 
 TODO
 
-Add interfaces to all contracts
-Implement supportsInterface() fully
-Use _msgSender(), _checkOwner(), 
-Check imports
-Check comments in interfaces and add refs to implementations
-
-Fix deployment scripts and tests
-Use interfaces in tests
-Add tests for all supportsInterface() calls
-
-Commit changes without governor
-
 Add payments to the offer transactions in JSCTitleToken
 Make sure operators and approvers do not have more permissins than required
 Add a parameter to the title token to disable NFT support
 Add a boolean to the individual tokens to enable NFT support
 Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
+Add tests for contracts when the gover is the owner
+Test frozen jurisdiciton, and governor contracts

@@ -11,10 +11,23 @@ import "./IJSCConfigurable.sol";
   to determine the latest contract instances in use.
 */
 interface IJSCJurisdiction is IJSCConfigurable {
-  event ContractAdded(string name, address contractAddress);
-  event ContractRemoved(string name, string contractAddress);
-  event ContractReplaced(string name, address contractAddress);
+    event ContractAdded(string name, address contractAddress);
+    event ContractRemoved(string name, string contractAddress);
+    event ContractReplaced(string name, address contractAddress);
 
-  /** Returns the address of the contract with the given name */
-  function getContractAddress(string memory name) external view returns (address);
+    /**
+    * @dev Initializes the contract adding given contracts
+    */
+    function init(
+        string calldata name,
+        string[] calldata contractKeys,
+        address[] calldata contracts,
+        string[] calldata descriptions
+    ) external;
+
+    /** Returns the address of the contract with the given name */
+    function getContractAddress(string memory name)
+        external
+        view
+        returns (address);
 }

@@ -17,6 +17,9 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
   using clib for clib.ParameterMap;
   string jurisdictionName;
 
+  /**
+   * @dev See {IJSCJurisdiction-init}.
+   */
   function init(
     string calldata name,
     string[] calldata contractKeys, 
@@ -79,7 +82,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
       paramNames: names,
       paramTypes: types,
       paramHints: hints,
-      rules: rlib.VotingRules(0,0,0,0,roles)
+      rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
     });
   }
 
@@ -102,7 +105,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
       paramNames: names,
       paramTypes: types,
       paramHints: hints,
-      rules: rlib.VotingRules(0,0,0,0,roles)
+      rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
     });
   }
 

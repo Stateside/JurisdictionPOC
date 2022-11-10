@@ -94,7 +94,7 @@ contract JSCRevisionedTest is JSCRevisioned {
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(0,0,0,0,roles)
+        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
       });
   }
 
@@ -114,7 +114,7 @@ contract JSCRevisionedTest is JSCRevisioned {
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(0,0,0,0,roles)
+        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
       });
   }
 
@@ -134,7 +134,7 @@ contract JSCRevisionedTest is JSCRevisioned {
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(0,0,0,0,roles)
+        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
       });
   }
 }

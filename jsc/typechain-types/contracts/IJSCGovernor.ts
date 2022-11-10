@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -26,6 +27,34 @@ import type {
   OnEvent,
   PromiseOrValue,
 } from "../common";
+
+export declare namespace IJSCGovernor {
+  export type VotingParamsStruct = {
+    votingPeriod: PromiseOrValue<BigNumberish>;
+    approvals: PromiseOrValue<BigNumberish>;
+    majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
+  };
+
+  export type VotingParamsStructOutput = [number, number, number, number] & {
+    votingPeriod: number;
+    approvals: number;
+    majority: number;
+    quorum: number;
+  };
+
+  export type RevisionCallStruct = {
+    target: PromiseOrValue<string>;
+    name: PromiseOrValue<string>;
+    pdata: PromiseOrValue<BytesLike>;
+  };
+
+  export type RevisionCallStructOutput = [string, string, string] & {
+    target: string;
+    name: string;
+    pdata: string;
+  };
+}
 
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
@@ -90,16 +119,19 @@ export declare namespace JSCConfigurableLib {
   };
 }
 
-export interface IJSCJurisdictionInterface extends utils.Interface {
+export interface IJSCGovernorInterface extends utils.Interface {
   functions: {
+    "castVote(uint256,uint8)": FunctionFragment;
+    "execute((address,string,bytes)[],bytes32,uint256)": FunctionFragment;
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
     "getBoolParameter(string)": FunctionFragment;
-    "getContractAddress(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
-    "init(string,string[],address[],string[])": FunctionFragment;
+    "hasVoted(uint256,address)": FunctionFragment;
+    "hashProposal((address,string,bytes)[],bytes32,uint256)": FunctionFragment;
+    "init(address)": FunctionFragment;
     "isFrozen()": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
@@ -109,20 +141,28 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     "nextRevision(uint256)": FunctionFragment;
     "parameterCount()": FunctionFragment;
     "parameterIteratorGet(uint256)": FunctionFragment;
+    "proposalDeadline(uint256)": FunctionFragment;
+    "proposalVotes(uint256)": FunctionFragment;
+    "propose((address,string,bytes)[],string,uint256)": FunctionFragment;
+    "quorum(uint256)": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
+    "state(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "castVote"
+      | "execute"
       | "executeRevision"
       | "getAddressParameter"
       | "getBoolParameter"
-      | "getContractAddress"
       | "getNumberParameter"
       | "getRevisionByName"
       | "getStringParameter"
+      | "hasVoted"
+      | "hashProposal"
       | "init"
       | "isFrozen"
       | "isValidParameterIterator"
@@ -133,11 +173,28 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
       | "nextRevision"
       | "parameterCount"
       | "parameterIteratorGet"
+      | "proposalDeadline"
+      | "proposalVotes"
+      | "propose"
+      | "quorum"
       | "revisionCount"
       | "revisionIteratorGet"
+      | "state"
       | "supportsInterface"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "castVote",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "execute",
+    values: [
+      IJSCGovernor.RevisionCallStruct[],
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "executeRevision",
     values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
@@ -148,10 +205,6 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getBoolParameter",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getContractAddress",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -167,13 +220,20 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "init",
+    functionFragment: "hasVoted",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hashProposal",
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>[],
-      PromiseOrValue<string>[],
-      PromiseOrValue<string>[]
+      IJSCGovernor.RevisionCallStruct[],
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "init",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
   encodeFunctionData(
@@ -209,6 +269,26 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "proposalDeadline",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "proposalVotes",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "propose",
+    values: [
+      IJSCGovernor.RevisionCallStruct[],
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "quorum",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "revisionCount",
     values?: undefined
   ): string;
@@ -217,10 +297,16 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "state",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
   ): string;
 
+  decodeFunctionResult(functionFragment: "castVote", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "execute", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "executeRevision",
     data: BytesLike
@@ -234,10 +320,6 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getContractAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getNumberParameter",
     data: BytesLike
   ): Result;
@@ -247,6 +329,11 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getStringParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "hasVoted", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "hashProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
@@ -284,6 +371,16 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "proposalDeadline",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "proposalVotes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "propose", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "quorum", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "revisionCount",
     data: BytesLike
   ): Result;
@@ -291,6 +388,7 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     functionFragment: "revisionIteratorGet",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -302,17 +400,18 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     "AddressParameterUpdated(string,address)": EventFragment;
     "BoolParameterAdded(string,bool)": EventFragment;
     "BoolParameterUpdated(string,bool)": EventFragment;
-    "ContractAdded(string,address)": EventFragment;
     "ContractFrozen(address,bool)": EventFragment;
-    "ContractRemoved(string,string)": EventFragment;
-    "ContractReplaced(string,address)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
+    "ProposalCanceled(uint256)": EventFragment;
+    "ProposalCreated(uint256,address,uint256,tuple,tuple[],uint256,string)": EventFragment;
+    "ProposalExecuted(uint256)": EventFragment;
     "RevisionAdded(string)": EventFragment;
     "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
     "StringParameterAdded(string,string)": EventFragment;
     "StringParameterUpdated(string,string)": EventFragment;
+    "VoteCast(address,uint256,uint8)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AddressParameterAdded"): EventFragment;
@@ -320,17 +419,18 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AddressParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BoolParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BoolParameterUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ContractAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ContractRemoved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ContractReplaced"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "StringParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "StringParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "VoteCast"): EventFragment;
 }
 
 export interface AddressParameterAddedEventObject {
@@ -393,17 +493,6 @@ export type BoolParameterUpdatedEvent = TypedEvent<
 export type BoolParameterUpdatedEventFilter =
   TypedEventFilter<BoolParameterUpdatedEvent>;
 
-export interface ContractAddedEventObject {
-  name: string;
-  contractAddress: string;
-}
-export type ContractAddedEvent = TypedEvent<
-  [string, string],
-  ContractAddedEventObject
->;
-
-export type ContractAddedEventFilter = TypedEventFilter<ContractAddedEvent>;
-
 export interface ContractFrozenEventObject {
   con: string;
   frozen: boolean;
@@ -414,29 +503,6 @@ export type ContractFrozenEvent = TypedEvent<
 >;
 
 export type ContractFrozenEventFilter = TypedEventFilter<ContractFrozenEvent>;
-
-export interface ContractRemovedEventObject {
-  name: string;
-  contractAddress: string;
-}
-export type ContractRemovedEvent = TypedEvent<
-  [string, string],
-  ContractRemovedEventObject
->;
-
-export type ContractRemovedEventFilter = TypedEventFilter<ContractRemovedEvent>;
-
-export interface ContractReplacedEventObject {
-  name: string;
-  contractAddress: string;
-}
-export type ContractReplacedEvent = TypedEvent<
-  [string, string],
-  ContractReplacedEventObject
->;
-
-export type ContractReplacedEventFilter =
-  TypedEventFilter<ContractReplacedEvent>;
 
 export interface NumberParameterAddedEventObject {
   name: string;
@@ -461,6 +527,52 @@ export type NumberParameterUpdatedEvent = TypedEvent<
 
 export type NumberParameterUpdatedEventFilter =
   TypedEventFilter<NumberParameterUpdatedEvent>;
+
+export interface ProposalCanceledEventObject {
+  proposalId: BigNumber;
+}
+export type ProposalCanceledEvent = TypedEvent<
+  [BigNumber],
+  ProposalCanceledEventObject
+>;
+
+export type ProposalCanceledEventFilter =
+  TypedEventFilter<ProposalCanceledEvent>;
+
+export interface ProposalCreatedEventObject {
+  proposalId: BigNumber;
+  proposer: string;
+  startBlock: BigNumber;
+  params: IJSCGovernor.VotingParamsStructOutput;
+  revs: IJSCGovernor.RevisionCallStructOutput[];
+  version: BigNumber;
+  description: string;
+}
+export type ProposalCreatedEvent = TypedEvent<
+  [
+    BigNumber,
+    string,
+    BigNumber,
+    IJSCGovernor.VotingParamsStructOutput,
+    IJSCGovernor.RevisionCallStructOutput[],
+    BigNumber,
+    string
+  ],
+  ProposalCreatedEventObject
+>;
+
+export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
+
+export interface ProposalExecutedEventObject {
+  proposalId: BigNumber;
+}
+export type ProposalExecutedEvent = TypedEvent<
+  [BigNumber],
+  ProposalExecutedEventObject
+>;
+
+export type ProposalExecutedEventFilter =
+  TypedEventFilter<ProposalExecutedEvent>;
 
 export interface RevisionAddedEventObject {
   name: string;
@@ -515,12 +627,24 @@ export type StringParameterUpdatedEvent = TypedEvent<
 export type StringParameterUpdatedEventFilter =
   TypedEventFilter<StringParameterUpdatedEvent>;
 
-export interface IJSCJurisdiction extends BaseContract {
+export interface VoteCastEventObject {
+  voter: string;
+  proposalId: BigNumber;
+  support: number;
+}
+export type VoteCastEvent = TypedEvent<
+  [string, BigNumber, number],
+  VoteCastEventObject
+>;
+
+export type VoteCastEventFilter = TypedEventFilter<VoteCastEvent>;
+
+export interface IJSCGovernor extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IJSCJurisdictionInterface;
+  interface: IJSCGovernorInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -542,6 +666,19 @@ export interface IJSCJurisdiction extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    castVote(
+      proposalId: PromiseOrValue<BigNumberish>,
+      support: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    execute(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -557,11 +694,6 @@ export interface IJSCJurisdiction extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    getContractAddress(
-      name: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
 
     getNumberParameter(
       name: PromiseOrValue<string>,
@@ -582,11 +714,21 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    hasVoted(
+      proposalId: PromiseOrValue<BigNumberish>,
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    hashProposal(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     init(
-      name: PromiseOrValue<string>,
-      contractKeys: PromiseOrValue<string>[],
-      contracts: PromiseOrValue<string>[],
-      descriptions: PromiseOrValue<string>[],
+      jurisdiction: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -623,6 +765,34 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[JSCConfigurableLib.ParameterInfoStructOutput]>;
 
+    proposalDeadline(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    proposalVotes(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        againstVotes: BigNumber;
+        forVotes: BigNumber;
+        abstainVotes: BigNumber;
+      }
+    >;
+
+    propose(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      description: PromiseOrValue<string>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    quorum(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     revisionCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     revisionIteratorGet(
@@ -634,11 +804,29 @@ export interface IJSCJurisdiction extends BaseContract {
       }
     >;
 
+    state(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
   };
+
+  castVote(
+    proposalId: PromiseOrValue<BigNumberish>,
+    support: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  execute(
+    revs: IJSCGovernor.RevisionCallStruct[],
+    descriptionHash: PromiseOrValue<BytesLike>,
+    version: PromiseOrValue<BigNumberish>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   executeRevision(
     name: PromiseOrValue<string>,
@@ -656,11 +844,6 @@ export interface IJSCJurisdiction extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  getContractAddress(
-    name: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -676,11 +859,21 @@ export interface IJSCJurisdiction extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  hasVoted(
+    proposalId: PromiseOrValue<BigNumberish>,
+    account: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  hashProposal(
+    revs: IJSCGovernor.RevisionCallStruct[],
+    descriptionHash: PromiseOrValue<BytesLike>,
+    version: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   init(
-    name: PromiseOrValue<string>,
-    contractKeys: PromiseOrValue<string>[],
-    contracts: PromiseOrValue<string>[],
-    descriptions: PromiseOrValue<string>[],
+    jurisdiction: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -717,6 +910,34 @@ export interface IJSCJurisdiction extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
 
+  proposalDeadline(
+    proposalId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  proposalVotes(
+    proposalId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      againstVotes: BigNumber;
+      forVotes: BigNumber;
+      abstainVotes: BigNumber;
+    }
+  >;
+
+  propose(
+    revs: IJSCGovernor.RevisionCallStruct[],
+    description: PromiseOrValue<string>,
+    version: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  quorum(
+    proposalId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   revisionIteratorGet(
@@ -724,12 +945,30 @@ export interface IJSCJurisdiction extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+  state(
+    proposalId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
   supportsInterface(
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   callStatic: {
+    castVote(
+      proposalId: PromiseOrValue<BigNumberish>,
+      support: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    execute(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -746,11 +985,6 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    getContractAddress(
-      name: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -766,11 +1000,21 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    hasVoted(
+      proposalId: PromiseOrValue<BigNumberish>,
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    hashProposal(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     init(
-      name: PromiseOrValue<string>,
-      contractKeys: PromiseOrValue<string>[],
-      contracts: PromiseOrValue<string>[],
-      descriptions: PromiseOrValue<string>[],
+      jurisdiction: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -807,12 +1051,45 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
 
+    proposalDeadline(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    proposalVotes(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        againstVotes: BigNumber;
+        forVotes: BigNumber;
+        abstainVotes: BigNumber;
+      }
+    >;
+
+    propose(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      description: PromiseOrValue<string>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    quorum(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     revisionIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    state(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
@@ -866,38 +1143,11 @@ export interface IJSCJurisdiction extends BaseContract {
       value?: null
     ): BoolParameterUpdatedEventFilter;
 
-    "ContractAdded(string,address)"(
-      name?: null,
-      contractAddress?: null
-    ): ContractAddedEventFilter;
-    ContractAdded(
-      name?: null,
-      contractAddress?: null
-    ): ContractAddedEventFilter;
-
     "ContractFrozen(address,bool)"(
       con?: null,
       frozen?: null
     ): ContractFrozenEventFilter;
     ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
-
-    "ContractRemoved(string,string)"(
-      name?: null,
-      contractAddress?: null
-    ): ContractRemovedEventFilter;
-    ContractRemoved(
-      name?: null,
-      contractAddress?: null
-    ): ContractRemovedEventFilter;
-
-    "ContractReplaced(string,address)"(
-      name?: null,
-      contractAddress?: null
-    ): ContractReplacedEventFilter;
-    ContractReplaced(
-      name?: null,
-      contractAddress?: null
-    ): ContractReplacedEventFilter;
 
     "NumberParameterAdded(string,uint256)"(
       name?: null,
@@ -916,6 +1166,31 @@ export interface IJSCJurisdiction extends BaseContract {
       name?: null,
       value?: null
     ): NumberParameterUpdatedEventFilter;
+
+    "ProposalCanceled(uint256)"(proposalId?: null): ProposalCanceledEventFilter;
+    ProposalCanceled(proposalId?: null): ProposalCanceledEventFilter;
+
+    "ProposalCreated(uint256,address,uint256,tuple,tuple[],uint256,string)"(
+      proposalId?: null,
+      proposer?: null,
+      startBlock?: null,
+      params?: null,
+      revs?: null,
+      version?: null,
+      description?: null
+    ): ProposalCreatedEventFilter;
+    ProposalCreated(
+      proposalId?: null,
+      proposer?: null,
+      startBlock?: null,
+      params?: null,
+      revs?: null,
+      version?: null,
+      description?: null
+    ): ProposalCreatedEventFilter;
+
+    "ProposalExecuted(uint256)"(proposalId?: null): ProposalExecutedEventFilter;
+    ProposalExecuted(proposalId?: null): ProposalExecutedEventFilter;
 
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
@@ -946,9 +1221,33 @@ export interface IJSCJurisdiction extends BaseContract {
       name?: null,
       value?: null
     ): StringParameterUpdatedEventFilter;
+
+    "VoteCast(address,uint256,uint8)"(
+      voter?: PromiseOrValue<string> | null,
+      proposalId?: null,
+      support?: null
+    ): VoteCastEventFilter;
+    VoteCast(
+      voter?: PromiseOrValue<string> | null,
+      proposalId?: null,
+      support?: null
+    ): VoteCastEventFilter;
   };
 
   estimateGas: {
+    castVote(
+      proposalId: PromiseOrValue<BigNumberish>,
+      support: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    execute(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -961,11 +1260,6 @@ export interface IJSCJurisdiction extends BaseContract {
     ): Promise<BigNumber>;
 
     getBoolParameter(
-      name: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getContractAddress(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -985,11 +1279,21 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    hasVoted(
+      proposalId: PromiseOrValue<BigNumberish>,
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    hashProposal(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     init(
-      name: PromiseOrValue<string>,
-      contractKeys: PromiseOrValue<string>[],
-      contracts: PromiseOrValue<string>[],
-      descriptions: PromiseOrValue<string>[],
+      jurisdiction: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1026,10 +1330,37 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    proposalDeadline(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    proposalVotes(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    propose(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      description: PromiseOrValue<string>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    quorum(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     revisionIteratorGet(
       i: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    state(
+      proposalId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1040,6 +1371,19 @@ export interface IJSCJurisdiction extends BaseContract {
   };
 
   populateTransaction: {
+    castVote(
+      proposalId: PromiseOrValue<BigNumberish>,
+      support: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    execute(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -1052,11 +1396,6 @@ export interface IJSCJurisdiction extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getBoolParameter(
-      name: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getContractAddress(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1076,11 +1415,21 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    hasVoted(
+      proposalId: PromiseOrValue<BigNumberish>,
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    hashProposal(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      descriptionHash: PromiseOrValue<BytesLike>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     init(
-      name: PromiseOrValue<string>,
-      contractKeys: PromiseOrValue<string>[],
-      contracts: PromiseOrValue<string>[],
-      descriptions: PromiseOrValue<string>[],
+      jurisdiction: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1117,10 +1466,37 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    proposalDeadline(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    proposalVotes(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    propose(
+      revs: IJSCGovernor.RevisionCallStruct[],
+      description: PromiseOrValue<string>,
+      version: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    quorum(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     revisionCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     revisionIteratorGet(
       i: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    state(
+      proposalId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
