@@ -21,7 +21,7 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
   event OfferToBuyCancelled(uint256 tokenId, address buyer);
 
   /**
-   * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+   * @dev Initializes the contract by setting a `name` and a `symbol` for the token collection and connecting this contract to a jurisdiction
    */
   function init(string memory name_, string memory symbol_, string memory baseURI_, address jurisdiction_ ) external;
 

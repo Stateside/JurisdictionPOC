@@ -47,16 +47,24 @@ export declare namespace JSCRevisionsLib {
 
 export interface JSCRevisionsLibInterface extends utils.Interface {
   functions: {
+    "OneDay()": FunctionFragment;
+    "OneWeek()": FunctionFragment;
     "checkVotingRules((uint16,uint16,uint8,uint8,string[]))": FunctionFragment;
   };
 
-  getFunction(nameOrSignatureOrTopic: "checkVotingRules"): FunctionFragment;
+  getFunction(
+    nameOrSignatureOrTopic: "OneDay" | "OneWeek" | "checkVotingRules"
+  ): FunctionFragment;
 
+  encodeFunctionData(functionFragment: "OneDay", values?: undefined): string;
+  encodeFunctionData(functionFragment: "OneWeek", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "checkVotingRules",
     values: [JSCRevisionsLib.VotingRulesStruct]
   ): string;
 
+  decodeFunctionResult(functionFragment: "OneDay", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "OneWeek", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "checkVotingRules",
     data: BytesLike
@@ -92,11 +100,19 @@ export interface JSCRevisionsLib extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    OneDay(overrides?: CallOverrides): Promise<[number]>;
+
+    OneWeek(overrides?: CallOverrides): Promise<[number]>;
+
     checkVotingRules(
       r: JSCRevisionsLib.VotingRulesStruct,
       overrides?: CallOverrides
     ): Promise<[void]>;
   };
+
+  OneDay(overrides?: CallOverrides): Promise<number>;
+
+  OneWeek(overrides?: CallOverrides): Promise<number>;
 
   checkVotingRules(
     r: JSCRevisionsLib.VotingRulesStruct,
@@ -104,6 +120,10 @@ export interface JSCRevisionsLib extends BaseContract {
   ): Promise<void>;
 
   callStatic: {
+    OneDay(overrides?: CallOverrides): Promise<number>;
+
+    OneWeek(overrides?: CallOverrides): Promise<number>;
+
     checkVotingRules(
       r: JSCRevisionsLib.VotingRulesStruct,
       overrides?: CallOverrides
@@ -113,6 +133,10 @@ export interface JSCRevisionsLib extends BaseContract {
   filters: {};
 
   estimateGas: {
+    OneDay(overrides?: CallOverrides): Promise<BigNumber>;
+
+    OneWeek(overrides?: CallOverrides): Promise<BigNumber>;
+
     checkVotingRules(
       r: JSCRevisionsLib.VotingRulesStruct,
       overrides?: CallOverrides
@@ -120,6 +144,10 @@ export interface JSCRevisionsLib extends BaseContract {
   };
 
   populateTransaction: {
+    OneDay(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    OneWeek(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     checkVotingRules(
       r: JSCRevisionsLib.VotingRulesStruct,
       overrides?: CallOverrides

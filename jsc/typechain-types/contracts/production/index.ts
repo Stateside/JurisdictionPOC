@@ -3,6 +3,7 @@
 /* eslint-disable */
 export type { JSCConfigurable } from "./JSCConfigurable";
 export type { JSCFreezable } from "./JSCFreezable";
+export type { JSCGovernor } from "./JSCGovernor";
 export type { JSCJurisdiction } from "./JSCJurisdiction";
 export type { JSCRevisioned } from "./JSCRevisioned";
 export type { JSCTitleToken } from "./JSCTitleToken";

@@ -3,6 +3,7 @@
 /* eslint-disable */
 export { JSCConfigurable__factory } from "./JSCConfigurable__factory";
 export { JSCFreezable__factory } from "./JSCFreezable__factory";
+export { JSCGovernor__factory } from "./JSCGovernor__factory";
 export { JSCJurisdiction__factory } from "./JSCJurisdiction__factory";
 export { JSCRevisioned__factory } from "./JSCRevisioned__factory";
 export { JSCTitleToken__factory } from "./JSCTitleToken__factory";

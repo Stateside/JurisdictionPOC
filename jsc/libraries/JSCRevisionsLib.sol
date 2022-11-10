@@ -7,6 +7,8 @@ pragma solidity ^0.8.9;
  */
 library JSCRevisionsLib {
   enum ParamType { t_address, t_bool, t_number, t_string }
+  uint16 public constant OneDay = 6 * 24; // Assuming a block every 10 minutes
+  uint16 public constant OneWeek = OneDay * 7;
   struct VotingRules {
     /** 
       How long voting lasts in number of blocks 
@@ -24,7 +26,6 @@ library JSCRevisionsLib {
       Percentage of cabinet response needed for vote to be considered valid (0-100). 
     */
     uint8 quorum;
-
     /** 
       What roles may execute this revision 
     */
