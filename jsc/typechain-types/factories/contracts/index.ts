@@ -3,3 +3,8 @@
 /* eslint-disable */
 export * as production from "./production";
 export * as tests from "./tests";
+export { IJSCConfigurable__factory } from "./IJSCConfigurable__factory";
+export { IJSCFreezable__factory } from "./IJSCFreezable__factory";
+export { IJSCJurisdiction__factory } from "./IJSCJurisdiction__factory";
+export { IJSCRevisioned__factory } from "./IJSCRevisioned__factory";
+export { IJSCTitleToken__factory } from "./IJSCTitleToken__factory";

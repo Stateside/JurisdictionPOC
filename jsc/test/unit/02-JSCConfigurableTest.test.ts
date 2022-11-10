@@ -1,5 +1,4 @@
-import { JSCConfigurableTest } from "../../typechain-types"
-import { JSCRevisionsLib } from "../../typechain-types/libraries"
+import * as tc from "../../typechain-types"
 import { ParamType } from "../../utils/types"
 
 // @ts-ignore
@@ -8,11 +7,14 @@ import { expect, use as chaiuse } from "chai"
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
+
+import * as iid from "../../utils/getInterfaceId"
+
 chaiuse(solidity);
 
 describe("JSCConfigurableTest", async () => {
-  let configurable: JSCConfigurableTest
-  let rlib: JSCRevisionsLib
+  let configurable: tc.JSCConfigurableTest
+  let rlib: tc.JSCRevisionsLib
 
   const testIterateParameters = async (val1:any, val2:any, val3:any, val4:any) => {
     await expect(await configurable.parameterCount()).to.be.equal(4);
@@ -73,6 +75,18 @@ describe("JSCConfigurableTest", async () => {
     configurable = await ethers.getContract("JSCConfigurableTest")
     rlib = await ethers.getContract("JSCRevisionsLib")
   })
+
+  it('correctly checks interfaces IDs', async function() {
+    expect(await configurable.supportsInterface("0xffffffff")).to.equal(false);
+    expect(await configurable.supportsInterface(iid.IID_IERC165)).to.equal(true);
+    expect(await configurable.supportsInterface(iid.IID_IERC721)).to.equal(false);
+    expect(await configurable.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await configurable.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
+    expect(await configurable.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
+    expect(await configurable.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
+    expect(await configurable.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
+    expect(await configurable.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
+  });
 
   it("iterates parameters", async () => {
     await testIterateParameters("0x111122223333444455556666777788889999aAaa", false, 1234, "string value");

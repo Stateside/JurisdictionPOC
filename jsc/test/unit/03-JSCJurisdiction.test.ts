@@ -1,5 +1,4 @@
-import { JSCJurisdiction } from "../../typechain-types"
-import { JSCRevisionsLib } from "../../typechain-types/libraries"
+import * as tc from "../../typechain-types"
 import { ParamType } from "../../utils/types"
 
 // @ts-ignore
@@ -8,11 +7,14 @@ import { expect, use as chaiuse } from "chai"
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
+
+import * as iid from "../../utils/getInterfaceId"
+
 chaiuse(solidity);
 
 describe("JSCJurisdiction", async () => {
-  let jurisdiction: JSCJurisdiction
-  let rlib: JSCRevisionsLib
+  let jurisdiction: tc.IJSCJurisdiction
+  let rlib: tc.JSCRevisionsLib
 
   const testParameterRevision = async (r:any, name:string, description:string, type:ParamType) => {
     await expect(r.name).to.be.equal(name);
@@ -49,6 +51,18 @@ describe("JSCJurisdiction", async () => {
     await deployments.fixture(["all"])
     jurisdiction = await ethers.getContract("JSCJurisdiction")
   })
+
+  it('correctly checks interfaces IDs', async function() {
+    expect(await jurisdiction.supportsInterface("0xffffffff")).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IERC165)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IERC721)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(true);
+  });
 
   it("iterates parameters", async () => {
     await testIterateParameters(

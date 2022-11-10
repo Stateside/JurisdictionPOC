@@ -27,26 +27,12 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export declare namespace JSCConfigurableLib {
-  export type ParameterInfoStruct = {
-    name: PromiseOrValue<string>;
-    description: PromiseOrValue<string>;
-    ptype: PromiseOrValue<BigNumberish>;
-  };
-
-  export type ParameterInfoStructOutput = [string, string, number] & {
-    name: string;
-    description: string;
-    ptype: number;
-  };
-}
-
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -59,8 +45,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 
@@ -90,6 +76,20 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
+export declare namespace JSCConfigurableLib {
+  export type ParameterInfoStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    ptype: PromiseOrValue<BigNumberish>;
+  };
+
+  export type ParameterInfoStructOutput = [string, string, number] & {
+    name: string;
+    description: string;
+    ptype: number;
+  };
+}
+
 export interface JSCJurisdictionInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
@@ -97,6 +97,7 @@ export interface JSCJurisdictionInterface extends utils.Interface {
     "getBoolParameter(string)": FunctionFragment;
     "getContractAddress(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
+    "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
     "init(string,string[],address[],string[])": FunctionFragment;
     "isFrozen()": FunctionFragment;
@@ -112,6 +113,7 @@ export interface JSCJurisdictionInterface extends utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
@@ -122,6 +124,7 @@ export interface JSCJurisdictionInterface extends utils.Interface {
       | "getBoolParameter"
       | "getContractAddress"
       | "getNumberParameter"
+      | "getRevisionByName"
       | "getStringParameter"
       | "init"
       | "isFrozen"
@@ -137,6 +140,7 @@ export interface JSCJurisdictionInterface extends utils.Interface {
       | "renounceOwnership"
       | "revisionCount"
       | "revisionIteratorGet"
+      | "supportsInterface"
       | "transferOwnership"
   ): FunctionFragment;
 
@@ -158,6 +162,10 @@ export interface JSCJurisdictionInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getNumberParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRevisionByName",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -220,6 +228,10 @@ export interface JSCJurisdictionInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
@@ -242,6 +254,10 @@ export interface JSCJurisdictionInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getNumberParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevisionByName",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -293,6 +309,10 @@ export interface JSCJurisdictionInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "revisionIteratorGet",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -586,6 +606,15 @@ export interface JSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput] & {
+        value: JSCRevisionsLib.RevisionStructOutput;
+      }
+    >;
+
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -649,6 +678,11 @@ export interface JSCJurisdiction extends BaseContract {
       }
     >;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -680,6 +714,11 @@ export interface JSCJurisdiction extends BaseContract {
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getRevisionByName(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
   getStringParameter(
     name: PromiseOrValue<string>,
@@ -740,6 +779,11 @@ export interface JSCJurisdiction extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+  supportsInterface(
+    interfaceId: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -771,6 +815,11 @@ export interface JSCJurisdiction extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
     getStringParameter(
       name: PromiseOrValue<string>,
@@ -828,6 +877,11 @@ export interface JSCJurisdiction extends BaseContract {
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
@@ -999,6 +1053,11 @@ export interface JSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1058,6 +1117,11 @@ export interface JSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1087,6 +1151,11 @@ export interface JSCJurisdiction extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getNumberParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRevisionByName(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1147,6 +1216,11 @@ export interface JSCJurisdiction extends BaseContract {
 
     revisionIteratorGet(
       i: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

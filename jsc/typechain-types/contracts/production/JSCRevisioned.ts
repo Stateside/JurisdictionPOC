@@ -76,11 +76,10 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
-export interface JSCFreezableInterface extends utils.Interface {
+export interface JSCRevisionedInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
-    "isFrozen()": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateRevisions()": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
@@ -96,7 +95,6 @@ export interface JSCFreezableInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "executeRevision"
       | "getRevisionByName"
-      | "isFrozen"
       | "isValidRevisionIterator"
       | "iterateRevisions"
       | "nextRevision"
@@ -116,7 +114,6 @@ export interface JSCFreezableInterface extends utils.Interface {
     functionFragment: "getRevisionByName",
     values: [PromiseOrValue<string>]
   ): string;
-  encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "isValidRevisionIterator",
     values: [PromiseOrValue<BigNumberish>]
@@ -159,7 +156,6 @@ export interface JSCFreezableInterface extends utils.Interface {
     functionFragment: "getRevisionByName",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "isFrozen", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isValidRevisionIterator",
     data: BytesLike
@@ -195,30 +191,17 @@ export interface JSCFreezableInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "ContractFrozen(address,bool)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
     "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionRemoved"): EventFragment;
 }
-
-export interface ContractFrozenEventObject {
-  con: string;
-  frozen: boolean;
-}
-export type ContractFrozenEvent = TypedEvent<
-  [string, boolean],
-  ContractFrozenEventObject
->;
-
-export type ContractFrozenEventFilter = TypedEventFilter<ContractFrozenEvent>;
 
 export interface OwnershipTransferredEventObject {
   previousOwner: string;
@@ -261,12 +244,12 @@ export type RevisionRemovedEvent = TypedEvent<
 
 export type RevisionRemovedEventFilter = TypedEventFilter<RevisionRemovedEvent>;
 
-export interface JSCFreezable extends BaseContract {
+export interface JSCRevisioned extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCFreezableInterface;
+  interface: JSCRevisionedInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -302,8 +285,6 @@ export interface JSCFreezable extends BaseContract {
         value: JSCRevisionsLib.RevisionStructOutput;
       }
     >;
-
-    isFrozen(overrides?: CallOverrides): Promise<[boolean]>;
 
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -356,8 +337,6 @@ export interface JSCFreezable extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
-  isFrozen(overrides?: CallOverrides): Promise<boolean>;
-
   isValidRevisionIterator(
     i: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -405,8 +384,6 @@ export interface JSCFreezable extends BaseContract {
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
-    isFrozen(overrides?: CallOverrides): Promise<boolean>;
-
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -442,12 +419,6 @@ export interface JSCFreezable extends BaseContract {
   };
 
   filters: {
-    "ContractFrozen(address,bool)"(
-      con?: null,
-      frozen?: null
-    ): ContractFrozenEventFilter;
-    ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
-
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
@@ -481,8 +452,6 @@ export interface JSCFreezable extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    isFrozen(overrides?: CallOverrides): Promise<BigNumber>;
 
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -531,8 +500,6 @@ export interface JSCFreezable extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    isFrozen(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isValidRevisionIterator(
       i: PromiseOrValue<BigNumberish>,

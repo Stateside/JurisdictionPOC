@@ -25,7 +25,7 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../../common";
+} from "../common";
 
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
@@ -104,7 +104,7 @@ export declare namespace JSCConfigurableLib {
   };
 }
 
-export interface JSCTitleTokenTestInterface extends utils.Interface {
+export interface IJSCTitleTokenInterface extends utils.Interface {
   functions: {
     "acceptOfferToBuy(uint256,address)": FunctionFragment;
     "acceptOfferToSell(uint256)": FunctionFragment;
@@ -139,26 +139,20 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "offerToBuyAtIndex(uint256,uint256)": FunctionFragment;
     "offerToSell(uint256,address,uint256)": FunctionFragment;
     "offerToSellAtIndex(uint256,uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "parameterCount()": FunctionFragment;
     "parameterIteratorGet(uint256)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setFrozenContract(bool)": FunctionFragment;
-    "setFrozenOwner(address,bool)": FunctionFragment;
-    "setFrozenToken(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "titleToTokenId(string)": FunctionFragment;
     "tokenAtIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
@@ -196,26 +190,20 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       | "offerToBuyAtIndex"
       | "offerToSell"
       | "offerToSellAtIndex"
-      | "owner"
       | "ownerOf"
       | "parameterCount"
       | "parameterIteratorGet"
-      | "renounceOwnership"
       | "revisionCount"
       | "revisionIteratorGet"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
-      | "setFrozenContract"
-      | "setFrozenOwner"
-      | "setFrozenToken"
       | "supportsInterface"
       | "symbol"
       | "titleToTokenId"
       | "tokenAtIndex"
       | "tokenURI"
       | "transferFrom"
-      | "transferOwnership"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -353,7 +341,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     functionFragment: "offerToSellAtIndex",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [PromiseOrValue<BigNumberish>]
@@ -365,10 +352,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "parameterIteratorGet",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "revisionCount",
@@ -400,18 +383,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setFrozenContract",
-    values: [PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setFrozenOwner",
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setFrozenToken",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
   ): string;
@@ -435,10 +406,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -549,7 +516,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     functionFragment: "offerToSellAtIndex",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "parameterCount",
@@ -557,10 +523,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "parameterIteratorGet",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -584,18 +546,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setFrozenContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setFrozenOwner",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setFrozenToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
@@ -611,10 +561,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
 
@@ -634,7 +580,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "OfferToSell(uint256,address,uint256)": EventFragment;
     "OfferToSellCancelled(uint256,address)": EventFragment;
     "OwnerFrozen(address,bool)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
     "RevisionAdded(string)": EventFragment;
     "RevisionExecuted(string,bytes)": EventFragment;
     "RevisionRemoved(string)": EventFragment;
@@ -659,7 +604,6 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OfferToSell"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OfferToSellCancelled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerFrozen"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionRemoved"): EventFragment;
@@ -847,18 +791,6 @@ export type OwnerFrozenEvent = TypedEvent<
 
 export type OwnerFrozenEventFilter = TypedEventFilter<OwnerFrozenEvent>;
 
-export interface OwnershipTransferredEventObject {
-  previousOwner: string;
-  newOwner: string;
-}
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  OwnershipTransferredEventObject
->;
-
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
-
 export interface RevisionAddedEventObject {
   name: string;
 }
@@ -935,12 +867,12 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface JSCTitleTokenTest extends BaseContract {
+export interface IJSCTitleToken extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: JSCTitleTokenTestInterface;
+  interface: IJSCTitleTokenInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -982,7 +914,7 @@ export interface JSCTitleTokenTest extends BaseContract {
     balanceOf(
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber] & { balance: BigNumber }>;
 
     burn(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1024,7 +956,7 @@ export interface JSCTitleTokenTest extends BaseContract {
     getApproved(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[string]>;
+    ): Promise<[string] & { operator: string }>;
 
     getBoolParameter(
       name: PromiseOrValue<string>,
@@ -1133,12 +1065,10 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[JSCTitleTokenLib.OfferStructOutput]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
     ownerOf(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[string]>;
+    ): Promise<[string] & { owner: string }>;
 
     parameterCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -1146,10 +1076,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[JSCConfigurableLib.ParameterInfoStructOutput]>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     revisionCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -1179,24 +1105,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     setApprovalForAll(
       operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setFrozenContract(
-      frozen: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setFrozenOwner(
-      owner: PromiseOrValue<string>,
-      frozen: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setFrozenToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      frozen: PromiseOrValue<boolean>,
+      _approved: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1227,11 +1136,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -1403,8 +1307,6 @@ export interface JSCTitleTokenTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCTitleTokenLib.OfferStructOutput>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
-
   ownerOf(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -1416,10 +1318,6 @@ export interface JSCTitleTokenTest extends BaseContract {
     i: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1445,24 +1343,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
   setApprovalForAll(
     operator: PromiseOrValue<string>,
-    approved: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setFrozenContract(
-    frozen: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setFrozenOwner(
-    owner: PromiseOrValue<string>,
-    frozen: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setFrozenToken(
-    tokenId: PromiseOrValue<BigNumberish>,
-    frozen: PromiseOrValue<boolean>,
+    _approved: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1493,11 +1374,6 @@ export interface JSCTitleTokenTest extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1669,8 +1545,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<JSCTitleTokenLib.OfferStructOutput>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
-
     ownerOf(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1682,8 +1556,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1709,24 +1581,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     setApprovalForAll(
       operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setFrozenContract(
-      frozen: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setFrozenOwner(
-      owner: PromiseOrValue<string>,
-      frozen: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setFrozenToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      frozen: PromiseOrValue<boolean>,
+      _approved: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1757,11 +1612,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -1903,15 +1753,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       frozen?: null
     ): OwnerFrozenEventFilter;
     OwnerFrozen(owner?: null, frozen?: null): OwnerFrozenEventFilter;
-
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
 
     "RevisionAdded(string)"(name?: null): RevisionAddedEventFilter;
     RevisionAdded(name?: null): RevisionAddedEventFilter;
@@ -2129,8 +1970,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
     ownerOf(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2141,10 +1980,6 @@ export interface JSCTitleTokenTest extends BaseContract {
     parameterIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     revisionCount(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2171,24 +2006,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     setApprovalForAll(
       operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setFrozenContract(
-      frozen: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setFrozenOwner(
-      owner: PromiseOrValue<string>,
-      frozen: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setFrozenToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      frozen: PromiseOrValue<boolean>,
+      _approved: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2219,11 +2037,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -2396,8 +2209,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     ownerOf(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -2408,10 +2219,6 @@ export interface JSCTitleTokenTest extends BaseContract {
     parameterIteratorGet(
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     revisionCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2438,24 +2245,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     setApprovalForAll(
       operator: PromiseOrValue<string>,
-      approved: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setFrozenContract(
-      frozen: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setFrozenOwner(
-      owner: PromiseOrValue<string>,
-      frozen: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setFrozenToken(
-      tokenId: PromiseOrValue<BigNumberish>,
-      frozen: PromiseOrValue<boolean>,
+      _approved: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2486,11 +2276,6 @@ export interface JSCTitleTokenTest extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

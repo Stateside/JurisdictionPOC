@@ -25,8 +25,8 @@ export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -39,8 +39,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 }
