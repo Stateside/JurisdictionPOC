@@ -1,7 +1,7 @@
 import { AlertStatus, Badge, Box, IconButton, useDisclosure, WrapItem } from '@chakra-ui/react'
 import { BigNumber, ethers } from 'ethers'
 import { commify, formatEther } from 'ethers/lib/utils'
-import { env, percentage, shorten } from 'utils/util'
+import { env, percentage, getAccountShortName } from '@/utils/util'
 import { FaCopy, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { useState } from 'react';
 import { GovernanceToken__factory } from '../../../typechain-types';
@@ -9,7 +9,7 @@ import { ApprovalEvent, DelegateChangedEvent, GovernanceToken, TransferEvent } f
 import { useEthersState } from 'store/AccountData';
 import IntegerInput from './IntegerInput';
 import TransferInput, { TransferData } from './TransferInput';
-import { useDebouncedEffect } from 'utils/debounce';
+import { useDebouncedEffect } from '@/utils/debounce';
 
 type AccountPanelProps = {
     index: number
@@ -92,7 +92,7 @@ const AccountPanel = (props:AccountPanelProps) => {
         reloadShares()
         reloadVotes()
         reloadAllowances()
-        toast(`${commify(formatEther(amt||0))} ETH transferred from ${shorten(from)} to ${shorten(to)}}`)
+        toast(`${commify(formatEther(amt||0))} ETH transferred from ${getAccountShortName(from)} to ${getAccountShortName(to)}}`)
     }
 
     const onDelegate = (delegator:string, from:string, to:string, e:DelegateChangedEvent) => {
@@ -100,7 +100,7 @@ const AccountPanel = (props:AccountPanelProps) => {
             return
 
         reloadVotes()
-        toast(`All votes from ${shorten(delegator)} delegated to ${shorten(to)}`)
+        toast(`All votes from ${getAccountShortName(delegator)} delegated to ${getAccountShortName(to)}`)
     }
 
     const onApproval = (owner:string, spender:string, amt:BigNumber, e:ApprovalEvent) => {
@@ -109,7 +109,7 @@ const AccountPanel = (props:AccountPanelProps) => {
 
         reloadBalance()
         reloadAllowances()
-        toast(`${commify(formatEther(amt||0))} ETH approved for spending by ${shorten(spender)}`)
+        toast(`${commify(formatEther(amt||0))} ETH approved for spending by ${getAccountShortName(spender)}`)
     }
                 
     // Debounce handling changes to accounts and blockchains
@@ -223,7 +223,7 @@ const AccountPanel = (props:AccountPanelProps) => {
                         {"Account " + (props.index+1) + ":"} 
                     </Box>
                     <Badge colorScheme='blue' ml='2' >
-                        {showWholePropsAccount ? (<>{panelAccount}<br/></>) : shorten(panelAccount)}
+                        {showWholePropsAccount ? (<>{panelAccount}<br/></>) : getAccountShortName(panelAccount)}
                         <IconButton variant="link" color="ButtonText" ml="2" size="xs" title='Copy' icon={<FaCopy size=".6rem" />} aria-label='Copy Public Key' onClick={onCopyAccount} />
                     </Badge>
                 </Box>
@@ -295,7 +295,7 @@ const AccountPanel = (props:AccountPanelProps) => {
                         ml='2'
                         as='span'
                     >
-                        {showWholePrivateKey ? (<>{privatekey}<br/></>) : shorten(privatekey)}
+                        {showWholePrivateKey ? (<>{privatekey}<br/></>) : getAccountShortName(privatekey)}
                         <IconButton variant="link" color="ButtonText" ml="2" size="xs" title='Copy' icon={<FaCopy size=".6rem" />} aria-label='Copy Private Key' onClick={onCopyPrivateKey} />
                   </Box>
                 </Box> : ""}

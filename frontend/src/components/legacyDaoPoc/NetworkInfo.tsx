@@ -3,8 +3,8 @@ import { ethers } from "ethers"
 import { commify } from "ethers/lib/utils"
 import { useState } from "react"
 import { useEthersState } from "store/AccountData"
-import { useDebouncedEffect } from "utils/debounce"
-import { shorten } from "utils/util"
+import { useDebouncedEffect } from "@/utils/debounce"
+import { shorten } from "@/utils/util"
 
 const NetworkInfo = () => {
   const ethersProvider = useEthersState(s => s.ethersProvider)

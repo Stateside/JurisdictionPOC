@@ -3,7 +3,7 @@ import {Alert, AlertDescription, AlertIcon, AlertTitle, Button, Flex, Text, useD
 import {BigNumber, ethers} from 'ethers'
 import { GovernorContract__factory, TimeLock__factory } from "../../../typechain-types/factories/contracts/governance_standard"
 import { Box__factory } from '../../../typechain-types/factories/contracts';
-import { env, shorten } from 'utils/util';
+import { env, shorten } from '@/utils/util';
 import ProposalInput, { ProposalType } from './ProposalInput';
 import VoteInput from './VoteInput';
 import ProposalPanel from './ProposalPanel';
@@ -13,7 +13,7 @@ import ColorInput, { Color } from './ColorInput';
 import { ProposalCreatedEvent, ProposalQueuedEvent, VoteCastEvent } from '../../../typechain-types/contracts/governance_standard/GovernorContract';
 import { CallExecutedEvent } from '../../../typechain-types/contracts/governance_standard/TimeLock';
 import ChannelInput, { Channel } from './TVChannelInput';
-import { useDebouncedEffect } from 'utils/debounce';
+import { useDebouncedEffect } from '@/utils/debounce';
 
 const Votes = ["Against", "For", "Abstain"]
 

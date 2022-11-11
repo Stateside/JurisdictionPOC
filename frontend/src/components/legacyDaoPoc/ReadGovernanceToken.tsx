@@ -2,12 +2,12 @@ import React, {useState } from 'react';
 import {Alert, AlertDescription, AlertIcon, AlertStatus, AlertTitle, Badge, Box, Text, VStack, Wrap} from '@chakra-ui/react'
 import {BigNumber, ethers} from 'ethers'
 import { GovernanceToken__factory } from "../../../typechain-types/factories/contracts"
-import { env, shorten } from 'utils/util';
+import { env, shorten } from '@/utils/util';
 import { commify, formatEther } from 'ethers/lib/utils';
 import { useEthersState } from 'store/AccountData';
 import AccountPanel from './AccountPanel';
 import { TransferEvent } from '../../../typechain-types/contracts/GovernanceToken';
-import { useDebouncedEffect } from 'utils/debounce';
+import { useDebouncedEffect } from '@/utils/debounce';
 
 interface Props {
     account: string | undefined

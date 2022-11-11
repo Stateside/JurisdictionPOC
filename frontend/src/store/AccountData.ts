@@ -1,5 +1,5 @@
 import create from 'zustand'
-import { ethers } from 'ethers';
+import { ethers } from 'ethers'
 
 /**
  * Implements state for browser wallet using 'zustand'
@@ -159,12 +159,12 @@ const switchAccount = (acc:string, set:ZustandSetter, get:ZustandGetter) => {
   set(s => ({account: acc, stateId: s.stateId+1}))
 }
 
-export const useEthersState = create<EthersStateType>()((set, get) => ({
-  ...defaultEthersStateData,
-  connect: () => switchWallet("injected", set, get),
-  disconnect: () => switchWallet("", set, get),
-  switchWallet: (w:string) => switchWallet(w, set, get),
-  switchAccount: (acc:string) => switchAccount(acc, set, get),
-}))
-
-//const stopLogging = useEthersState.subscribe(console.log)
+export const useEthersState = create<EthersStateType>()(
+  (set, get) => ({
+      ...defaultEthersStateData,
+      connect: () => switchWallet("injected", set, get),
+      disconnect: () => switchWallet("", set, get),
+      switchWallet: (w:string) => switchWallet(w, set, get),
+      switchAccount: (acc:string) => switchAccount(acc, set, get),
+  })
+)

@@ -1,6 +1,6 @@
 import { Badge, Box, Button, WrapItem } from '@chakra-ui/react'
 import { commify, formatEther } from 'ethers/lib/utils'
-import { shorten } from 'utils/util'
+import { shorten } from '@/utils/util'
 import { ProposalInfo } from './ReadGovernorContract'
 
 type ProposalPanelProps = {

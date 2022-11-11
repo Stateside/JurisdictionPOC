@@ -1,4 +1,5 @@
 import { extendTheme } from "@chakra-ui/react";
+import { menuTheme } from '@/styles/MenuTheme'
 
 const defaultFontSize = '15px';
 const fontFamilyTypes = ['GTAmericaStandardRegular','GTAmericaStandardBold','GTAmericaCompressedRegular','GTAmericaCompressedBold'];
@@ -84,6 +85,51 @@ const components = {
       },
     },
   },
+  Menu: menuTheme,
+  Heading: {
+    variants: {
+      "80": {
+        fontSize: '80px',
+        fontWeight: '400',
+        lineHeight: '80px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      },
+    }
+  },
+  Text: {
+    variants: {
+      
+      "60": {
+        fontSize: '60px',
+        fontWeight: '400',
+        lineHeight: '60px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      },
+      "40": {
+        fontSize: '40px',
+        fontWeight: '400',
+        lineHeight: '40px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      },
+      "15/20": {
+        fontSize: '15px',
+        fontWeight: '400',
+        lineHeight: '20px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      },
+      "15/20-BOLD": {
+        fontSize: '15px',
+        fontWeight: '700',
+        lineHeight: '20px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      }
+    }
+  }
 };
 
 export const theme = extendTheme({

@@ -6,9 +6,9 @@ import { BigNumber, ethers } from 'ethers'
 import Head from 'next/head'
 import AccountPanel from 'components/legacyDaoPoc/AccountPanel'
 import { GovernanceToken__factory } from '../../typechain-types'
-import { env } from 'utils/util'
+import { env } from '@/utils/util'
 import { useEthersState } from 'store/AccountData'
-import { useDebouncedEffect } from 'utils/debounce'
+import { useDebouncedEffect } from '@/utils/debounce'
 
 type Account = { 
   publicKey: string

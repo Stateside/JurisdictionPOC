@@ -3,10 +3,10 @@ import React, {useEffect, useState } from 'react';
 import {Badge, Box, Button, Divider, HStack, Text, VStack} from '@chakra-ui/react'
 import {ethers} from 'ethers'
 import { Box__factory } from "../../../typechain-types/factories/contracts/Box__factory"
-import { env, shorten } from 'utils/util';
+import { env, shorten } from '@/utils/util';
 import { GovernorContract__factory } from '../../../typechain-types';
 import { useEthersState } from 'store/AccountData';
-import { useDebouncedEffect } from 'utils/debounce';
+import { useDebouncedEffect } from '@/utils/debounce';
 
 interface Props {
     currentAccount: string | undefined

@@ -1,21 +1,11 @@
-// import { siteDetaultsData } from './layoutData';
+import { MenuItemInterface, SiteLayoutData, SiteLabel, HomeLabels } from '@/interfaces/index';
 
-interface SiteLayoutData {
-    title: string
-    ctaConnect: string
-}
 
-interface SiteLabel {
-    regular: string
-    vip: string
-}
-
-interface HomeLabels {
-    pageTitle: string
-    mainTitle: SiteLabel
-    ctaConnect: string
-}
-
+export const siteMainMenu:Array<MenuItemInterface> = [
+    {label: 'Your Properties', url: '/tokens', command: '⌘T'},
+    {label: 'Create a Jurisdiction', url: '/create-jurisdiction', command: '⌘J'},
+    {label: 'Create a Propossal', url: '/create-propossal', command: '⌘P'},
+]
 
 export const siteLayoutData:SiteLayoutData = {
     title: `Blockchain Jurisdictions 
@@ -44,8 +34,8 @@ export const homeLabels:HomeLabels = {
  * @param label 
  * @returns 
  */
-export const getLabel = (account:string, label: SiteLabel):string =>  {
-    return account === '' ? label.regular : label.vip
+export const getLabel = (active:boolean, label: SiteLabel):string =>  {
+    return !active ? label.regular : label.vip
 }
 
 

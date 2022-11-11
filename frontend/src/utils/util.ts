@@ -1,7 +1,13 @@
 import { BigNumber, ethers } from "ethers";
 
-export const shorten = (hex:string) => 
-    hex.toLocaleLowerCase().startsWith("0x") ? hex.substring(0,6) + "..." + hex.substring(hex.length-4) : hex
+export const setProvider = (type:string) => { window.localStorage.setItem("provider", type) };
+export const getProvider = () => { return window.localStorage.getItem("provider") };
+
+export const refreshState = () => { window.localStorage.setItem("provider", 'undefined')};
+
+export const getAccountShortName = (account:any): string => {
+    return account !== '' ? `${account.slice(0, 6)}...${account.slice(-2)}` : '';
+}
 
 export const env = (varName:string, val:string|undefined) =>{
     if (val)

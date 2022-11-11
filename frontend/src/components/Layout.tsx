@@ -3,7 +3,7 @@ import { Container, Box } from '@chakra-ui/react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { useEthersState } from '@/store/AccountData'
-import { siteLayoutData } from '@/store/initial'
+import { siteLayoutData, siteMainMenu } from '@/store/initial'
 
 type Props = {
   children: ReactNode
@@ -12,10 +12,8 @@ type Props = {
 export function Layout(props: Props) {
   const ethersState = useEthersState()
   const { title, ctaConnect } = siteLayoutData
-  console.log('AQUI', ethersState)
   return (
     <Box
-
       minHeight='100vh'
       maxW='container.xl'
       backgroundImage='url("/imgs/jurisdictionBackgroundShapes.svg")'
@@ -32,7 +30,7 @@ export function Layout(props: Props) {
         minHeight={'100vh'}
         padding='0'
       >
-        <Header siteTitle={title} ctaText={ctaConnect} />
+        <Header siteTitle={title} ctaText={ctaConnect} menu={siteMainMenu}/>
         {props.children}
         <Footer />
       </Container>

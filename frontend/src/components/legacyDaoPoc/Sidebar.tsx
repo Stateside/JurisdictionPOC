@@ -36,7 +36,7 @@ import {
 } from 'react-icons/fi';
 import { IconType } from 'react-icons';
 import { ReactText } from 'react';
-import { shorten } from 'utils/util';
+import { shorten } from '@/utils/util';
 import { useRouter } from 'next/router';
 import { useEthersState } from 'store/AccountData';
 
