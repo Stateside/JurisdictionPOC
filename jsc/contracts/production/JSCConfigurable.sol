@@ -48,12 +48,12 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
       super.supportsInterface(interfaceId);
   }
 
-  function _addAddressParameter(clib.AddressParameter memory p) internal {
+  function _addAddressParameter(clib.AddressParameter memory p) internal virtual {
     _parameters.insertAddress(p);
     emit AddressParameterAdded(p.name, p.value);
   }
 
-  function _removeAddressParameter(string memory name) internal {
+  function _removeAddressParameter(string memory name) internal virtual {
     address a = _parameters.getAddress(name);
     _parameters.remove(name);
     emit AddressParameterRemoved(name, a);
@@ -154,15 +154,17 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
     }
   }
 
-  function _updateAddressParameter(bytes memory pdata) internal {
-      string memory name;
-      address value; 
-      (name, value) = abi.decode(pdata, (string, address));
-      _parameters.setAddress(name, value);
+  function _updateAddressParameter(bytes memory pdata) internal virtual {
+    string memory name;
+    address value; 
+    (name, value) = abi.decode(pdata, (string, address));
+    address oldValue = _parameters.getAddress(name);
+    _parameters.setAddress(name, value);
     emit AddressParameterUpdated(name, value);
+    _onUpdateAddressParameter(name, oldValue, value);
   }
 
-  function _onUpdateAddressParameter(string memory name, address value) internal virtual {}
+  function _onUpdateAddressParameter(string memory name, address oldValue, address newValue) internal virtual {}
 
   function _updateBoolParameter(bytes memory pdata) internal {
       string memory name;

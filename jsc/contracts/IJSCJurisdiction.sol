@@ -12,8 +12,8 @@ import "./IJSCConfigurable.sol";
 */
 interface IJSCJurisdiction is IJSCConfigurable {
     event ContractAdded(string name, address contractAddress);
-    event ContractRemoved(string name, string contractAddress);
-    event ContractReplaced(string name, address contractAddress);
+    event ContractRemoved(string name, address contractAddress);
+    event ContractReplaced(string name, address oldAddress, address newAddress);
 
     /**
     * @dev Initializes the contract adding given contracts

@@ -54,13 +54,13 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
   }
 
   function _addJurisdictionRevisions() internal {
-    _addRevision(_createRevisionForContractUpsert("AddContract", "Add a new contract called {key} deployed at {address}"));
+    _addRevision(_createRevisionForAddContract("AddContract", "Add a new contract called {key} deployed at {address}"));
     _addHandler("AddContract", _handlerAddContract);
     _addRevision(_createRevisionForRemoveContract("RemoveContract", "Remove the contract {key}"));
     _addHandler("RemoveContract", _handleRemoveContract);
   }
 
-  function _createRevisionForContractUpsert(string memory rname, string memory description) internal pure returns (rlib.Revision memory) {
+  function _createRevisionForAddContract(string memory rname, string memory description) internal pure returns (rlib.Revision memory) {
     string[] memory names = new string[](3);
     names[0] = "key";
     names[1] = "description";
@@ -119,6 +119,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
       value: contractAddress,
       description: description
     }));
+    emit ContractAdded(name, contractAddress);
   }
 
   function _handleRemoveContract(bytes memory pdata) internal {
@@ -127,9 +128,10 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     (name, contractAddress) = abi.decode(pdata, (string, address));
     require(getAddressParameter(name) == contractAddress, "Unexpected contract address");
     _removeAddressParameter(name);
+    emit ContractRemoved(name, contractAddress);
   }
 
-  function _onUpdateAddressParameter(string memory name, address value) internal override {
-    emit ContractReplaced(name, value);
+  function _onUpdateAddressParameter(string memory name, address oldValue, address newValue) internal override {
+    emit ContractReplaced(name, oldValue, newValue);
   }
 }
