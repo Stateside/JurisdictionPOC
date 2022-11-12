@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { connectors } from "@/connectors/index";
 import { useWeb3React } from '@web3-react/core'
-import { CircularProgress } from '@chakra-ui/react'
-import { Center } from '@chakra-ui/react'
+import Loader from '@/components/Loader';
 
 function MetamaskProvider({ children }: { children: any }) {
     const { active: networkActive, error: networkError, activate: activateNetwork } = useWeb3React()
     const [loaded, setLoaded] = useState(false)
+
     useEffect(() => {
         connectors.injected
             .isAuthorized()
@@ -23,14 +23,8 @@ function MetamaskProvider({ children }: { children: any }) {
             })
     }, [activateNetwork, networkActive, networkError])
 
-    if (loaded) {
-        return children
-    }
-    return (
-        <Center bg='brand.grey.grey01' h='100vh'>
-            <CircularProgress isIndeterminate color='brand.java' />
-        </Center>
-    )
+    return loaded ? children : <Loader />
+    
 }
 
 export default MetamaskProvider

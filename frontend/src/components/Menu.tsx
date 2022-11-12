@@ -16,6 +16,7 @@ const Menu = (props: Props) => {
                 width='54px'
                 background='brand.grey.grey04'
                 _hover={{ bg: 'brand.black' }}
+                _active={{ bg: 'brand.black' }}
                 as={IconButton}
                 aria-label='Options'
                 icon={<MenuIcon width='24px' height='24px' />}
