@@ -1,26 +1,30 @@
-import { JSCJurisdiction } from "../../typechain-types"
-import { JSCRevisionsLib } from "../../typechain-types/libraries"
+import * as tc from "../../typechain-types"
+import { ParamType } from "../../utils/types"
+
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
 import { expect, use as chaiuse } from "chai"
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
+
+import * as iid from "../../utils/getInterfaceId"
+
 chaiuse(solidity);
 
 describe("JSCJurisdiction", async () => {
-  let jurisdiction: JSCJurisdiction
-  let rlib: JSCRevisionsLib
+  let jurisdiction: tc.IJSCJurisdiction
+  let rlib: tc.JSCRevisionsLib
 
-  const testParameterRevision = async (r:any, name:string, description:string, type:number) => {
+  const testParameterRevision = async (r:any, name:string, description:string, type:ParamType) => {
     await expect(r.name).to.be.equal(name);
     await expect(r.description).to.be.equal(description);
     await expect(r.paramNames.length, "r.paramNames Length").to.be.equal(2);
     await expect(r.paramNames[0]).to.be.equal("name");
     await expect(r.paramNames[1]).to.be.equal("value");
     await expect(r.paramTypes.length, "r.paramTypes Length").to.be.equal(2);
-    await expect(r.paramTypes[0], "incorrect type for name parameter in revision").to.be.equal(2); // t_address=0, t_number=1, t_string=2
-    await expect(r.paramTypes[1], "incorrect type for value parameter in revision").to.be.equal(type); // t_address=0, t_number=1, t_string=2
+    await expect(r.paramTypes[0], "incorrect type for name parameter in revision").to.be.equal(ParamType.t_string);
+    await expect(r.paramTypes[1], "incorrect type for value parameter in revision").to.be.equal(type);
     await expect(r.paramHints.length, "r.paramHints Length").to.be.equal(2);
     await expect(r.paramHints[0]).to.be.equal("Name of the parameter");
     await expect(r.paramHints[1]).to.be.equal("New value for the parameter");
@@ -48,6 +52,18 @@ describe("JSCJurisdiction", async () => {
     jurisdiction = await ethers.getContract("JSCJurisdiction")
   })
 
+  it('correctly checks interfaces IDs', async function() {
+    expect(await jurisdiction.supportsInterface("0xffffffff")).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IERC165)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IERC721)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(true);
+  });
+
   it("iterates parameters", async () => {
     await testIterateParameters(
       ["jsc.contract.mycontract"],
@@ -58,12 +74,24 @@ describe("JSCJurisdiction", async () => {
 
   it("iterates jurisdiction revisions", async () => {
     // one parameter revision and AddContract and RemoveContract
-    await expect(await jurisdiction.revisionCount()).to.be.equal(3);
+    await expect(await jurisdiction.revisionCount()).to.be.equal(4);
     
     let i = await jurisdiction.iterateRevisions();
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     let r = await jurisdiction.revisionIteratorGet(i);
-    await testParameterRevision(r, "ChangeConfig:jsc.contract.mycontract", "This is a test contract address", 0);
+    await expect(r.name).to.be.equal("FreezeContract");
+    await expect(r.description).to.be.equal("Freeze or unfreeze contract {address}");
+    await expect(r.paramNames.length, "r.paramNames Length").to.be.equal(1);
+    await expect(r.paramNames[0]).to.be.equal("freeze");
+    await expect(r.paramTypes.length, "r.paramTypes Length").to.be.equal(1);
+    await expect(r.paramTypes[0], "incorrect type for key parameter in revision").to.be.equal(ParamType.t_bool);
+    await expect(r.paramHints.length, "r.paramHints Length").to.be.equal(1);
+    await expect(r.paramHints[0]).to.be.equal("Freeze contract?");
+
+    i = await jurisdiction.nextRevision(i)
+    await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
+    r = await jurisdiction.revisionIteratorGet(i);
+    await testParameterRevision(r, "ChangeConfig:jsc.contract.mycontract", "This is a test contract address", ParamType.t_address);
     
     i = await jurisdiction.nextRevision(i)
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
@@ -75,9 +103,9 @@ describe("JSCJurisdiction", async () => {
     await expect(r.paramNames[1]).to.be.equal("description");
     await expect(r.paramNames[2]).to.be.equal("address");
     await expect(r.paramTypes.length, "r.paramTypes Length").to.be.equal(3);
-    await expect(r.paramTypes[0], "incorrect type for key parameter in revision").to.be.equal(2); // t_address=0, t_number=1, t_string=2
-    await expect(r.paramTypes[1], "incorrect type for description parameter in revision").to.be.equal(2); // t_address=0, t_number=1, t_string=2
-    await expect(r.paramTypes[2], "incorrect type for address parameter in revision").to.be.equal(0); // t_address=0, t_number=1, t_string=2
+    await expect(r.paramTypes[0], "incorrect type for key parameter in revision").to.be.equal(ParamType.t_string);
+    await expect(r.paramTypes[1], "incorrect type for description parameter in revision").to.be.equal(ParamType.t_string);
+    await expect(r.paramTypes[2], "incorrect type for address parameter in revision").to.be.equal(ParamType.t_address);
     await expect(r.paramHints.length, "r.paramHints Length").to.be.equal(3);
     await expect(r.paramHints[0]).to.be.equal("Unique key for this contract within the jurisdiction");
     await expect(r.paramHints[1]).to.be.equal("Description of this contract");
@@ -92,8 +120,8 @@ describe("JSCJurisdiction", async () => {
     await expect(r.paramNames[0]).to.be.equal("key");
     await expect(r.paramNames[1]).to.be.equal("address");
     await expect(r.paramTypes.length, "r.paramTypes Length").to.be.equal(2);
-    await expect(r.paramTypes[0], "incorrect type for name parameter in revision").to.be.equal(2); // t_address=0, t_number=1, t_string=2
-    await expect(r.paramTypes[1], "incorrect type for address parameter in revision").to.be.equal(0); // t_address=0, t_number=1, t_string=2
+    await expect(r.paramTypes[0], "incorrect type for name parameter in revision").to.be.equal(ParamType.t_string);
+    await expect(r.paramTypes[1], "incorrect type for address parameter in revision").to.be.equal(ParamType.t_address);
     await expect(r.paramHints.length, "r.paramHints Length").to.be.equal(2);
     await expect(r.paramHints[0]).to.be.equal("Unique key for this contract within the jurisdiction");
     await expect(r.paramHints[1]).to.be.equal("Current address of this contract");

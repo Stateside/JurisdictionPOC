@@ -2,36 +2,32 @@
 pragma solidity ^0.8.9;
 
 /**
-  This library contains code for use by the JSCBaseProposable smart contract. It's purpose is primarily to reduce the size of 
+  This library contains code for use by the JSCRevisioned smart contract. It's purpose is primarily to reduce the size of 
   smart contracts that use this contract as a base class and centralize the type and functionality definitions.
  */
 library JSCRevisionsLib {
-  enum ParamType { t_address, t_number, t_string }
+  enum ParamType { t_address, t_bool, t_number, t_string }
+  uint16 public constant OneDay = 6 * 24; // Assuming a block every 10 minutes
+  uint16 public constant OneWeek = OneDay * 7;
   struct VotingRules {
-    /** How long voting lasts in number of blocks */
+    /** 
+      How long voting lasts in number of blocks 
+    */
     uint16 votingPeriod;
     /** 
       How many approvals needed (0-65535). Yes votes count as approvals.
-      If approvals is zero and majority is greater than zero then the majority setting is used.
-      If approvals is greater than zero and majority is zero then the approvals setting is used.
-      If both are zero then the proposal is executed immediately.
     */
     uint16 approvals;
     /** 
-      Percentage of cabinet response needed for containing proposal to be considered valid (0-100). 
-      Must be non zero if majority is greater than zero 
-    */
-    uint8 quorumPercentage;
-    /** 
-      Percentage of votes needed for revision to proceed (0-100) 
-      If approvals is zero and majority is greater than zero then the majority setting is used.
-      If approvals is greater than zero and majority is zero then the approvals setting is used.
-      If both are zero then the proposal is executed immediately.
+      Percentage of quorum that are yes votes needed for revision to pass (0-100) 
     */
     uint8 majority;
-
     /** 
-      What roles may execute propose revision 
+      Percentage of cabinet response needed for vote to be considered valid (0-100). 
+    */
+    uint8 quorum;
+    /** 
+      What roles may execute this revision 
     */
     string[] roles;
   }
@@ -66,16 +62,28 @@ library JSCRevisionsLib {
 
   function checkVotingRules(VotingRules calldata r) public pure {
     require(
-      r.approvals == 0 || r.majority == 0, 
-      "Voting rules must not specify both a majority and approvals");
+      r.majority >= 0 && r.majority <= 100, 
+      "Invalid majority (0-100)");
     require(
-      r.majority == 0 || r.quorumPercentage > 0, 
-      "VotingRules contains majority but no quorum");
+      r.approvals >= 0 && r.approvals <= 100, 
+      "Invalid approvals (0-100)");
     require(
-      r.votingPeriod > 0 || (r.approvals == 0 || r.majority == 0), 
+      r.quorum >= 0 && r.quorum <= 100, 
+      "Invalid quorum (0-100)");
+    require(
+      r.majority == 0 || r.quorum > 0,
+      "VotingRules contains a majority but no quorum");
+    require(
+      r.majority > 0 || r.quorum == 0, 
+      "VotingRules contains a quorum but no majority");
+    require(
+      r.votingPeriod > 0 || (r.approvals == 0 && r.majority == 0), 
       "VotingPeriod must be non-zero");
+    require(
+      r.votingPeriod == 0 || r.approvals > 0 || r.majority > 0, 
+      "Invalid VotingPeriod");
   }
-
+ 
   /** Adds the given revision. Fails if another revision with the same name already exists. */
   function insert(RevisionMap storage self, Revision calldata r) public {
     require(bytes(r.name).length > 0, "Missing revision name");

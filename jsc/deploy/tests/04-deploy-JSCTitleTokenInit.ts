@@ -10,18 +10,20 @@ const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRunt
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
+  const jscJurisdiction = await get("JSCJurisdiction")
   const jscTitleToken = await get("JSCTitleToken")
 
   log(`Initializing JSCTitleToken...`)
-  await init(jscTitleToken.address, "Test", "TST", "http://stateside.agency/jsc/tokens/"); 
+  await init(jscTitleToken.address, "Test", "TST", "http://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
 }
 
-const init = async (jscTitleTokenAddress:string, name: string, symbol:string, uri:string) => {
+const init = async (jscTitleTokenAddress:string, name: string, symbol:string, uri:string, jscJurisdictionAddress:string) => {
   const jscTitleToken = await ethers.getContractAt("JSCTitleToken", jscTitleTokenAddress)
   await jscTitleToken.init(
     name,
     symbol,
-    uri
+    uri,
+    jscJurisdictionAddress
   )
 }
 

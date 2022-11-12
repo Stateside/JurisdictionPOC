@@ -27,26 +27,12 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export declare namespace JSCConfigurableLib {
-  export type ParameterInfoStruct = {
-    name: PromiseOrValue<string>;
-    description: PromiseOrValue<string>;
-    ptype: PromiseOrValue<BigNumberish>;
-  };
-
-  export type ParameterInfoStructOutput = [string, string, number] & {
-    name: string;
-    description: string;
-    ptype: number;
-  };
-}
-
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -59,8 +45,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 
@@ -90,20 +76,57 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
+export declare namespace JSCTitleTokenLib {
+  export type OfferStruct = {
+    buyer: PromiseOrValue<string>;
+    amount: PromiseOrValue<BigNumberish>;
+    offeredOn: PromiseOrValue<BigNumberish>;
+  };
+
+  export type OfferStructOutput = [string, BigNumber, BigNumber] & {
+    buyer: string;
+    amount: BigNumber;
+    offeredOn: BigNumber;
+  };
+}
+
+export declare namespace JSCConfigurableLib {
+  export type ParameterInfoStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    ptype: PromiseOrValue<BigNumberish>;
+  };
+
+  export type ParameterInfoStructOutput = [string, string, number] & {
+    name: string;
+    description: string;
+    ptype: number;
+  };
+}
+
 export interface JSCTitleTokenTestInterface extends utils.Interface {
   functions: {
+    "acceptOfferToBuy(uint256,address)": FunctionFragment;
+    "acceptOfferToSell(uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
     "cancelOfferToBuy(uint256)": FunctionFragment;
     "cancelOfferToSell(uint256,address)": FunctionFragment;
+    "countOffersToBuy(uint256)": FunctionFragment;
+    "countOffersToSell(uint256)": FunctionFragment;
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getBoolParameter(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
+    "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
-    "init(string,string,string)": FunctionFragment;
+    "init(string,string,string,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "isFrozen()": FunctionFragment;
+    "isFrozenOwner(address)": FunctionFragment;
+    "isFrozenToken(uint256)": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateParameters()": FunctionFragment;
@@ -113,7 +136,9 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "nextParameter(uint256)": FunctionFragment;
     "nextRevision(uint256)": FunctionFragment;
     "offerToBuy(uint256,uint256)": FunctionFragment;
+    "offerToBuyAtIndex(uint256,uint256)": FunctionFragment;
     "offerToSell(uint256,address,uint256)": FunctionFragment;
+    "offerToSellAtIndex(uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "parameterCount()": FunctionFragment;
@@ -124,6 +149,7 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setFrozenContract(bool)": FunctionFragment;
     "setFrozenOwner(address,bool)": FunctionFragment;
     "setFrozenToken(uint256,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -137,18 +163,27 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "acceptOfferToBuy"
+      | "acceptOfferToSell"
       | "approve"
       | "balanceOf"
       | "burn"
       | "cancelOfferToBuy"
       | "cancelOfferToSell"
+      | "countOffersToBuy"
+      | "countOffersToSell"
       | "executeRevision"
       | "getAddressParameter"
       | "getApproved"
+      | "getBoolParameter"
       | "getNumberParameter"
+      | "getRevisionByName"
       | "getStringParameter"
       | "init"
       | "isApprovedForAll"
+      | "isFrozen"
+      | "isFrozenOwner"
+      | "isFrozenToken"
       | "isValidParameterIterator"
       | "isValidRevisionIterator"
       | "iterateParameters"
@@ -158,7 +193,9 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       | "nextParameter"
       | "nextRevision"
       | "offerToBuy"
+      | "offerToBuyAtIndex"
       | "offerToSell"
+      | "offerToSellAtIndex"
       | "owner"
       | "ownerOf"
       | "parameterCount"
@@ -169,6 +206,7 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
+      | "setFrozenContract"
       | "setFrozenOwner"
       | "setFrozenToken"
       | "supportsInterface"
@@ -180,6 +218,14 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       | "transferOwnership"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "acceptOfferToBuy",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "acceptOfferToSell",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
@@ -201,6 +247,14 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "countOffersToBuy",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "countOffersToSell",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "executeRevision",
     values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
   ): string;
@@ -213,7 +267,15 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getBoolParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getNumberParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRevisionByName",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -225,12 +287,22 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<string>,
       PromiseOrValue<string>
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "isFrozenOwner",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isFrozenToken",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "isValidParameterIterator",
@@ -266,12 +338,20 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "offerToBuyAtIndex",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "offerToSell",
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "offerToSellAtIndex",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -320,6 +400,10 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
+    functionFragment: "setFrozenContract",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setFrozenOwner",
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
@@ -357,6 +441,14 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "acceptOfferToBuy",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "acceptOfferToSell",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
@@ -366,6 +458,14 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "cancelOfferToSell",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "countOffersToBuy",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "countOffersToSell",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -381,7 +481,15 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getBoolParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getNumberParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevisionByName",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -391,6 +499,15 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "isFrozen", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isFrozenOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isFrozenToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -421,7 +538,15 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "offerToBuy", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "offerToBuyAtIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "offerToSell",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "offerToSellAtIndex",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -456,6 +581,10 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setFrozenContract",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -495,6 +624,9 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "AddressParameterUpdated(string,address)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "BoolParameterAdded(string,bool)": EventFragment;
+    "BoolParameterUpdated(string,bool)": EventFragment;
+    "ContractFrozen(address,bool)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
     "OfferToBuy(uint256,address,uint256)": EventFragment;
@@ -517,6 +649,9 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AddressParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoolParameterAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoolParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OfferToBuy"): EventFragment;
@@ -593,6 +728,41 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface BoolParameterAddedEventObject {
+  name: string;
+  value: boolean;
+}
+export type BoolParameterAddedEvent = TypedEvent<
+  [string, boolean],
+  BoolParameterAddedEventObject
+>;
+
+export type BoolParameterAddedEventFilter =
+  TypedEventFilter<BoolParameterAddedEvent>;
+
+export interface BoolParameterUpdatedEventObject {
+  name: string;
+  value: boolean;
+}
+export type BoolParameterUpdatedEvent = TypedEvent<
+  [string, boolean],
+  BoolParameterUpdatedEventObject
+>;
+
+export type BoolParameterUpdatedEventFilter =
+  TypedEventFilter<BoolParameterUpdatedEvent>;
+
+export interface ContractFrozenEventObject {
+  con: string;
+  frozen: boolean;
+}
+export type ContractFrozenEvent = TypedEvent<
+  [string, boolean],
+  ContractFrozenEventObject
+>;
+
+export type ContractFrozenEventFilter = TypedEventFilter<ContractFrozenEvent>;
 
 export interface NumberParameterAddedEventObject {
   name: string;
@@ -792,6 +962,17 @@ export interface JSCTitleTokenTest extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -819,6 +1000,16 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -835,10 +1026,24 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput] & {
+        value: JSCRevisionsLib.RevisionStructOutput;
+      }
+    >;
 
     getStringParameter(
       name: PromiseOrValue<string>,
@@ -849,12 +1054,25 @@ export interface JSCTitleTokenTest extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    isFrozen(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -896,12 +1114,24 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[JSCTitleTokenLib.OfferStructOutput]>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[JSCTitleTokenLib.OfferStructOutput]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -953,6 +1183,11 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setFrozenContract(
+      frozen: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setFrozenOwner(
       owner: PromiseOrValue<string>,
       frozen: PromiseOrValue<boolean>,
@@ -1001,6 +1236,17 @@ export interface JSCTitleTokenTest extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  acceptOfferToBuy(
+    tokenId: PromiseOrValue<BigNumberish>,
+    buyer: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  acceptOfferToSell(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   approve(
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
@@ -1028,6 +1274,16 @@ export interface JSCTitleTokenTest extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  countOffersToBuy(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  countOffersToSell(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   executeRevision(
     name: PromiseOrValue<string>,
     pdata: PromiseOrValue<BytesLike>,
@@ -1044,10 +1300,20 @@ export interface JSCTitleTokenTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getBoolParameter(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getRevisionByName(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
   getStringParameter(
     name: PromiseOrValue<string>,
@@ -1058,12 +1324,25 @@ export interface JSCTitleTokenTest extends BaseContract {
     name_: PromiseOrValue<string>,
     symbol_: PromiseOrValue<string>,
     baseURI_: PromiseOrValue<string>,
+    jurisdiction_: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   isApprovedForAll(
     owner: PromiseOrValue<string>,
     operator: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isFrozen(overrides?: CallOverrides): Promise<boolean>;
+
+  isFrozenOwner(
+    owner: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isFrozenToken(
+    tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -1105,12 +1384,24 @@ export interface JSCTitleTokenTest extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  offerToBuyAtIndex(
+    tokenId: PromiseOrValue<BigNumberish>,
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<JSCTitleTokenLib.OfferStructOutput>;
+
   offerToSell(
     tokenId: PromiseOrValue<BigNumberish>,
     buyer: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  offerToSellAtIndex(
+    tokenId: PromiseOrValue<BigNumberish>,
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<JSCTitleTokenLib.OfferStructOutput>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1155,6 +1446,11 @@ export interface JSCTitleTokenTest extends BaseContract {
   setApprovalForAll(
     operator: PromiseOrValue<string>,
     approved: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setFrozenContract(
+    frozen: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1206,6 +1502,17 @@ export interface JSCTitleTokenTest extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1233,6 +1540,16 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -1249,10 +1566,20 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
     getStringParameter(
       name: PromiseOrValue<string>,
@@ -1263,12 +1590,25 @@ export interface JSCTitleTokenTest extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isFrozen(overrides?: CallOverrides): Promise<boolean>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -1310,12 +1650,24 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<JSCTitleTokenLib.OfferStructOutput>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<JSCTitleTokenLib.OfferStructOutput>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1358,6 +1710,11 @@ export interface JSCTitleTokenTest extends BaseContract {
     setApprovalForAll(
       operator: PromiseOrValue<string>,
       approved: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setFrozenContract(
+      frozen: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1458,6 +1815,30 @@ export interface JSCTitleTokenTest extends BaseContract {
       operator?: PromiseOrValue<string> | null,
       approved?: null
     ): ApprovalForAllEventFilter;
+
+    "BoolParameterAdded(string,bool)"(
+      name?: null,
+      value?: null
+    ): BoolParameterAddedEventFilter;
+    BoolParameterAdded(
+      name?: null,
+      value?: null
+    ): BoolParameterAddedEventFilter;
+
+    "BoolParameterUpdated(string,bool)"(
+      name?: null,
+      value?: null
+    ): BoolParameterUpdatedEventFilter;
+    BoolParameterUpdated(
+      name?: null,
+      value?: null
+    ): BoolParameterUpdatedEventFilter;
+
+    "ContractFrozen(address,bool)"(
+      con?: null,
+      frozen?: null
+    ): ContractFrozenEventFilter;
+    ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
 
     "NumberParameterAdded(string,uint256)"(
       name?: null,
@@ -1581,6 +1962,17 @@ export interface JSCTitleTokenTest extends BaseContract {
   };
 
   estimateGas: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1608,6 +2000,16 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -1624,7 +2026,17 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getNumberParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRevisionByName(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1638,12 +2050,25 @@ export interface JSCTitleTokenTest extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isFrozen(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1685,11 +2110,23 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1735,6 +2172,11 @@ export interface JSCTitleTokenTest extends BaseContract {
     setApprovalForAll(
       operator: PromiseOrValue<string>,
       approved: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setFrozenContract(
+      frozen: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1787,6 +2229,17 @@ export interface JSCTitleTokenTest extends BaseContract {
   };
 
   populateTransaction: {
+    acceptOfferToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      buyer: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    acceptOfferToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1814,6 +2267,16 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    countOffersToBuy(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    countOffersToSell(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     executeRevision(
       name: PromiseOrValue<string>,
       pdata: PromiseOrValue<BytesLike>,
@@ -1830,7 +2293,17 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getNumberParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRevisionByName(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1844,12 +2317,25 @@ export interface JSCTitleTokenTest extends BaseContract {
       name_: PromiseOrValue<string>,
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
+      jurisdiction_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isFrozen(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isFrozenOwner(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isFrozenToken(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1891,11 +2377,23 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    offerToBuyAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     offerToSell(
       tokenId: PromiseOrValue<BigNumberish>,
       buyer: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    offerToSellAtIndex(
+      tokenId: PromiseOrValue<BigNumberish>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1941,6 +2439,11 @@ export interface JSCTitleTokenTest extends BaseContract {
     setApprovalForAll(
       operator: PromiseOrValue<string>,
       approved: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setFrozenContract(
+      frozen: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

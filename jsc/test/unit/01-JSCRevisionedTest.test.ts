@@ -1,19 +1,37 @@
-import { JSCProposableTest } from "../../typechain-types"
+import * as tc from "../../typechain-types"
+
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
 import { expect, use as chaiuse } from "chai"
 
 import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
+
+import * as iid from "../../utils/getInterfaceId"
+
 chaiuse(solidity);
 
-describe("JSCProposableTest", async () => {
-  let proposable: JSCProposableTest
+describe("JSCRevisionedTest", async () => {
+  let proposable: tc.JSCRevisionedTest
+  let owner, bob, jane, sara;
 
   beforeEach(async () => {
     await deployments.fixture(["all"])
-    proposable = await ethers.getContract("JSCProposableTest")
+    proposable = await ethers.getContract("JSCRevisionedTest");
+    [owner, bob, jane, sara] = await ethers.getSigners();
   })
+
+  it('correctly checks interfaces IDs', async function() {
+    expect(await proposable.supportsInterface("0xffffffff")).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IERC165)).to.equal(true);
+    expect(await proposable.supportsInterface(iid.IID_IERC721)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
+    expect(await proposable.supportsInterface(iid.IID_IJSCFreezable)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
+  });
 
   it("iterates revisions", async () => {
     let i = await proposable.iterateRevisions()
@@ -36,6 +54,11 @@ describe("JSCProposableTest", async () => {
     await expect(tresponse).to.not.be.reverted;
     await expect(tresponse).to.emit(proposable, "RevisionRemoved").withArgs("first");
     await expect((await proposable.first()).name).to.be.equal("second")
+  })
+
+  it("fails to execute revision if not owner", async () => {
+    let revArgs = defaultAbiCoder.encode(["string"],["rev1"]);
+    await expect(proposable.connect(bob).executeRevision("first", revArgs)).to.be.revertedWith('Ownable: caller is not the owner');
   })
 
   it("executes string revision", async () => {

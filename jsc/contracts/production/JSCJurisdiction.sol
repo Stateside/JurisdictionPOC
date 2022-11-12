@@ -3,7 +3,8 @@ pragma solidity ^0.8.9;
 
 import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
-import "./JSCBaseConfigurable.sol";
+import "./JSCConfigurable.sol";
+import "../IJSCJurisdiction.sol";
 
 /**
   This is the top level container for all other smart contracts in the jurisdiction.
@@ -12,14 +13,13 @@ import "./JSCBaseConfigurable.sol";
   key is the name of the contract. All contracts should go through the jurisdiction contract
   to determine the latest contract instances in use.
 */
-contract JSCJurisdiction is JSCBaseConfigurable {
+contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
   using clib for clib.ParameterMap;
   string jurisdictionName;
 
-  event ContractAdded(string name, address contractAddress);
-  event ContractRemoved(string name, string contractAddress);
-  event ContractReplaced(string name, address contractAddress);
-
+  /**
+   * @dev See {IJSCJurisdiction-init}.
+   */
   function init(
     string calldata name,
     string[] calldata contractKeys, 
@@ -29,12 +29,26 @@ contract JSCJurisdiction is JSCBaseConfigurable {
     require(bytes(jurisdictionName).length == 0, "init() cannot be called twice");
 
     jurisdictionName = name;
+    JSCConfigurable._init();
+    
     for (uint i = 0; i < contracts.length; i++)
       _addAddressParameter(clib.AddressParameter(contractKeys[i], descriptions[i], contracts[i]));
     _addParameterRevisions();
     _addJurisdictionRevisions();
   }
 
+  /**
+   * @dev See {IERC165-supportsInterface}.
+   */
+  function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, JSCConfigurable) returns (bool) {
+    return
+      interfaceId == type(IJSCJurisdiction).interfaceId ||
+      super.supportsInterface(interfaceId);
+  }
+
+  /** 
+   * @dev See {IJSCJurisdiction.getContractAddress} 
+   */
   function getContractAddress(string memory name) external view returns (address) {
     return getAddressParameter(name);
   }
@@ -68,7 +82,7 @@ contract JSCJurisdiction is JSCBaseConfigurable {
       paramNames: names,
       paramTypes: types,
       paramHints: hints,
-      rules: rlib.VotingRules(0,0,0,0,roles)
+      rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
     });
   }
 
@@ -91,7 +105,7 @@ contract JSCJurisdiction is JSCBaseConfigurable {
       paramNames: names,
       paramTypes: types,
       paramHints: hints,
-      rules: rlib.VotingRules(0,0,0,0,roles)
+      rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
     });
   }
 

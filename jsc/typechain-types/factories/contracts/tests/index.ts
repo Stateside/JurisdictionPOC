@@ -2,6 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export { JSCConfigurableTest__factory } from "./JSCConfigurableTest__factory";
-export { JSCProposableTest__factory } from "./JSCProposableTest__factory";
+export { JSCRevisionedTest__factory } from "./JSCRevisionedTest__factory";
 export { JSCTitleTokenReceiverTest__factory } from "./JSCTitleTokenReceiverTest__factory";
 export { JSCTitleTokenTest__factory } from "./JSCTitleTokenTest__factory";

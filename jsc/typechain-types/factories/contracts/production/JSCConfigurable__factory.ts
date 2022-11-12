@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  JSCBaseConfigurable,
-  JSCBaseConfigurableInterface,
-} from "../../../contracts/production/JSCBaseConfigurable";
+  JSCConfigurable,
+  JSCConfigurableInterface,
+} from "../../../contracts/production/JSCConfigurable";
 
 const _abi = [
   {
@@ -65,6 +65,63 @@ const _abi = [
       },
     ],
     name: "AddressParameterUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "value",
+        type: "bool",
+      },
+    ],
+    name: "BoolParameterAdded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "value",
+        type: "bool",
+      },
+    ],
+    name: "BoolParameterUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "con",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "frozen",
+        type: "bool",
+      },
+    ],
+    name: "ContractFrozen",
     type: "event",
   },
   {
@@ -252,6 +309,25 @@ const _abi = [
         type: "string",
       },
     ],
+    name: "getBoolParameter",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
     name: "getNumberParameter",
     outputs: [
       {
@@ -271,12 +347,103 @@ const _abi = [
         type: "string",
       },
     ],
+    name: "getRevisionByName",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "description",
+            type: "string",
+          },
+          {
+            internalType: "string[]",
+            name: "paramNames",
+            type: "string[]",
+          },
+          {
+            internalType: "enum JSCRevisionsLib.ParamType[]",
+            name: "paramTypes",
+            type: "uint8[]",
+          },
+          {
+            internalType: "string[]",
+            name: "paramHints",
+            type: "string[]",
+          },
+          {
+            components: [
+              {
+                internalType: "uint16",
+                name: "votingPeriod",
+                type: "uint16",
+              },
+              {
+                internalType: "uint16",
+                name: "approvals",
+                type: "uint16",
+              },
+              {
+                internalType: "uint8",
+                name: "majority",
+                type: "uint8",
+              },
+              {
+                internalType: "uint8",
+                name: "quorum",
+                type: "uint8",
+              },
+              {
+                internalType: "string[]",
+                name: "roles",
+                type: "string[]",
+              },
+            ],
+            internalType: "struct JSCRevisionsLib.VotingRules",
+            name: "rules",
+            type: "tuple",
+          },
+        ],
+        internalType: "struct JSCRevisionsLib.Revision",
+        name: "value",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+    ],
     name: "getStringParameter",
     outputs: [
       {
         internalType: "string",
         name: "",
         type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isFrozen",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -517,12 +684,12 @@ const _abi = [
               },
               {
                 internalType: "uint8",
-                name: "quorumPercentage",
+                name: "majority",
                 type: "uint8",
               },
               {
                 internalType: "uint8",
-                name: "majority",
+                name: "quorum",
                 type: "uint8",
               },
               {
@@ -547,6 +714,25 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "newOwner",
         type: "address",
@@ -559,15 +745,15 @@ const _abi = [
   },
 ];
 
-export class JSCBaseConfigurable__factory {
+export class JSCConfigurable__factory {
   static readonly abi = _abi;
-  static createInterface(): JSCBaseConfigurableInterface {
-    return new utils.Interface(_abi) as JSCBaseConfigurableInterface;
+  static createInterface(): JSCConfigurableInterface {
+    return new utils.Interface(_abi) as JSCConfigurableInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): JSCBaseConfigurable {
-    return new Contract(address, _abi, signerOrProvider) as JSCBaseConfigurable;
+  ): JSCConfigurable {
+    return new Contract(address, _abi, signerOrProvider) as JSCConfigurable;
   }
 }

@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export { JSCRevisionsLib__factory } from "./JSCRevisionsLib__factory";
+export { JSCTitleTokenLib__factory } from "./JSCTitleTokenLib__factory";

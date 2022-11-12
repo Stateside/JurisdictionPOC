@@ -27,26 +27,12 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export declare namespace JSCConfigurableLib {
-  export type ParameterInfoStruct = {
-    name: PromiseOrValue<string>;
-    description: PromiseOrValue<string>;
-    ptype: PromiseOrValue<BigNumberish>;
-  };
-
-  export type ParameterInfoStructOutput = [string, string, number] & {
-    name: string;
-    description: string;
-    ptype: number;
-  };
-}
-
 export declare namespace JSCRevisionsLib {
   export type VotingRulesStruct = {
     votingPeriod: PromiseOrValue<BigNumberish>;
     approvals: PromiseOrValue<BigNumberish>;
-    quorumPercentage: PromiseOrValue<BigNumberish>;
     majority: PromiseOrValue<BigNumberish>;
+    quorum: PromiseOrValue<BigNumberish>;
     roles: PromiseOrValue<string>[];
   };
 
@@ -59,8 +45,8 @@ export declare namespace JSCRevisionsLib {
   ] & {
     votingPeriod: number;
     approvals: number;
-    quorumPercentage: number;
     majority: number;
+    quorum: number;
     roles: string[];
   };
 
@@ -90,12 +76,29 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
+export declare namespace JSCConfigurableLib {
+  export type ParameterInfoStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    ptype: PromiseOrValue<BigNumberish>;
+  };
+
+  export type ParameterInfoStructOutput = [string, string, number] & {
+    name: string;
+    description: string;
+    ptype: number;
+  };
+}
+
 export interface JSCConfigurableTestInterface extends utils.Interface {
   functions: {
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
+    "getBoolParameter(string)": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
+    "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
+    "isFrozen()": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
     "iterateParameters()": FunctionFragment;
@@ -108,6 +111,7 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "revisionCount()": FunctionFragment;
     "revisionIteratorGet(uint256)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
@@ -115,8 +119,11 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "executeRevision"
       | "getAddressParameter"
+      | "getBoolParameter"
       | "getNumberParameter"
+      | "getRevisionByName"
       | "getStringParameter"
+      | "isFrozen"
       | "isValidParameterIterator"
       | "isValidRevisionIterator"
       | "iterateParameters"
@@ -129,6 +136,7 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
       | "renounceOwnership"
       | "revisionCount"
       | "revisionIteratorGet"
+      | "supportsInterface"
       | "transferOwnership"
   ): FunctionFragment;
 
@@ -141,13 +149,22 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getBoolParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getNumberParameter",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRevisionByName",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "getStringParameter",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "isValidParameterIterator",
     values: [PromiseOrValue<BigNumberish>]
@@ -194,6 +211,10 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
@@ -207,13 +228,22 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getBoolParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getNumberParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRevisionByName",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getStringParameter",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isFrozen", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isValidParameterIterator",
     data: BytesLike
@@ -260,6 +290,10 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
@@ -268,6 +302,9 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
     "AddressParameterAdded(string,address)": EventFragment;
     "AddressParameterRemoved(string,address)": EventFragment;
     "AddressParameterUpdated(string,address)": EventFragment;
+    "BoolParameterAdded(string,bool)": EventFragment;
+    "BoolParameterUpdated(string,bool)": EventFragment;
+    "ContractFrozen(address,bool)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -281,6 +318,9 @@ export interface JSCConfigurableTestInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AddressParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AddressParameterRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AddressParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoolParameterAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoolParameterUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
@@ -326,6 +366,41 @@ export type AddressParameterUpdatedEvent = TypedEvent<
 
 export type AddressParameterUpdatedEventFilter =
   TypedEventFilter<AddressParameterUpdatedEvent>;
+
+export interface BoolParameterAddedEventObject {
+  name: string;
+  value: boolean;
+}
+export type BoolParameterAddedEvent = TypedEvent<
+  [string, boolean],
+  BoolParameterAddedEventObject
+>;
+
+export type BoolParameterAddedEventFilter =
+  TypedEventFilter<BoolParameterAddedEvent>;
+
+export interface BoolParameterUpdatedEventObject {
+  name: string;
+  value: boolean;
+}
+export type BoolParameterUpdatedEvent = TypedEvent<
+  [string, boolean],
+  BoolParameterUpdatedEventObject
+>;
+
+export type BoolParameterUpdatedEventFilter =
+  TypedEventFilter<BoolParameterUpdatedEvent>;
+
+export interface ContractFrozenEventObject {
+  con: string;
+  frozen: boolean;
+}
+export type ContractFrozenEvent = TypedEvent<
+  [string, boolean],
+  ContractFrozenEventObject
+>;
+
+export type ContractFrozenEventFilter = TypedEventFilter<ContractFrozenEvent>;
 
 export interface NumberParameterAddedEventObject {
   name: string;
@@ -454,15 +529,31 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [JSCRevisionsLib.RevisionStructOutput] & {
+        value: JSCRevisionsLib.RevisionStructOutput;
+      }
+    >;
+
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    isFrozen(overrides?: CallOverrides): Promise<[boolean]>;
 
     isValidParameterIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -512,6 +603,11 @@ export interface JSCConfigurableTest extends BaseContract {
       }
     >;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -529,15 +625,27 @@ export interface JSCConfigurableTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getBoolParameter(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getRevisionByName(
+    name: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
   getStringParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  isFrozen(overrides?: CallOverrides): Promise<boolean>;
 
   isValidParameterIterator(
     i: PromiseOrValue<BigNumberish>,
@@ -583,6 +691,11 @@ export interface JSCConfigurableTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+  supportsInterface(
+    interfaceId: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -600,15 +713,27 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRevisionByName(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCRevisionsLib.RevisionStructOutput>;
+
     getStringParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    isFrozen(overrides?: CallOverrides): Promise<boolean>;
 
     isValidParameterIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -652,6 +777,11 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -685,6 +815,30 @@ export interface JSCConfigurableTest extends BaseContract {
       name?: null,
       value?: null
     ): AddressParameterUpdatedEventFilter;
+
+    "BoolParameterAdded(string,bool)"(
+      name?: null,
+      value?: null
+    ): BoolParameterAddedEventFilter;
+    BoolParameterAdded(
+      name?: null,
+      value?: null
+    ): BoolParameterAddedEventFilter;
+
+    "BoolParameterUpdated(string,bool)"(
+      name?: null,
+      value?: null
+    ): BoolParameterUpdatedEventFilter;
+    BoolParameterUpdated(
+      name?: null,
+      value?: null
+    ): BoolParameterUpdatedEventFilter;
+
+    "ContractFrozen(address,bool)"(
+      con?: null,
+      frozen?: null
+    ): ContractFrozenEventFilter;
+    ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
 
     "NumberParameterAdded(string,uint256)"(
       name?: null,
@@ -756,7 +910,17 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getNumberParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRevisionByName(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -765,6 +929,8 @@ export interface JSCConfigurableTest extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    isFrozen(overrides?: CallOverrides): Promise<BigNumber>;
 
     isValidParameterIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -810,6 +976,11 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -828,7 +999,17 @@ export interface JSCConfigurableTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getBoolParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getNumberParameter(
+      name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRevisionByName(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -837,6 +1018,8 @@ export interface JSCConfigurableTest extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    isFrozen(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     isValidParameterIterator(
       i: PromiseOrValue<BigNumberish>,
@@ -879,6 +1062,11 @@ export interface JSCConfigurableTest extends BaseContract {
 
     revisionIteratorGet(
       i: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

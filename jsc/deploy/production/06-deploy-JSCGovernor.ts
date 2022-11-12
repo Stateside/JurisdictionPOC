@@ -5,27 +5,32 @@ import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
-const deployJSCProposableTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCGovernor: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
   const jscRevisionsLib = await get("JSCRevisionsLib")
+  const jscConfigurableLib = await get("JSCConfigurableLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCProposableTest and waiting for confirmations...")
-  const jscProposableTest = await deploy("JSCProposableTest", {
+  log("Deploying JSCGovernor and waiting for confirmations...")
+  const jscGovernor = await deploy("JSCGovernor", {
     from: deployer,
     args: [],
     log: true,
     libraries: {
-      JSCRevisionsLib: jscRevisionsLib.address
+      JSCRevisionsLib: jscRevisionsLib.address,
+      JSCConfigurableLib: jscConfigurableLib.address
     },
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCProposableTest at ${jscProposableTest.address}`)
+  log(`JSCGovernor at ${jscGovernor.address}`)
+  if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
+    await verify(jscGovernor.address, [])
+  }
 }
 
-export default deployJSCProposableTest
-deployJSCProposableTest.tags = ["all", "jscProposableTest"]
+export default deployJSCGovernor
+deployJSCGovernor.tags = ["all", "production", "jscGovernor"]

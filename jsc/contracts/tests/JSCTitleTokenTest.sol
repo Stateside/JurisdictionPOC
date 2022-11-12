@@ -14,4 +14,8 @@ contract JSCTitleTokenTest is JSCTitleToken {
   function setFrozenOwner(address owner, bool frozen) external { 
     _setFrozenOwner(owner, frozen);
   }
+
+  function setFrozenContract(bool frozen) external { 
+    _setFrozenContract(frozen);
+  }
 }
