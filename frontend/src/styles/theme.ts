@@ -70,6 +70,26 @@ const sizes = {
 const components = {
   Button: {
     variants: {
+      "Header":{
+        size:'md',
+        fontWeight:'700',
+        fontSize:'15px',
+        lineHeight:'20px',
+        color:'brand.grey.grey04',
+        background:'brand.java',
+        type:"button",
+      },
+      "Heading":{
+        fontWeight:'700',
+        fontSize:'15px',
+        lineHeight:'20px',
+        color:'brand.black',
+        background:'brand.java',
+        type:"button",
+        _hover:{
+          background: "brand.javaHover",
+        },
+      },
       "white-link": {
         justifyContent: "left",
         padding: "5px 0",

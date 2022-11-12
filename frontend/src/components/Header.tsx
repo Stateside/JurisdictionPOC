@@ -53,6 +53,9 @@ export function Header(props: Props) {
                 maxWidth={'100%'}
                 padding='0'>
                 <Connect
+                    w='125px'
+                    variant='Header'
+                    margin='0 10px 0 0'
                     ctaText={ctaText} />
                 { 
                     active &&

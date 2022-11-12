@@ -8,13 +8,16 @@ import WalletIcon from '@/components/icons/WalletIcon'
 import SelectWalletModal from "@/components/Modal";
 
 type Props = {
+    w: string
     ctaText: string
+    variant: string
+    margin?: string
 }
 
 const Connect = (props: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { account, activate, deactivate, active } = useWeb3React();
-    const { ctaText } = props;
+    const { ctaText, variant } = props;
     const path = window.location.pathname;
 
     useEffect(() => {
@@ -26,16 +29,9 @@ const Connect = (props: Props) => {
     return (
         <>
             <Button
-                size='md'
+                {...props}
+                variant={variant}
                 rightIcon={<WalletIcon />}
-                fontWeight='700'
-                fontSize='15px'
-                lineHeight='20px'
-                color='brand.grey.grey04'
-                background='brand.java'
-                type="button"
-                w='125px'
-                margin='0 10px 0 0'
                 onClick={!active ? onOpen : () => {
                     refreshState()
                     deactivate()

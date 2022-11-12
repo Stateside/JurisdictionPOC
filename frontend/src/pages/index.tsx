@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { VStack, Flex, Heading } from "@chakra-ui/layout"
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Button } from '@chakra-ui/react'
 import WalletIcon from '@/components/icons/WalletIcon'
+import Connect from '@/components/Connect'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 
@@ -39,20 +40,10 @@ const Home: NextPage = () => {
           {getLabel(active, homeLabels.mainTitle)}
         </Heading>
         {!active &&
-          <Button
-            float='right'
-            width='321px'
-            rightIcon={<WalletIcon />}
-            fontWeight='700'
-            fontSize='15px'
-            lineHeight='20px'
-            color='brand.black'
-            background='brand.java' type="button" w='225px' onClick={() => console.log('Login')}
-            _hover={{
-              background: "brand.javaHover",
-            }}>
-            {homeLabels.ctaConnect}
-          </Button>
+          <Connect 
+            variant='Heading'
+            w='250px'
+            ctaText={homeLabels.ctaConnect} />
         }
       </Flex>
     </VStack>
