@@ -13,7 +13,6 @@ function getLibrary(provider: any): any {
 }
 
 function App({ Component, pageProps }: AppProps) {
-  console.log('THEME INFORMATION:', theme);
   return (
     <ChakraProvider theme={theme}>
       <Web3ReactProvider getLibrary={getLibrary}>

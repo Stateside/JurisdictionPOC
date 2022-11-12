@@ -25,7 +25,6 @@ const Connect = (props: Props) => {
         if (provider) activate(connectors[provider]);
     }, []);
 
-    console.log(account)
     return (
         <>
             <Button
