@@ -71,10 +71,6 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
             return ProposalState.Executed;
         }
 
-        if (proposal.canceled) {
-            return ProposalState.Canceled;
-        }
-
         uint256 deadline = proposalDeadline(proposalId);
 
         if (deadline >= block.number) {

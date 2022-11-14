@@ -2,14 +2,9 @@ import * as tc from "../../typechain-types"
 
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
-import { expect, use as chaiuse } from "chai"
-
-import { solidity } from "ethereum-waffle";
+import { expect } from "chai"
 import { defaultAbiCoder } from "ethers/lib/utils"
-
 import * as iid from "../../utils/getInterfaceId"
-
-chaiuse(solidity);
 
 describe("JSCRevisionedTest", async () => {
   let proposable: tc.JSCRevisionedTest

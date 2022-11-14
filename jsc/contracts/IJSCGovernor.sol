@@ -94,11 +94,6 @@ interface IJSCGovernor is IJSCConfigurable {
     );
 
     /**
-     * @dev Emitted when a proposal is canceled.
-     */
-    event ProposalCanceled(uint256 proposalId);
-
-    /**
      * @dev Emitted when a proposal is executed.
      */
     event ProposalExecuted(uint256 proposalId);

@@ -1,16 +1,10 @@
 import * as tc from "../../typechain-types"
 import { ParamType } from "../../utils/types"
-
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
-import { expect, use as chaiuse } from "chai"
-
-import { solidity } from "ethereum-waffle";
+import { expect } from "chai"
 import { defaultAbiCoder } from "ethers/lib/utils"
-
 import * as iid from "../../utils/getInterfaceId"
-
-chaiuse(solidity);
 
 describe("JSCJurisdiction", async () => {
   let jurisdiction: tc.IJSCJurisdiction

@@ -1,15 +1,10 @@
 import * as tc from "../../typechain-types"
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
-import { expect, use as chaiuse } from "chai"
+import { expect } from "chai"
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
-
-import { solidity } from "ethereum-waffle";
 import { defaultAbiCoder } from "ethers/lib/utils"
-
 import * as iid from "../../utils/getInterfaceId"
-
-chaiuse(solidity);
 
 /**
  * Runs a colection of tests to ensure that the JSCTitleToken contract behaves as expected.

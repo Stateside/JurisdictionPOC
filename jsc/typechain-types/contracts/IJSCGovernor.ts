@@ -403,7 +403,6 @@ export interface IJSCGovernorInterface extends utils.Interface {
     "ContractFrozen(address,bool)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
-    "ProposalCanceled(uint256)": EventFragment;
     "ProposalCreated(uint256,address,uint256,tuple,tuple[],uint256,string)": EventFragment;
     "ProposalExecuted(uint256)": EventFragment;
     "RevisionAdded(string)": EventFragment;
@@ -422,7 +421,6 @@ export interface IJSCGovernorInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ContractFrozen"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NumberParameterUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RevisionAdded"): EventFragment;
@@ -527,17 +525,6 @@ export type NumberParameterUpdatedEvent = TypedEvent<
 
 export type NumberParameterUpdatedEventFilter =
   TypedEventFilter<NumberParameterUpdatedEvent>;
-
-export interface ProposalCanceledEventObject {
-  proposalId: BigNumber;
-}
-export type ProposalCanceledEvent = TypedEvent<
-  [BigNumber],
-  ProposalCanceledEventObject
->;
-
-export type ProposalCanceledEventFilter =
-  TypedEventFilter<ProposalCanceledEvent>;
 
 export interface ProposalCreatedEventObject {
   proposalId: BigNumber;
@@ -1166,9 +1153,6 @@ export interface IJSCGovernor extends BaseContract {
       name?: null,
       value?: null
     ): NumberParameterUpdatedEventFilter;
-
-    "ProposalCanceled(uint256)"(proposalId?: null): ProposalCanceledEventFilter;
-    ProposalCanceled(proposalId?: null): ProposalCanceledEventFilter;
 
     "ProposalCreated(uint256,address,uint256,tuple,tuple[],uint256,string)"(
       proposalId?: null,
