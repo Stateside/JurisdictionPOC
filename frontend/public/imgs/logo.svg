@@ -1,0 +1,18 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="1" y="1" width="8" height="8" fill="#D9D9D9"/>
+<rect x="1" y="11" width="8" height="8" fill="#636363"/>
+<rect x="1" y="21" width="8" height="8" fill="#02BEB7"/>
+<rect x="1" y="31" width="8" height="8" rx="4" fill="#D9D9D9"/>
+<rect x="11" y="1" width="8" height="8" fill="#333431"/>
+<rect x="11" y="11" width="8" height="8" rx="4" fill="#D9D9D9"/>
+<path d="M19 21H11V29L19 21Z" fill="#898989"/>
+<rect x="11" y="31" width="8" height="8" fill="#636363"/>
+<path d="M21 9H29L21 1V9Z" fill="#CCCCCC"/>
+<rect x="21" y="11" width="8" height="8" fill="#02BEB7"/>
+<rect x="21" y="21" width="8" height="8" fill="#FF4850"/>
+<rect x="21" y="31" width="8" height="8" fill="#D9D9D9"/>
+<rect x="31" y="1" width="8" height="8" fill="#D9D9D9"/>
+<rect x="31" y="11" width="8" height="8" rx="4" fill="#898989"/>
+<rect x="31" y="21" width="8" height="8" fill="#D9D9D9"/>
+<path d="M39 39V31L31 39H39Z" fill="#333431"/>
+</svg>
