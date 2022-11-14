@@ -304,8 +304,8 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     "BoolParameterUpdated(string,bool)": EventFragment;
     "ContractAdded(string,address)": EventFragment;
     "ContractFrozen(address,bool)": EventFragment;
-    "ContractRemoved(string,string)": EventFragment;
-    "ContractReplaced(string,address)": EventFragment;
+    "ContractRemoved(string,address)": EventFragment;
+    "ContractReplaced(string,address,address)": EventFragment;
     "NumberParameterAdded(string,uint256)": EventFragment;
     "NumberParameterUpdated(string,uint256)": EventFragment;
     "RevisionAdded(string)": EventFragment;
@@ -428,10 +428,11 @@ export type ContractRemovedEventFilter = TypedEventFilter<ContractRemovedEvent>;
 
 export interface ContractReplacedEventObject {
   name: string;
-  contractAddress: string;
+  oldAddress: string;
+  newAddress: string;
 }
 export type ContractReplacedEvent = TypedEvent<
-  [string, string],
+  [string, string, string],
   ContractReplacedEventObject
 >;
 
@@ -881,7 +882,7 @@ export interface IJSCJurisdiction extends BaseContract {
     ): ContractFrozenEventFilter;
     ContractFrozen(con?: null, frozen?: null): ContractFrozenEventFilter;
 
-    "ContractRemoved(string,string)"(
+    "ContractRemoved(string,address)"(
       name?: null,
       contractAddress?: null
     ): ContractRemovedEventFilter;
@@ -890,13 +891,15 @@ export interface IJSCJurisdiction extends BaseContract {
       contractAddress?: null
     ): ContractRemovedEventFilter;
 
-    "ContractReplaced(string,address)"(
+    "ContractReplaced(string,address,address)"(
       name?: null,
-      contractAddress?: null
+      oldAddress?: null,
+      newAddress?: null
     ): ContractReplacedEventFilter;
     ContractReplaced(
       name?: null,
-      contractAddress?: null
+      oldAddress?: null,
+      newAddress?: null
     ): ContractReplacedEventFilter;
 
     "NumberParameterAdded(string,uint256)"(

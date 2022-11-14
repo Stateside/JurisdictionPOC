@@ -1,16 +1,10 @@
 import * as tc from "../../typechain-types"
 import { ParamType } from "../../utils/types"
-
 // @ts-ignore
 import { deployments, ethers } from "hardhat"
-import { expect, use as chaiuse } from "chai"
-
-import { solidity } from "ethereum-waffle";
+import { expect } from "chai"
 import { defaultAbiCoder } from "ethers/lib/utils"
-
 import * as iid from "../../utils/getInterfaceId"
-
-chaiuse(solidity);
 
 describe("JSCJurisdiction", async () => {
   let jurisdiction: tc.IJSCJurisdiction
@@ -144,8 +138,10 @@ describe("JSCJurisdiction", async () => {
       ["string", "string", "address"],
       ["jsc.contract.my2ndcontract", "A second contract", "0x111122223333444455556666777788889999aAaa"]);
     let tresponse = jurisdiction.executeRevision("AddContract", revArgs);
-    await expect(tresponse).to.emit(jurisdiction, "AddressParameterAdded").withArgs("jsc.contract.my2ndcontract", "0x111122223333444455556666777788889999aAaa");
-    await expect(tresponse).to.emit(jurisdiction, "RevisionExecuted").withArgs("AddContract", revArgs);
+    await expect(tresponse)
+      .to.emit(jurisdiction, "AddressParameterAdded").withArgs("jsc.contract.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
+      .to.emit(jurisdiction, "ContractAdded").withArgs("jsc.contract.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
+      .to.emit(jurisdiction, "RevisionExecuted").withArgs("AddContract", revArgs);
     await testIterateParameters(
       ["jsc.contract.mycontract",         "jsc.contract.my2ndcontract"],
       ["This is a test contract address", "A second contract"],
@@ -156,12 +152,30 @@ describe("JSCJurisdiction", async () => {
       ["string", "address"],
       ["jsc.contract.mycontract", jurisdiction.address]);
     tresponse = jurisdiction.executeRevision("RemoveContract", revArgs);
-    await expect(tresponse).to.emit(jurisdiction, "AddressParameterRemoved").withArgs("jsc.contract.mycontract", jurisdiction.address);
-    await expect(tresponse).to.emit(jurisdiction, "RevisionExecuted").withArgs("RemoveContract", revArgs);
+    await expect(tresponse)
+    .to.emit(jurisdiction, "AddressParameterRemoved").withArgs("jsc.contract.mycontract", jurisdiction.address)
+    .to.emit(jurisdiction, "ContractRemoved").withArgs("jsc.contract.mycontract", jurisdiction.address)
+      .to.emit(jurisdiction, "RevisionExecuted").withArgs("RemoveContract", revArgs);
     await testIterateParameters(
       ["jsc.contract.my2ndcontract"],
       ["A second contract"],
       ["0x111122223333444455556666777788889999aAaa"]
+    );
+  })
+
+  it("replaces contract with parameter update", async () => {
+    let revArgs = defaultAbiCoder.encode(
+      ["string", "address"],
+      ["jsc.contract.mycontract", "0x111122223333444455556666777788889999AaaB"]);
+    let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contract.mycontract", revArgs);
+    await expect(tresponse)
+      .to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contract.mycontract", "0x111122223333444455556666777788889999AaaB")
+      .to.emit(jurisdiction, "ContractReplaced").withArgs("jsc.contract.mycontract", jurisdiction.address, "0x111122223333444455556666777788889999AaaB")
+      .to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contract.mycontract", revArgs);
+    await testIterateParameters(
+      ["jsc.contract.mycontract"],
+      ["This is a test contract address"],
+      ["0x111122223333444455556666777788889999AaaB"]
     );
   })
 })

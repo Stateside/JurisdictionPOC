@@ -154,9 +154,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "string",
+        internalType: "address",
         name: "contractAddress",
-        type: "string",
+        type: "address",
       },
     ],
     name: "ContractRemoved",
@@ -174,7 +174,13 @@ const _abi = [
       {
         indexed: false,
         internalType: "address",
-        name: "contractAddress",
+        name: "oldAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newAddress",
         type: "address",
       },
     ],
