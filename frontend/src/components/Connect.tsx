@@ -9,7 +9,7 @@ import SelectWalletModal from "@/components/Modal";
 
 type Props = {
     w: string
-    ctaText: string
+    label: string
     variant: string
     margin?: string
 }
@@ -17,7 +17,7 @@ type Props = {
 const Connect = (props: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { account, activate, deactivate, active } = useWeb3React();
-    const { ctaText, variant } = props;
+    const { label, variant } = props;
     const path = window.location.pathname;
 
     useEffect(() => {
@@ -40,7 +40,7 @@ const Connect = (props: Props) => {
                     background: "brand.javaHover",
                 }}>
                 {
-                   !active ? ctaText : getAccountShortName(account)
+                   !active ? label : getAccountShortName(account)
                 }
             </Button>
             <SelectWalletModal isOpen={isOpen} closeModal={onClose} />

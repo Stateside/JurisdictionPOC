@@ -56,7 +56,7 @@ export function Header(props: Props) {
                     w='125px'
                     variant='Header'
                     margin='0 10px 0 0'
-                    ctaText={ctaText} />
+                    label={ctaText} />
                 { 
                     active &&
                     <Menu items={menu} />

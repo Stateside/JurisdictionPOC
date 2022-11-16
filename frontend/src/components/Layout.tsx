@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { Container, Box } from '@chakra-ui/react'
+import { Container, Box, SimpleGrid } from '@chakra-ui/react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { siteLayoutData, siteMainMenu } from '@/store/initial'
@@ -28,8 +28,10 @@ export function Layout(props: Props) {
         minHeight={'100vh'}
         padding='0'
       >
-        <Header siteTitle={title} ctaText={ctaConnect} menu={siteMainMenu}/>
-        {props.children}
+        <Header siteTitle={title} ctaText={ctaConnect} menu={siteMainMenu} />
+          <SimpleGrid minChildWidth='1140px' columns={12} spacing={'30px'}>
+            {props.children}
+          </SimpleGrid>
         <Footer />
       </Container>
     </Box>
