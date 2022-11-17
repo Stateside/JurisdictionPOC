@@ -46,12 +46,15 @@ describe("JSCGovernor", async () => {
     expect(await governor.supportsInterface(iid.IID_IERC165)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IERC721)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await governor.supportsInterface(iid.IID_IAccessControl)).to.equal(false);
+    expect(await governor.supportsInterface(iid.IID_IAccessControlEnumerable)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IJSCGovernor)).to.equal(true);
+    expect(await governor.supportsInterface(iid.IID_IJSCCabinet)).to.equal(false);
   });
 
   it('remains frozen until initialized', async function() {

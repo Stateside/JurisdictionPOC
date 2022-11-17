@@ -3,6 +3,7 @@
 /* eslint-disable */
 export * as production from "./production";
 export * as tests from "./tests";
+export { IJSCCabinet__factory } from "./IJSCCabinet__factory";
 export { IJSCConfigurable__factory } from "./IJSCConfigurable__factory";
 export { IJSCFreezable__factory } from "./IJSCFreezable__factory";
 export { IJSCGovernor__factory } from "./IJSCGovernor__factory";
