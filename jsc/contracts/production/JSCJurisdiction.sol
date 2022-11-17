@@ -82,7 +82,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
       paramNames: names,
       paramTypes: types,
       paramHints: hints,
-      rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+      rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
     });
   }
 
@@ -105,7 +105,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
       paramNames: names,
       paramTypes: types,
       paramHints: hints,
-      rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+      rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
     });
   }
 

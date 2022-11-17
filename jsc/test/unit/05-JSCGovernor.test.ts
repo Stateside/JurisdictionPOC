@@ -113,7 +113,7 @@ describe("JSCGovernor", async () => {
 
   /** the ceiling of the division of two numbers */
   const ceilDiv = (a:number,b:number) => Math.ceil(a/b)
-  const oneWeek = () => 6*24*7
+  const blocksPerWeek = () => 5*60*24*7
 
   const basicProposalTests = async (proposal:PreparedProposal, expectedQuorum:number) => {
     await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote not currently active");
@@ -132,7 +132,7 @@ describe("JSCGovernor", async () => {
         proposal.description
       )
     checkVotingParams(resultRules, {
-      votingPeriod: oneWeek(),
+      votingPeriod: blocksPerWeek(),
       approvals: 0,
       majority: 51,
       quorum: 51
@@ -144,7 +144,7 @@ describe("JSCGovernor", async () => {
     await expect(governor.propose(proposal.revs, proposal.description, proposal.version+1)).to.not.be.reverted; // Bump version to create a new valid proposal
     await expect(await governor.state(proposal.proposalHash)).to.equal(ProposalState.Active);
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(0), BigNumber.from(0), BigNumber.from(0)]);
-    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + oneWeek());
+    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek());
     await expect(await governor.quorum(proposal.proposalHash)).to.equal(expectedQuorum);
 
     // Test if votes can be made and are recorded correctly
@@ -170,7 +170,7 @@ describe("JSCGovernor", async () => {
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(1), BigNumber.from(1)]);
 
     // This shouldn't change after voting
-    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + oneWeek());
+    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek());
     await expect(await governor.quorum(proposal.proposalHash)).to.equal(expectedQuorum);
   }
 
