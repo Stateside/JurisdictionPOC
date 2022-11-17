@@ -71,11 +71,15 @@ describe("JSCTitleToken", async () => {
     expect(await titleToken.supportsInterface(iid.IID_IERC165)).to.equal(true);
     expect(await titleToken.supportsInterface(iid.IID_IERC721)).to.equal(true);
     expect(await titleToken.supportsInterface(iid.IID_IERC721Metadata)).to.equal(true);
+    expect(await titleToken.supportsInterface(iid.IID_IAccessControl)).to.equal(false);
+    expect(await titleToken.supportsInterface(iid.IID_IAccessControlEnumerable)).to.equal(false);
     expect(await titleToken.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
     expect(await titleToken.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
     expect(await titleToken.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
     expect(await titleToken.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(true);
     expect(await titleToken.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCGovernor)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCCabinet)).to.equal(false);
   });
 
   it('(ERC721) correctly mints an NFT', async function() {

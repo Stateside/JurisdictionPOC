@@ -5,6 +5,7 @@ import type * as production from "./production";
 export type { production };
 import type * as tests from "./tests";
 export type { tests };
+export type { IJSCCabinet } from "./IJSCCabinet";
 export type { IJSCConfigurable } from "./IJSCConfigurable";
 export type { IJSCFreezable } from "./IJSCFreezable";
 export type { IJSCGovernor } from "./IJSCGovernor";
