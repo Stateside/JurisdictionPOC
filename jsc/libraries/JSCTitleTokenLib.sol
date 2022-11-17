@@ -327,7 +327,7 @@ library JSCTitleTokenLib {
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
       });
   }
 
@@ -351,7 +351,7 @@ library JSCTitleTokenLib {
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
       });
   }
 
@@ -375,7 +375,7 @@ library JSCTitleTokenLib {
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
       });
   }
 }
