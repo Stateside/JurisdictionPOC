@@ -2,35 +2,33 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
 import verify from "../../helper-functions"
 import { networkConfig, developmentChains } from "../../helper-hardhat-config"
-// @ts-ignore
-import { ethers } from "hardhat" 
 
-const deployJSCCabinet: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCConfigurableLib: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
-  const jscRevisionsLib = await get("JSCRevisionsLib")
-  const jscConfigurableLib = await get("JSCConfigurableLib")
-
+  log("looking for production_JSCRevisionsLib")
+  const jscRevisionsLib = await get("production_JSCRevisionsLib")
+  log(`jscRevisionsLib=${jscRevisionsLib}`)
   log("----------------------------------------------------")
-  log("Deploying JSCCabinet and waiting for confirmations...")
-  const jscCabinet = await deploy("JSCCabinet", {
+  log("Deploying production_JSCConfigurableLib and waiting for confirmations...")
+  const jscConfigurableLib = await deploy("production_JSCConfigurableLib", {
     from: deployer,
+    contract: "JSCConfigurableLib",
     args: [],
     log: true,
     libraries: {
-      JSCRevisionsLib: jscRevisionsLib.address,
-      JSCConfigurableLib: jscConfigurableLib.address
+      "JSCRevisionsLib": jscRevisionsLib.address
     },
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCCabinet at ${jscCabinet.address}`)
+  log(`production_JSCConfigurableLib deployed at ${jscConfigurableLib.address}`)
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    await verify(jscCabinet.address, [])
+    await verify(jscConfigurableLib.address, [])
   }
 }
 
-export default deployJSCCabinet
-deployJSCCabinet.tags = ["all", "production", "jscCabinet"]
+export default deployJSCConfigurableLib
+deployJSCConfigurableLib.tags = ["all", "production", "production_JSCConfigurableLib"]

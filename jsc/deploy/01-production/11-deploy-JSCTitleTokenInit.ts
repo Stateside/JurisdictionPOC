@@ -7,14 +7,14 @@ import { ethers } from "hardhat"
 
 const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
-  const { getNamedAccounts, deployments, network } = hre
-  const { deploy, log, get } = deployments
-  const { deployer } = await getNamedAccounts()
-  const jscJurisdiction = await get("JSCJurisdiction")
-  const jscTitleToken = await get("JSCTitleToken")
+  const { deployments } = hre
+  const { log, get } = deployments
+  const jscJurisdiction = await get("production_JSCJurisdiction")
+  const jscTitleToken = await get("production_JSCTitleToken")
 
-  log(`Initializing JSCTitleToken...`)
-  await init(jscTitleToken.address, "Test", "TST", "http://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
+  log("----------------------------------------------------")
+  log(`Initializing production_JSCTitleToken...`)
+  await init(jscTitleToken.address, "Demo", "DEMO", "http://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
 }
 
 const init = async (jscTitleTokenAddress:string, name: string, symbol:string, uri:string, jscJurisdictionAddress:string) => {
@@ -28,4 +28,4 @@ const init = async (jscTitleTokenAddress:string, name: string, symbol:string, ur
 }
 
 export default deployJSCTitleTokenInit
-deployJSCTitleTokenInit.tags = ["all", "jscTitleTokenInit"]
+deployJSCTitleTokenInit.tags = ["all", "production", "production_JSCTitleToken"]

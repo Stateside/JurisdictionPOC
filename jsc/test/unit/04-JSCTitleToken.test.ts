@@ -38,14 +38,14 @@ describe("JSCTitleToken", async () => {
 }
 
   beforeEach(async () => {
-    await deployments.fixture(["all"]);
-    titleToken = await ethers.getContract("JSCTitleToken");
-    titleTokenTest = await ethers.getContract("JSCTitleTokenTest");
-    tokenReceiver = await ethers.getContract("JSCTitleTokenReceiverTest");
-    jurisdiction = await ethers.getContract("JSCJurisdiction");
-    revisionsLib = await ethers.getContract("JSCRevisionsLib");
-    configurableLib = await ethers.getContract("JSCConfigurableLib");
-    titleTokenLib = await ethers.getContract("JSCTitleTokenLib");
+    await deployments.fixture(["production", "unittests"]);
+    titleToken = await ethers.getContract("production_JSCTitleToken");
+    titleTokenTest = await ethers.getContract("unittests_JSCTitleTokenTest");
+    tokenReceiver = await ethers.getContract("unittests_JSCTitleTokenReceiverTest");
+    jurisdiction = await ethers.getContract("production_JSCJurisdiction");
+    revisionsLib = await ethers.getContract("production_JSCRevisionsLib");
+    configurableLib = await ethers.getContract("production_JSCConfigurableLib");
+    titleTokenLib = await ethers.getContract("production_JSCTitleTokenLib");
     [owner, bob, jane, sara, ...otherAccounts] = await ethers.getSigners();
   });
 

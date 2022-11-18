@@ -31,11 +31,11 @@ describe("JSCGovernor", async () => {
   const ONE_MINUTE = 60;
 
   beforeEach(async () => {
-    await deployments.fixture(["all"]); // Reset blockchain to initial state with deployed and initialized contracts
-    governor = await ethers.getContract("JSCGovernor");
-    jurisdiction = await ethers.getContract("JSCJurisdiction");
-    revisionsLib = await ethers.getContract("JSCRevisionsLib");
-    configurableLib = await ethers.getContract("JSCConfigurableLib");
+    await deployments.fixture(["production", "unittests"]); // Reset blockchain to initial state with deployed and initialized contracts
+    governor = await ethers.getContract("production_JSCGovernor");
+    jurisdiction = await ethers.getContract("production_JSCJurisdiction");
+    revisionsLib = await ethers.getContract("production_JSCRevisionsLib");
+    configurableLib = await ethers.getContract("production_JSCConfigurableLib");
     [owner, bob, jane, sara, bryan, paul, alex, ...otherAccounts] = await ethers.getSigners();
 
     await (jurisdiction as tc.JSCJurisdiction).transferOwnership(governor.address)

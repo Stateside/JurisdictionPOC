@@ -42,8 +42,8 @@ describe("JSCJurisdiction", async () => {
   }
 
   beforeEach(async () => {
-    await deployments.fixture(["all"])
-    jurisdiction = await ethers.getContract("JSCJurisdiction")
+    await deployments.fixture(["production", "unittests"])
+    jurisdiction = await ethers.getContract("unittests_JSCJurisdiction")
   })
 
   it('correctly checks interfaces IDs', async function() {

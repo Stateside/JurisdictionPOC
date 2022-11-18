@@ -5,29 +5,24 @@ import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
-const deployJSCConfigurableTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCTitleTokenReceiverTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
-  const jscRevisionsLib = await get("JSCRevisionsLib")
-  const jscConfigurableLib = await get("JSCConfigurableLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCConfigurableTest and waiting for confirmations...")
-  const jscConfigurableTest = await deploy("JSCConfigurableTest", {
+  log("Deploying unittests_JSCTitleTokenReceiverTest and waiting for confirmations...")
+  const jscTitleTokenReceiverTest = await deploy("unittests_JSCTitleTokenReceiverTest", {
     from: deployer,
+    contract: "JSCTitleTokenReceiverTest",
     args: [],
     log: true,
-    libraries: {
-      JSCRevisionsLib: jscRevisionsLib.address,
-      JSCConfigurableLib: jscConfigurableLib.address
-    },
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCConfigurableTest at ${jscConfigurableTest.address}`)
+  log(`unittests_JSCTitleTokenReceiverTest deployed at ${jscTitleTokenReceiverTest.address}`)
 }
 
-export default deployJSCConfigurableTest
-deployJSCConfigurableTest.tags = ["all", "jscConfigurableTest"]
+export default deployJSCTitleTokenReceiverTest
+deployJSCTitleTokenReceiverTest.tags = ["all", "unittests", "unittests_JSCTitleTokenReceiverTest"]

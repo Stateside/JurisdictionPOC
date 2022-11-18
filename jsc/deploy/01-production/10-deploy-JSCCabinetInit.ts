@@ -7,11 +7,11 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
   // @ts-ignore
   const { deployments, ethers } = hre
   const { log, get } = deployments
-  const jscCabinetContract = await get("JSCCabinet")
-  const jscJurisdictionContract = await get("JSCJurisdiction")
+  const jscCabinetContract = await get("production_JSCCabinet")
+  const jscJurisdictionContract = await get("production_JSCJurisdiction")
 
-
-  log(`Initializing JSCCabinet...`)
+  log("----------------------------------------------------")
+  log(`Initializing production_JSCCabinet...`)
   const [owner, bob, jane, sara, bryan, paul, alex, ...otherAccounts] = await ethers.getSigners();
   const J = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("JUDICIAL_ROLE"))
   const L = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LEGISLATIVE_ROLE"))
@@ -24,4 +24,4 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
   }
 
 export default deployJSCCabinetInit
-deployJSCCabinetInit.tags = ["all", "jscCabinetInit"]
+deployJSCCabinetInit.tags = ["all", "production", "production_JSCCabinet"]

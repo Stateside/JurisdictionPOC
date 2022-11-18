@@ -2,29 +2,34 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
 import verify from "../../helper-functions"
 import { networkConfig, developmentChains } from "../../helper-hardhat-config"
-// @ts-ignore
-import { ethers } from "hardhat" 
 
-const deployJSCTitleTokenLib: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployJSCGovernor: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
+  const jscRevisionsLib = await get("production_JSCRevisionsLib")
+  const jscConfigurableLib = await get("production_JSCConfigurableLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCTitleTokenLib and waiting for confirmations...")
-  const jscTitleTokenLib = await deploy("JSCTitleTokenLib", {
+  log("Deploying production_JSCGovernor and waiting for confirmations...")
+  const jscGovernor = await deploy("production_JSCGovernor", {
     from: deployer,
+    contract: "JSCGovernor",
     args: [],
     log: true,
+    libraries: {
+      JSCRevisionsLib: jscRevisionsLib.address,
+      JSCConfigurableLib: jscConfigurableLib.address
+    },
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCTitleTokenLib at ${jscTitleTokenLib.address}`)
+  log(`production_JSCGovernor deployed at ${jscGovernor.address}`)
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    await verify(jscTitleTokenLib.address, [])
+    await verify(jscGovernor.address, [])
   }
 }
 
-export default deployJSCTitleTokenLib
-deployJSCTitleTokenLib.tags = ["all", "production", "jscTitleTokenLib"]
+export default deployJSCGovernor
+deployJSCGovernor.tags = ["all", "production", "production_JSCGovernor"]
