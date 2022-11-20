@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import {ERC165Checker as erc165} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {JSCRevisionsLib as rlib} from "libraries/JSCRevisionsLib.sol";
 import "./JSCConfigurable.sol";
@@ -15,9 +16,12 @@ import "../IJSCGovernor.sol";
  */
 contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     using SafeCast for uint256;
+    using EnumerableSet for EnumerableSet.UintSet;
 
     mapping(uint256 => ProposalVote) private _proposalVotes;
     mapping(uint256 => ProposalCore) private _proposals;
+    EnumerableSet.UintSet private _proposalIds; // Keep track of all proposals
+
     address private _jurisdiction;
 
     /**
@@ -44,6 +48,20 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
             super.supportsInterface(interfaceId);
     }
 
+    /**
+     * @dev See {IJSCGovernor.proposalCount}
+     */
+    function proposalCount() external view returns (uint256) {
+        return _proposalIds.length();
+    }
+    
+    /**
+     * @dev See {IJSCGovernor.proposalAtIndex}
+     */
+    function proposalAtIndex(uint256 index) external view returns (uint256) {
+        return _proposalIds.at(index);
+    }
+    
     /**
      * @dev See {IJSCGovernor.hashProposal}
      */
@@ -141,6 +159,7 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
         proposal.params.approvals = vr.approvals;
         proposal.params.majority = vr.majority;
         proposal.params.quorum = vr.quorum;
+        _proposalIds.add(proposalId);
 
         emit ProposalCreated(
             proposalId,

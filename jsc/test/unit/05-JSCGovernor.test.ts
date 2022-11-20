@@ -7,6 +7,7 @@ import { defaultAbiCoder } from "ethers/lib/utils"
 
 import * as iid from "../../utils/getInterfaceId"
 import { ProposalState, VoteType } from "../../utils/types"
+import { createProposalVersion, PreparedProposal, prepareProposal } from "../../utils/proposals";
 
 /**
  * Runs a colection of tests to ensure that the JSCGovernor contract behaves as expected.
@@ -19,23 +20,17 @@ describe("JSCGovernor", async () => {
 
   let owner, bob, jane, sara, bryan, paul, alex, otherAccounts;
 
-  const createProposalVersion = (d: Date) => {
-    let v = d.getFullYear()
-    v = v*100 + d.getMonth() + 1
-    v = v*100 + d.getDate()
-    return v*100;
-  }
   const zeroAddress = '0x0000000000000000000000000000000000000000';
   let proposalVersion = createProposalVersion(new Date())
 
   const ONE_MINUTE = 60;
 
   beforeEach(async () => {
-    await deployments.fixture(["all"]); // Reset blockchain to initial state with deployed and initialized contracts
-    governor = await ethers.getContract("JSCGovernor");
-    jurisdiction = await ethers.getContract("JSCJurisdiction");
-    revisionsLib = await ethers.getContract("JSCRevisionsLib");
-    configurableLib = await ethers.getContract("JSCConfigurableLib");
+    await deployments.fixture(["production", "unittests"]); // Reset blockchain to initial state with deployed and initialized contracts
+    governor = await ethers.getContract("production_JSCGovernor");
+    jurisdiction = await ethers.getContract("production_JSCJurisdiction");
+    revisionsLib = await ethers.getContract("production_JSCRevisionsLib");
+    configurableLib = await ethers.getContract("production_JSCConfigurableLib");
     [owner, bob, jane, sara, bryan, paul, alex, ...otherAccounts] = await ethers.getSigners();
 
     await (jurisdiction as tc.JSCJurisdiction).transferOwnership(governor.address)
@@ -46,12 +41,15 @@ describe("JSCGovernor", async () => {
     expect(await governor.supportsInterface(iid.IID_IERC165)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IERC721)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await governor.supportsInterface(iid.IID_IAccessControl)).to.equal(false);
+    expect(await governor.supportsInterface(iid.IID_IAccessControlEnumerable)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
     expect(await governor.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
     expect(await governor.supportsInterface(iid.IID_IJSCGovernor)).to.equal(true);
+    expect(await governor.supportsInterface(iid.IID_IJSCCabinet)).to.equal(false);
   });
 
   it('remains frozen until initialized', async function() {
@@ -70,32 +68,6 @@ describe("JSCGovernor", async () => {
     await expect(governor.init(jurisdiction.address)).to.be.revertedWith('init() cannot be called twice');
   });
 
-  type PreparedProposal = {
-    revs: tc.IJSCGovernor.RevisionCallStruct[],
-    description: string,
-    descriptionHash: string,
-    proposalHash: BigNumber,
-    version: number,
-    incrementVersion: () => void
-  }
-
-  const prepareProposal = async (revs: tc.IJSCGovernor.RevisionCallStruct[], description: string):Promise<PreparedProposal> => {
-    const descriptionHash:string = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description))
-    const pp = {
-      revs,
-      description,
-      descriptionHash,
-      proposalHash: BigNumber.from(0),
-      version: 0,
-      incrementVersion: async function() {
-        this.version = ++proposalVersion
-        this.proposalHash = await governor.hashProposal(revs, descriptionHash, this.version)
-      }
-    }
-    pp.incrementVersion();
-    return pp
-  }
-
   const checkVotingParams = (actual:tc.IJSCGovernor.VotingParamsStructOutput|undefined, expected:tc.IJSCGovernor.VotingParamsStruct) => {
     expect(actual?.votingPeriod).to.equal(expected.votingPeriod)
     expect(actual?.approvals).to.equal(expected.approvals)
@@ -113,7 +85,7 @@ describe("JSCGovernor", async () => {
 
   /** the ceiling of the division of two numbers */
   const ceilDiv = (a:number,b:number) => Math.ceil(a/b)
-  const oneWeek = () => 6*24*7
+  const blocksPerWeek = () => 5*60*24*7
 
   const basicProposalTests = async (proposal:PreparedProposal, expectedQuorum:number) => {
     await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote not currently active");
@@ -132,7 +104,7 @@ describe("JSCGovernor", async () => {
         proposal.description
       )
     checkVotingParams(resultRules, {
-      votingPeriod: oneWeek(),
+      votingPeriod: blocksPerWeek(),
       approvals: 0,
       majority: 51,
       quorum: 51
@@ -144,7 +116,7 @@ describe("JSCGovernor", async () => {
     await expect(governor.propose(proposal.revs, proposal.description, proposal.version+1)).to.not.be.reverted; // Bump version to create a new valid proposal
     await expect(await governor.state(proposal.proposalHash)).to.equal(ProposalState.Active);
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(0), BigNumber.from(0), BigNumber.from(0)]);
-    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + oneWeek());
+    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek());
     await expect(await governor.quorum(proposal.proposalHash)).to.equal(expectedQuorum);
 
     // Test if votes can be made and are recorded correctly
@@ -170,16 +142,16 @@ describe("JSCGovernor", async () => {
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(1), BigNumber.from(1)]);
 
     // This shouldn't change after voting
-    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + oneWeek());
+    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek());
     await expect(await governor.quorum(proposal.proposalHash)).to.equal(expectedQuorum);
   }
 
   it('accepts simple proposal', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract")
+    }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await basicProposalTests(proposal, ceilDiv(3*51, 100))
   });
@@ -205,11 +177,11 @@ describe("JSCGovernor", async () => {
   }
 
   it('executes simple winning proposal', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract")
+    }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(await jurisdiction.isFrozen()).to.equal(false);
     await testWinningProposal(proposal)
@@ -217,7 +189,7 @@ describe("JSCGovernor", async () => {
   });
 
   it('executes complex winning proposal', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: jurisdiction.address,
       name: "AddContract",
       pdata: defaultAbiCoder.encode(
@@ -227,7 +199,7 @@ describe("JSCGovernor", async () => {
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Add a contract and then freeze the jurisdiction contract")
+    }], "Add a contract and then freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(await jurisdiction.isFrozen()).to.equal(false);
     await expect(jurisdiction.getAddressParameter("jsc.contract.myontract")).to.be.revertedWith("Trying to access non-existant parameter")
@@ -254,11 +226,11 @@ describe("JSCGovernor", async () => {
   }
 
   it('processes losing proposals', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract")
+    }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await testLosingProposal(proposal)
   });
@@ -279,17 +251,17 @@ describe("JSCGovernor", async () => {
   }
 
   it('expires proposals', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract")
+    }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await testExpiredProposal(proposal)
   });
 
   it('accepts proposal with multiple revisions', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
@@ -297,29 +269,53 @@ describe("JSCGovernor", async () => {
       target: jurisdiction.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[false])
-    }], "Freeze and unfreeze the jurisdiction contract")
+    }], "Freeze and unfreeze the jurisdiction contract", ++proposalVersion)
 
     await basicProposalTests(proposal, ceilDiv(3*51, 100))
   });
 
   it('rejects simple proposal with unknown contract', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: revisionsLib.address,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract")
+    }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
   });
 
   it('rejects simple proposal with zero contract', async function() {
-    const proposal = await prepareProposal([{
+    const proposal = await prepareProposal(governor, [{
       target: zeroAddress,
       name: "FreezeContract",
       pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract")
+    }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
+  });
+
+  it('iterates all existing proposals', async function() {
+    const propData = {
+      target: jurisdiction.address,
+      name: "FreezeContract",
+      pdata: defaultAbiCoder.encode(["bool"],[true])
+    };
+    const p1 = await prepareProposal(governor, [propData], "1", 1)
+    const p2 = await prepareProposal(governor, [propData], "2", 2)
+    const p3 = await prepareProposal(governor, [propData], "3", 3)
+    const p4 = await prepareProposal(governor, [propData], "4", 4)
+
+    await expect(governor.propose(p1.revs, p1.description, p1.version)).to.not.be.reverted;
+    await expect(governor.propose(p2.revs, p2.description, p2.version)).to.not.be.reverted;
+    await expect(governor.propose(p3.revs, p3.description, p3.version)).to.not.be.reverted;
+    await expect(governor.propose(p4.revs, p4.description, p4.version)).to.not.be.reverted;
+    
+    await expect(await governor.proposalCount()).to.equal(4);
+    await expect(await governor.proposalAtIndex(0)).to.equal(p1.proposalHash);
+    await expect(await governor.proposalAtIndex(1)).to.equal(p2.proposalHash);
+    await expect(await governor.proposalAtIndex(2)).to.equal(p3.proposalHash);
+    await expect(await governor.proposalAtIndex(3)).to.equal(p4.proposalHash);
+    await expect(governor.proposalAtIndex(4)).to.be.revertedWithPanic("0x32"); // Array accessed at an out-of-bounds or negative index
   });
 })
 
@@ -327,4 +323,5 @@ describe("JSCGovernor", async () => {
     Check who can propose (unknown and revision restrictions)
     Check who can cast votes
     Check link to jurisdiction
+    What happens if we propose to freeze the governor? Can we unfreeze it?
   */

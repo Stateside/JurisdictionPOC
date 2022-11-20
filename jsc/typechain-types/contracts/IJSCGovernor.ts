@@ -141,6 +141,8 @@ export interface IJSCGovernorInterface extends utils.Interface {
     "nextRevision(uint256)": FunctionFragment;
     "parameterCount()": FunctionFragment;
     "parameterIteratorGet(uint256)": FunctionFragment;
+    "proposalAtIndex(uint256)": FunctionFragment;
+    "proposalCount()": FunctionFragment;
     "proposalDeadline(uint256)": FunctionFragment;
     "proposalVotes(uint256)": FunctionFragment;
     "propose((address,string,bytes)[],string,uint256)": FunctionFragment;
@@ -173,6 +175,8 @@ export interface IJSCGovernorInterface extends utils.Interface {
       | "nextRevision"
       | "parameterCount"
       | "parameterIteratorGet"
+      | "proposalAtIndex"
+      | "proposalCount"
       | "proposalDeadline"
       | "proposalVotes"
       | "propose"
@@ -267,6 +271,14 @@ export interface IJSCGovernorInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "parameterIteratorGet",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "proposalAtIndex",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "proposalCount",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "proposalDeadline",
@@ -368,6 +380,14 @@ export interface IJSCGovernorInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "parameterIteratorGet",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "proposalAtIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "proposalCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -752,6 +772,13 @@ export interface IJSCGovernor extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[JSCConfigurableLib.ParameterInfoStructOutput]>;
 
+    proposalAtIndex(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    proposalCount(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     proposalDeadline(
       proposalId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -897,6 +924,13 @@ export interface IJSCGovernor extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
 
+  proposalAtIndex(
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  proposalCount(overrides?: CallOverrides): Promise<BigNumber>;
+
   proposalDeadline(
     proposalId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -1037,6 +1071,13 @@ export interface IJSCGovernor extends BaseContract {
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<JSCConfigurableLib.ParameterInfoStructOutput>;
+
+    proposalAtIndex(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    proposalCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     proposalDeadline(
       proposalId: PromiseOrValue<BigNumberish>,
@@ -1314,6 +1355,13 @@ export interface IJSCGovernor extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    proposalAtIndex(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    proposalCount(overrides?: CallOverrides): Promise<BigNumber>;
+
     proposalDeadline(
       proposalId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1449,6 +1497,13 @@ export interface IJSCGovernor extends BaseContract {
       i: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    proposalAtIndex(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    proposalCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     proposalDeadline(
       proposalId: PromiseOrValue<BigNumberish>,

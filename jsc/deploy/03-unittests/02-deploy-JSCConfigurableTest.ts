@@ -1,7 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
+import { networkConfig } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
@@ -10,13 +9,14 @@ const deployJSCConfigurableTest: DeployFunction = async function (hre: HardhatRu
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, log, get } = deployments
   const { deployer } = await getNamedAccounts()
-  const jscRevisionsLib = await get("JSCRevisionsLib")
-  const jscConfigurableLib = await get("JSCConfigurableLib")
+  const jscRevisionsLib = await get("production_JSCRevisionsLib")
+  const jscConfigurableLib = await get("production_JSCConfigurableLib")
 
   log("----------------------------------------------------")
-  log("Deploying JSCConfigurableTest and waiting for confirmations...")
-  const jscConfigurableTest = await deploy("JSCConfigurableTest", {
+  log("Deploying unittests_JSCConfigurableTest...")
+  const jscConfigurableTest = await deploy("unittests_JSCConfigurableTest", {
     from: deployer,
+    contract: "JSCConfigurableTest",
     args: [],
     log: true,
     libraries: {
@@ -26,8 +26,8 @@ const deployJSCConfigurableTest: DeployFunction = async function (hre: HardhatRu
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
   })
-  log(`JSCConfigurableTest at ${jscConfigurableTest.address}`)
+  log(`unittests_JSCConfigurableTest deployed at ${jscConfigurableTest.address}`)
 }
 
 export default deployJSCConfigurableTest
-deployJSCConfigurableTest.tags = ["all", "jscConfigurableTest"]
+deployJSCConfigurableTest.tags = ["all", "unittests", "unittests_JSCConfigurableTest"]

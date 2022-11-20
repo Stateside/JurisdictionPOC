@@ -63,9 +63,23 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
   }
 
   /**
+   * @dev See {IJSCTitleToken-totalSupply}.
+   */
+  function totalSupply() external view returns (uint256) {
+    return _storage.tokenIds.countTokenIds();
+  }
+  
+  /**
    * @dev See {IJSCTitleToken-tokenAtIndex}.
    */
-  function tokenAtIndex(address owner, uint256 index) external view returns (uint256) {
+  function tokenAtIndex(uint256 index) external view returns (uint256) {
+    return _storage.tokenIds.getTokenAt(index);
+  }
+
+  /**
+   * @dev See {IJSCTitleToken-ownerTokenAtIndex}.
+   */
+  function ownerTokenAtIndex(address owner, uint256 index) external view returns (uint256) {
     return _storage.tokensByOwner[owner].getTokenAt(index);
   }
 
@@ -207,6 +221,13 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    */
   function titleToTokenId(string memory titleId) public pure returns (uint256) {
     return uint256(keccak256(abi.encode(titleId)));
+  }
+
+  /**
+   * @dev See {IJSCTitleToken-tokenToTitleId}.
+   */
+  function tokenToTitleId(uint tokenId) external view returns (string memory) {
+    return _storage.getTitleToken(tokenId).titleId;
   }
 
   /**

@@ -7,8 +7,8 @@ pragma solidity ^0.8.9;
  */
 library JSCRevisionsLib {
   enum ParamType { t_address, t_bool, t_number, t_string }
-  uint16 public constant OneDay = 6 * 24; // Assuming a block every 10 minutes
-  uint16 public constant OneWeek = OneDay * 7;
+  uint16 public constant BlocksPerDay = 24 * 60 * 5; // Assuming a block every 12 seconds
+  uint16 public constant BlocksPerWeek = BlocksPerDay * 7;
   struct VotingRules {
     /** 
       How long voting lasts in number of blocks 

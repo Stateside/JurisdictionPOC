@@ -35,10 +35,14 @@ Tasks
 
 TODO
 
-Add payments to the offer transactions in JSCTitleToken
-Make sure operators and approvers do not have more permissins than required
-Add a parameter to the title token to disable NFT support
-Add a boolean to the individual tokens to enable NFT support
-Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
-Add tests for contracts when the gover is the owner
-Test frozen jurisdiciton, and governor contracts
+- Add payments to the offer transactions in JSCTitleToken
+- Add a parameter to JSVTitleToken to indicate how much ownership transfers cost
+- Make sure operators and approvers do not have more permissins than required
+- Add a parameter to the title token to disable NFT support
+- Add a boolean to the individual tokens to enable NFT support
+- Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
+- Add tests for contracts when the gover is the owner
+- Test frozen jurisdiciton, and governor contracts
+- Switch RevisionMap implementation in JSCRevisioned to use OpenZeppelins EnumerableSet
+- Switch TokenIdList and OfferList implementations in JSCTitleTokens to use OpenZeppelins EnumerableSet
+- Analyze contracts with some vulnerabulity scanners like Mythril, Slither, and Securify

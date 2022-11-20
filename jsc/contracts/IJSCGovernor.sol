@@ -111,6 +111,16 @@ interface IJSCGovernor is IJSCConfigurable {
     function init(address jurisdiction) external;
 
     /**
+     * @dev Returns the number of proposals every created
+     */
+    function proposalCount() external view returns (uint256);
+    
+    /**
+     * @dev returns the proposal ID at the given index. The index must be between 0 and proposalCount().
+     */
+    function proposalAtIndex(uint256 index) external view returns (uint256);
+    
+    /**
      * @dev The proposal id is produced by hashing the ABI encoded `revs` array, and the descriptionHash (bytes32 which itself
      * is the keccak256 hash of the description string) and the version. This proposal id
      * can be produced from the proposal data which is part of the {ProposalCreated} event. It can even be computed in

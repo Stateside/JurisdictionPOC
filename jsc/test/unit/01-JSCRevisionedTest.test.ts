@@ -11,8 +11,8 @@ describe("JSCRevisionedTest", async () => {
   let owner, bob, jane, sara;
 
   beforeEach(async () => {
-    await deployments.fixture(["all"])
-    proposable = await ethers.getContract("JSCRevisionedTest");
+    await deployments.fixture(["production", "unittests"])
+    proposable = await ethers.getContract("unittests_JSCRevisionedTest");
     [owner, bob, jane, sara] = await ethers.getSigners();
   })
 
@@ -21,11 +21,15 @@ describe("JSCRevisionedTest", async () => {
     expect(await proposable.supportsInterface(iid.IID_IERC165)).to.equal(true);
     expect(await proposable.supportsInterface(iid.IID_IERC721)).to.equal(false);
     expect(await proposable.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IAccessControl)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IAccessControlEnumerable)).to.equal(false);
     expect(await proposable.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
     expect(await proposable.supportsInterface(iid.IID_IJSCFreezable)).to.equal(false);
     expect(await proposable.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(false);
     expect(await proposable.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
     expect(await proposable.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IJSCGovernor)).to.equal(false);
+    expect(await proposable.supportsInterface(iid.IID_IJSCCabinet)).to.equal(false);
   });
 
   it("iterates revisions", async () => {

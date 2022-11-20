@@ -66,9 +66,9 @@ describe("JSCConfigurableTest", async () => {
   }
 
   beforeEach(async () => {
-    await deployments.fixture(["all"])
-    configurable = await ethers.getContract("JSCConfigurableTest")
-    rlib = await ethers.getContract("JSCRevisionsLib")
+    await deployments.fixture(["production", "unittests"])
+    configurable = await ethers.getContract("unittests_JSCConfigurableTest")
+    rlib = await ethers.getContract("production_JSCRevisionsLib")
   })
 
   it('correctly checks interfaces IDs', async function() {

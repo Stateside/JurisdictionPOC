@@ -1,19 +1,16 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
 const deployJSCTitleTokenTestInit: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
-  const { getNamedAccounts, deployments, network } = hre
-  const { deploy, log, get } = deployments
-  const { deployer } = await getNamedAccounts()
-  const jscJurisdiction = await get("JSCJurisdiction")
-  const jscTitleTokenTest = await get("JSCTitleTokenTest")
+  const { deployments, network } = hre
+  const { log, get } = deployments
+  const jscJurisdiction = await get("production_JSCJurisdiction")
+  const jscTitleTokenTest = await get("unittests_JSCTitleTokenTest")
 
-  log(`Initializing JSCTitleTokenTest...`)
+  log(`Initializing unittests_JSCTitleTokenTest...`)
   await init(jscTitleTokenTest.address, "Test", "TST", "http://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
 }
 
@@ -28,4 +25,4 @@ const init = async (jscTitleTokenTestAddress:string, name: string, symbol:string
 }
 
 export default deployJSCTitleTokenTestInit
-deployJSCTitleTokenTestInit.tags = ["all", "jscTitleTokenTestInit"]
+deployJSCTitleTokenTestInit.tags = ["all", "unittests", "unittests_JSCTitleTokenTest"]

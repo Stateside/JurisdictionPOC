@@ -40,8 +40,11 @@ library JSCTitleTokenLib {
       // Token symbol
       string symbol;
 
-      // Mapping from token ID to owner address
+      // Mapping from token ID to token data
       mapping(uint => TitleToken) tokens;
+
+      // Collection of all tokens to support enumeration
+      TokenIdList tokenIds;
 
       // Mapping owner address to tokenIds
       mapping(address => TokenIdList) tokensByOwner;
@@ -200,6 +203,14 @@ library JSCTitleTokenLib {
   }
 
   /**
+    * @dev Returns the TitleToken struct for the given tokenId
+    */
+  function getTitleToken(Storage storage self, uint tokenId) public view returns (TitleToken storage) {
+    requireMinted(self, tokenId);
+    return self.tokens[tokenId];
+  }
+
+  /**
     * @dev Reverts if the frozen state of owner does not match the given state
     */
   function requireFrozenOwner(Storage storage self, address owner, bool frozen) public view {
@@ -228,6 +239,7 @@ library JSCTitleTokenLib {
       require(owner != address(0), "mint to the zero address");
       
       addTokenId(self.tokensByOwner[owner], tokenId);
+      addTokenId(self.tokenIds, tokenId);
       self.tokens[tokenId].titleId = titleId;
       self.tokens[tokenId].owner = owner;
 
@@ -251,6 +263,7 @@ library JSCTitleTokenLib {
     */
   function burn(Storage storage self, uint tokenId, address owner) public {
     removeTokenId(self.tokensByOwner[owner], tokenId);
+    removeTokenId(self.tokenIds, tokenId);
     delete self.tokens[tokenId];
     emit Transfer(owner, address(0), tokenId);
   }
@@ -323,11 +336,11 @@ library JSCTitleTokenLib {
 
     return rlib.Revision({
         name: "ChangeOwner",
-        description: "Change the owner of a token",
+        description: "Change the owner of token {token} to {newOwner}",
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
       });
   }
 
@@ -347,11 +360,11 @@ library JSCTitleTokenLib {
 
     return rlib.Revision({
         name: "FreezeToken",
-        description: "Freeze or unfreeze a token",
+        description: "Set frozen state of token {token} to {freeze}",
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
       });
   }
 
@@ -371,11 +384,11 @@ library JSCTitleTokenLib {
 
     return rlib.Revision({
         name: "FreezeOwner",
-        description: "Freeze or unfreeze a property owner",
+        description: "Set frozen state of owner {owner} to {freeze}",
         paramNames: names,
         paramTypes: types,
         paramHints: hints,
-        rules: rlib.VotingRules(rlib.OneWeek,0,51,51,roles)
+        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
       });
   }
 }

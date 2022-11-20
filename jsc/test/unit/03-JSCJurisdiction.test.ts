@@ -34,7 +34,7 @@ describe("JSCJurisdiction", async () => {
       await expect(p.description).to.be.equal(descriptions[j])
       let a = await jurisdiction.getAddressParameter(p.name);
       await expect(a).to.be.equal(addresses[j]);  
-      i = await jurisdiction.nextRevision(i)
+      i = await jurisdiction.nextParameter(i)
     }
 
     await expect(await jurisdiction.isValidParameterIterator(i)).to.be.false;
@@ -42,8 +42,8 @@ describe("JSCJurisdiction", async () => {
   }
 
   beforeEach(async () => {
-    await deployments.fixture(["all"])
-    jurisdiction = await ethers.getContract("JSCJurisdiction")
+    await deployments.fixture(["production", "unittests"])
+    jurisdiction = await ethers.getContract("unittests_JSCJurisdiction")
   })
 
   it('correctly checks interfaces IDs', async function() {
@@ -51,11 +51,15 @@ describe("JSCJurisdiction", async () => {
     expect(await jurisdiction.supportsInterface(iid.IID_IERC165)).to.equal(true);
     expect(await jurisdiction.supportsInterface(iid.IID_IERC721)).to.equal(false);
     expect(await jurisdiction.supportsInterface(iid.IID_IERC721Metadata)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IAccessControl)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IAccessControlEnumerable)).to.equal(false);
     expect(await jurisdiction.supportsInterface(iid.IID_IJSCRevisioned)).to.equal(true);
     expect(await jurisdiction.supportsInterface(iid.IID_IJSCFreezable)).to.equal(true);
     expect(await jurisdiction.supportsInterface(iid.IID_IJSCConfigurable)).to.equal(true);
     expect(await jurisdiction.supportsInterface(iid.IID_IJSCTitleToken)).to.equal(false);
     expect(await jurisdiction.supportsInterface(iid.IID_IJSCJurisdiction)).to.equal(true);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCGovernor)).to.equal(false);
+    expect(await jurisdiction.supportsInterface(iid.IID_IJSCCabinet)).to.equal(false);
   });
 
   it("iterates parameters", async () => {
