@@ -10,7 +10,7 @@ import "./JSCConfigurable.sol";
 import "../IJSCCabinet.sol";
 
 /**
-  @dev This is an implementation of the IJSCCabinet interface.
+  @dev This is an implementation of the IJSCCabinet interface. See {IJSCCabinet}.
 */
 contract JSCCabinet is
     Context,

@@ -5,7 +5,7 @@ import "./JSCRevisioned.sol";
 import "../IJSCFreezable.sol";
 
 /**
- * This is a base contract that implements a frozen state which can only be changed using "revisions"
+ * @dev This is a base contract that implements a frozen state which can only be changed using "revisions"
  */
 contract JSCFreezable is IJSCFreezable, JSCRevisioned {
   bool private _frozen = true;

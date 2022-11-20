@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "../IJSCRevisioned.sol";
 
 /**
-  This is the base class that all smart contracts that want to take part in Jurisdiction governance should inherit from.
+  @dev This is the base class that all smart contracts that want to take part in Jurisdiction governance should inherit from.
   This base class provides a way for smart contracts to register "revisions" and have them executed by the jurisdiciton's
   governor contract.
 
@@ -107,7 +107,7 @@ abstract contract JSCRevisioned is Ownable, IJSCRevisioned, ERC165 {
   }
 
   /** 
-    Verifies that the given revision exists and executes it with the given ABI encoded parameter data.
+    @dev Verifies that the given revision exists and executes it with the given ABI encoded parameter data.
     Derived contracts do not need to worry about this normally as long as they register appropriate handlers.
 
     This function will fail if the given revision does not exist or a handler has not been registered for the revision.
@@ -119,7 +119,7 @@ abstract contract JSCRevisioned is Ownable, IJSCRevisioned, ERC165 {
   }
 
   /**
-    Registers the given handler function to be executed when the governor requests the execution of a revision with
+    @dev Registers the given handler function to be executed when the governor requests the execution of a revision with
     the same name
   */
   function _addHandler(string memory name, function (bytes memory) f) internal {

@@ -7,7 +7,7 @@ import "./JSCConfigurable.sol";
 import "../IJSCJurisdiction.sol";
 
 /**
-  This is the top level container for all other smart contracts in the jurisdiction.
+  @dev This is the top level container for all other smart contracts in the jurisdiction.
 
   It contains references to all the other contracts in the jurisdiction in a mapping whose
   key is the name of the contract. All contracts should go through the jurisdiction contract
