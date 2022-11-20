@@ -1,7 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
+import { networkConfig } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
@@ -13,7 +12,7 @@ const deployJSCRevisionedTest: DeployFunction = async function (hre: HardhatRunt
   const jscRevisionsLib = await get("production_JSCRevisionsLib")
 
   log("----------------------------------------------------")
-  log("Deploying unittests_JSCRevisionedTest and waiting for confirmations...")
+  log("Deploying unittests_JSCRevisionedTest...")
   const jscRevisionedTest = await deploy("unittests_JSCRevisionedTest", {
     from: deployer,
     contract: "JSCRevisionedTest",

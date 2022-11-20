@@ -34,7 +34,7 @@ describe("JSCJurisdiction", async () => {
       await expect(p.description).to.be.equal(descriptions[j])
       let a = await jurisdiction.getAddressParameter(p.name);
       await expect(a).to.be.equal(addresses[j]);  
-      i = await jurisdiction.nextRevision(i)
+      i = await jurisdiction.nextParameter(i)
     }
 
     await expect(await jurisdiction.isValidParameterIterator(i)).to.be.false;

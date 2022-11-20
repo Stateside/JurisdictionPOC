@@ -5,9 +5,10 @@ import { expect } from "chai"
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 import { defaultAbiCoder } from "ethers/lib/utils"
 import * as iid from "../../utils/getInterfaceId"
+import accounts from "../../utils/accounts"
 
 /**
- * Runs a colection of tests to ensure that the JSCTitleToken contract behaves as expected.
+ * Runs a collection of tests to ensure that the JSCTitleToken contract behaves as expected.
  * Includes tests for ERC-721 compliance.
  */
 describe("JSCTitleToken", async () => {
@@ -252,36 +253,71 @@ describe("JSCTitleToken", async () => {
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
     let countBob = await titleToken.balanceOf(bob.address);
     await expect(countBob).to.equal(1);
-    await expect(await titleToken.tokenAtIndex(bob.address, 0)).to.equal(tokenId1);
-    await expect(titleToken.tokenAtIndex(bob.address, 1)).to.be.revertedWith('index out of bounds');
+    await expect(await titleToken.ownerTokenAtIndex(bob.address, 0)).to.equal(tokenId1);
+    await expect(titleToken.ownerTokenAtIndex(bob.address, 1)).to.be.revertedWith('index out of bounds');
 
     await titleToken.mint(bob.address, titleId2);
     let tokenId2 = await titleToken.titleToTokenId(titleId2);
     countBob = await titleToken.balanceOf(bob.address);
     await expect(countBob).to.equal(2);
-    await expect(await titleToken.tokenAtIndex(bob.address, 0)).to.equal(tokenId1);
-    await expect(await titleToken.tokenAtIndex(bob.address, 1)).to.equal(tokenId2);
-    await expect(titleToken.tokenAtIndex(bob.address, 2)).to.be.revertedWith('index out of bounds');
+    await expect(await titleToken.ownerTokenAtIndex(bob.address, 0)).to.equal(tokenId1);
+    await expect(await titleToken.ownerTokenAtIndex(bob.address, 1)).to.equal(tokenId2);
+    await expect(titleToken.ownerTokenAtIndex(bob.address, 2)).to.be.revertedWith('index out of bounds');
 
     await titleToken.mint(sara.address, titleId3);
     let tokenId3 = await titleToken.titleToTokenId(titleId3);
     let countSara = await titleToken.balanceOf(sara.address);
     await expect(countBob).to.equal(2);
-    await expect(await titleToken.tokenAtIndex(bob.address, 0)).to.equal(tokenId1);
-    await expect(await titleToken.tokenAtIndex(bob.address, 1)).to.equal(tokenId2);
-    await expect(titleToken.tokenAtIndex(bob.address, 2)).to.be.revertedWith('index out of bounds');
+    await expect(await titleToken.ownerTokenAtIndex(bob.address, 0)).to.equal(tokenId1);
+    await expect(await titleToken.ownerTokenAtIndex(bob.address, 1)).to.equal(tokenId2);
+    await expect(titleToken.ownerTokenAtIndex(bob.address, 2)).to.be.revertedWith('index out of bounds');
     await expect(countSara).to.equal(1);
-    await expect(await titleToken.tokenAtIndex(sara.address, 0)).to.equal(tokenId3);
-    await expect(titleToken.tokenAtIndex(sara.address, 1)).to.be.revertedWith('index out of bounds');
+    await expect(await titleToken.ownerTokenAtIndex(sara.address, 0)).to.equal(tokenId3);
+    await expect(titleToken.ownerTokenAtIndex(sara.address, 1)).to.be.revertedWith('index out of bounds');
 
     await titleToken.burn(tokenId1);
     countBob = await titleToken.balanceOf(bob.address);
     await expect(countBob).to.equal(1);
-    await expect(await titleToken.tokenAtIndex(bob.address, 0)).to.equal(tokenId2);
-    await expect(titleToken.tokenAtIndex(bob.address, 1)).to.be.revertedWith('index out of bounds');
+    await expect(await titleToken.ownerTokenAtIndex(bob.address, 0)).to.equal(tokenId2);
+    await expect(titleToken.ownerTokenAtIndex(bob.address, 1)).to.be.revertedWith('index out of bounds');
     await expect(countSara).to.equal(1);
-    await expect(await titleToken.tokenAtIndex(sara.address, 0)).to.equal(tokenId3);
-    await expect(titleToken.tokenAtIndex(sara.address, 1)).to.be.revertedWith('index out of bounds');
+    await expect(await titleToken.ownerTokenAtIndex(sara.address, 0)).to.equal(tokenId3);
+    await expect(titleToken.ownerTokenAtIndex(sara.address, 1)).to.be.revertedWith('index out of bounds');
+  });
+
+  it('iterates all tokens', async function() {
+    const tokens:{[name: string]: string[]} = {
+      "Bob":   ["title-1"],
+      "Sara":  ["title-2", "title-3"],
+      "Jane":  ["title-4", "title-5"],
+      "Bryan": ["title-6", "title-7", "title-8"],
+      "Rich":  ["title-9", "title-10", "title-11", "title-12"],
+      "Alex":  ["title-13", "title-14", "title-15", "title-16", "title-17", "title-18", "title-19", "title-20"]
+    }
+
+    const map = {}, titlesAndOwners:{owner: string, titleId: string, tokenId: ethers.BigNumber}[] = []
+    let titleCount = 0
+    accounts.forEach(a => { map[a.name] = a; map[a.address] = a.name; })
+    for (const name in tokens) {
+        const titles = tokens[name];
+        for (let i = 0; i < titles.length; i++) {
+          const t = titles[i];
+          titleToken.mint(map[name].address, t)
+          titlesAndOwners.push({owner: name, titleId: t, tokenId: await titleToken.titleToTokenId(t)})
+          titleCount++
+        }
+    }
+
+    await expect((await titleToken.totalSupply()).toNumber()).to.equal(titleCount);
+    for (let i = 0; i < titleCount; i++) {
+      const tokenId = await titleToken.tokenAtIndex(i)
+      const titleId = await titleToken.tokenToTitleId(tokenId);
+      const owner = await titleToken.ownerOf(tokenId);
+      await expect(tokenId).to.equal(titlesAndOwners[i].tokenId)
+      await expect(map[owner.toLowerCase()]).to.equal(titlesAndOwners[i].owner)
+      await expect(titleId).to.equal(titlesAndOwners[i].titleId)
+      await expect(await titleToken.tokenToTitleId(tokenId)).to.equal(titleId)
+    }
   });
 
   it('receives and iterates offers to buy', async function() {
@@ -714,5 +750,6 @@ describe("JSCTitleToken", async () => {
    *   Check of wrong person can accept offers
    *   Fix documentation
    *   Add support for ERC165
+   *   Check link to jurisdiction
    */
 })

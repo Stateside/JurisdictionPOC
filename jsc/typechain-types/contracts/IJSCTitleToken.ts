@@ -140,6 +140,7 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
     "offerToSell(uint256,address,uint256)": FunctionFragment;
     "offerToSellAtIndex(uint256,uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
+    "ownerTokenAtIndex(address,uint256)": FunctionFragment;
     "parameterCount()": FunctionFragment;
     "parameterIteratorGet(uint256)": FunctionFragment;
     "revisionCount()": FunctionFragment;
@@ -150,8 +151,10 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "titleToTokenId(string)": FunctionFragment;
-    "tokenAtIndex(address,uint256)": FunctionFragment;
+    "tokenAtIndex(uint256)": FunctionFragment;
+    "tokenToTitleId(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
+    "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
   };
 
@@ -191,6 +194,7 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
       | "offerToSell"
       | "offerToSellAtIndex"
       | "ownerOf"
+      | "ownerTokenAtIndex"
       | "parameterCount"
       | "parameterIteratorGet"
       | "revisionCount"
@@ -202,7 +206,9 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
       | "symbol"
       | "titleToTokenId"
       | "tokenAtIndex"
+      | "tokenToTitleId"
       | "tokenURI"
+      | "totalSupply"
       | "transferFrom"
   ): FunctionFragment;
 
@@ -346,6 +352,10 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "ownerTokenAtIndex",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "parameterCount",
     values?: undefined
   ): string;
@@ -393,11 +403,19 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "tokenAtIndex",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokenToTitleId",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom",
@@ -518,6 +536,10 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "ownerTokenAtIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "parameterCount",
     data: BytesLike
   ): Result;
@@ -558,7 +580,15 @@ export interface IJSCTitleTokenInterface extends utils.Interface {
     functionFragment: "tokenAtIndex",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenToTitleId",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
     data: BytesLike
@@ -1070,6 +1100,12 @@ export interface IJSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string] & { owner: string }>;
 
+    ownerTokenAtIndex(
+      owner: PromiseOrValue<string>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     parameterCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     parameterIteratorGet(
@@ -1122,15 +1158,21 @@ export interface IJSCTitleToken extends BaseContract {
     ): Promise<[BigNumber]>;
 
     tokenAtIndex(
-      owner: PromiseOrValue<string>,
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    tokenToTitleId(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferFrom(
       from: PromiseOrValue<string>,
@@ -1312,6 +1354,12 @@ export interface IJSCTitleToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  ownerTokenAtIndex(
+    owner: PromiseOrValue<string>,
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   parameterCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   parameterIteratorGet(
@@ -1360,15 +1408,21 @@ export interface IJSCTitleToken extends BaseContract {
   ): Promise<BigNumber>;
 
   tokenAtIndex(
-    owner: PromiseOrValue<string>,
     index: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  tokenToTitleId(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   tokenURI(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferFrom(
     from: PromiseOrValue<string>,
@@ -1550,6 +1604,12 @@ export interface IJSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    ownerTokenAtIndex(
+      owner: PromiseOrValue<string>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     parameterCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     parameterIteratorGet(
@@ -1598,15 +1658,21 @@ export interface IJSCTitleToken extends BaseContract {
     ): Promise<BigNumber>;
 
     tokenAtIndex(
-      owner: PromiseOrValue<string>,
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    tokenToTitleId(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferFrom(
       from: PromiseOrValue<string>,
@@ -1975,6 +2041,12 @@ export interface IJSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    ownerTokenAtIndex(
+      owner: PromiseOrValue<string>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     parameterCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     parameterIteratorGet(
@@ -2023,8 +2095,12 @@ export interface IJSCTitleToken extends BaseContract {
     ): Promise<BigNumber>;
 
     tokenAtIndex(
-      owner: PromiseOrValue<string>,
       index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    tokenToTitleId(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2032,6 +2108,8 @@ export interface IJSCTitleToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferFrom(
       from: PromiseOrValue<string>,
@@ -2214,6 +2292,12 @@ export interface IJSCTitleToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    ownerTokenAtIndex(
+      owner: PromiseOrValue<string>,
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     parameterCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     parameterIteratorGet(
@@ -2262,8 +2346,12 @@ export interface IJSCTitleToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     tokenAtIndex(
-      owner: PromiseOrValue<string>,
       index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    tokenToTitleId(
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2271,6 +2359,8 @@ export interface IJSCTitleToken extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferFrom(
       from: PromiseOrValue<string>,

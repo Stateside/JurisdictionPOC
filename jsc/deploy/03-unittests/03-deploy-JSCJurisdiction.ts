@@ -1,7 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
+import { networkConfig } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
@@ -14,7 +13,7 @@ const deployJSCJurisdiction: DeployFunction = async function (hre: HardhatRuntim
   const jscConfigurableLib = await get("production_JSCConfigurableLib")
 
   log("----------------------------------------------------")
-  log("Deploying unittests_JSCJurisdiction and waiting for confirmations...")
+  log("Deploying unittests_JSCJurisdiction...")
   const jscJurisdictionContract = await deploy("unittests_JSCJurisdiction", {
     from: deployer,
     contract: "JSCJurisdiction",
@@ -37,9 +36,6 @@ const deployJSCJurisdiction: DeployFunction = async function (hre: HardhatRuntim
   )
 
   log(`unittests_JSCJurisdiction deployed at ${jscJurisdiction.address}`)
-  if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    await verify(jscJurisdiction.address, [])
-  }
 }
 
 export default deployJSCJurisdiction

@@ -1,9 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
-// @ts-ignore
-import { ethers } from "hardhat" 
+import { networkConfig } from "../../helper-hardhat-config"
 
 const deployJSCTitleTokenReceiverTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -12,7 +9,7 @@ const deployJSCTitleTokenReceiverTest: DeployFunction = async function (hre: Har
   const { deployer } = await getNamedAccounts()
 
   log("----------------------------------------------------")
-  log("Deploying unittests_JSCTitleTokenReceiverTest and waiting for confirmations...")
+  log("Deploying unittests_JSCTitleTokenReceiverTest...")
   const jscTitleTokenReceiverTest = await deploy("unittests_JSCTitleTokenReceiverTest", {
     from: deployer,
     contract: "JSCTitleTokenReceiverTest",

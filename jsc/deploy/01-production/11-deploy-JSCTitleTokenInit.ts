@@ -14,7 +14,7 @@ const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRunt
 
   log("----------------------------------------------------")
   log(`Initializing production_JSCTitleToken...`)
-  await init(jscTitleToken.address, "Demo", "DEMO", "http://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
+  await init(jscTitleToken.address, "Demo", "DEMO", "https://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
 }
 
 const init = async (jscTitleTokenAddress:string, name: string, symbol:string, uri:string, jscJurisdictionAddress:string) => {

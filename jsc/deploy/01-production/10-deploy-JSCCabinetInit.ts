@@ -19,8 +19,8 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
 
   const jscCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscCabinet.init(jscJurisdictionContract.address,
-    [owner.address, bob.address,  jane.address, sara.address, bryan.address,  paul.address, alex.address],
-    [J,             L,            L,            L,            E,              E,            E])
+    [bob.address,  jane.address, sara.address, bryan.address,  paul.address, alex.address],
+    [J,            L,            L,            E,              E,            E])
   }
 
 export default deployJSCCabinetInit

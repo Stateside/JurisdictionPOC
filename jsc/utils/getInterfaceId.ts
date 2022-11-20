@@ -1,7 +1,15 @@
+// @ts-ignore
 import { ethers } from 'hardhat'
 import { utils } from 'ethers'
 import * as tc from "../typechain-types"
 
+/*
+   The interfaces in Solidity have an ID which is based on a has of the function signatures in that interface.
+   
+   ERC165 is a standard mechanism for determining if a contract implements a given interface.
+
+   This file contains constants with the ID's of interfaces used by the jurisdiciton contracts.
+ */
 const verbose = false;
 
 export const getInterfaceID = (name:string, contractInterface: utils.Interface) => {

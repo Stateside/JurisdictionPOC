@@ -26,15 +26,31 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
   function init(string memory name_, string memory symbol_, string memory baseURI_, address jurisdiction_ ) external;
 
   /**
+   * @dev Returns the amount of title tokens in existence.
+   */
+  function totalSupply() external view returns (uint256);
+  
+  /**
+   * @dev returns the tokenId at the given index. The index must be between 0 and totalSupply(). Note that the supply
+   * of tokens (and the assigned indexes) may change if iterating the list spans multiple blocks.
+   */
+  function tokenAtIndex(uint256 index) external view returns (uint256);
+
+  /**
    * @dev returns the tokenId belonging to the given owner at the given index. The given index must be
    * between 0 and balanceOf(owner)
    */
-  function tokenAtIndex(address owner, uint256 index) external view returns (uint256);
+  function ownerTokenAtIndex(address owner, uint256 index) external view returns (uint256);
 
   /**
-   * @dev Returns `tokenId` for given title id.
+   * @dev Returns `tokenId` for given titleId.
    */
   function titleToTokenId(string memory titleId) external pure returns (uint256);
+
+  /**
+   * @dev Returns `titleId` for given tokenId.
+   */
+  function tokenToTitleId(uint tokenId) external view returns (string memory);
 
   /**
    * @dev Creates a new title token and transfers it to `owner`.

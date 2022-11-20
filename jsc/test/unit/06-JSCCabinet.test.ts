@@ -66,4 +66,5 @@ describe("JSCCabinet", async () => {
 })
 
   /*
+     Check link to jurisdiction
   */

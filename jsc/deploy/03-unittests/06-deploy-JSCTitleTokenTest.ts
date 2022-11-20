@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
+import { networkConfig } from "../../helper-hardhat-config"
 
 const deployJSCTitleTokenTest: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -12,7 +12,7 @@ const deployJSCTitleTokenTest: DeployFunction = async function (hre: HardhatRunt
   const jscTitleTokenLib = await get("production_JSCTitleTokenLib")
 
   log("----------------------------------------------------")
-  log("Deploying unittests_JSCTitleTokenTest and waiting for confirmations...")
+  log("Deploying unittests_JSCTitleTokenTest...")
   const jscTitleTokenTest = await deploy("unittests_JSCTitleTokenTest", {
     from: deployer,
     contract: "JSCTitleTokenTest",
