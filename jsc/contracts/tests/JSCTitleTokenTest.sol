@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "contracts/production/JSCTitleToken.sol";
 
 /**
-  This contract is for testing the JSCTitleTokenTest contract.
+  @dev This contract is for testing the JSCTitleTokenTest contract.
  */
 contract JSCTitleTokenTest is JSCTitleToken {
   function setFrozenToken(uint tokenId, bool frozen) external { 
