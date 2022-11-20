@@ -16,31 +16,45 @@ We will also have several abstract contracts that act as base classes
 
 # Development
 
-To insall all dependencies run 
+To install all dependencies run 
 ```
 yarn
 ```
 
+---
 To compile all smart contracts and update the typechain-types run
 ```
 yarn hardhat compile
 ```
 
+---
 To run smart contract unit tests run
 ```
 yarn hardhat test
 ```
 
+---
 To run an instance of the hardhat blockchain simulation (Starts a JSON-RPC server on top of Hardhat EVM)
 ```
 yarn hardhat node
 ```
 
+---
 To deploy contracts to the localhost blockchain run
 ```
 yarn hardhat deploy
 ```
 
+---
+To see the addresses of deployed development contracts perform the following series of steps:
+```
+yarn hardhat deploy
+cd ../frontend
+yarn dev
+```
+Then open your browser and vist the URL http://localhost:3000/api/getContracts
+
+---
 For other commands run
 ```
 yarn hardhat --help
