@@ -18,6 +18,11 @@ interface IJSCCabinet is IAccessControlEnumerable, IJSCConfigurable {
         address[] memory accounts,
         bytes32[] memory roles) external;
 
+    /**
+     * @dev Returns the address of the jurisdicion of which this contract is a part
+     */
+    function getJurisdiction() view external returns (address);
+
     /** @dev Indicates if the given member account is a member of this cabinet */
     function isMember(address account) external view returns (bool);
 

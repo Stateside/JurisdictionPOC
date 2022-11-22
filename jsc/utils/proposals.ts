@@ -37,9 +37,9 @@ export const prepareProposal = async (governor:tc.IJSCGovernor, revs: tc.IJSCGov
         description,
         descriptionHash,
         proposalHash: BigNumber.from(0),
-        version,
+        version:-1,
         incrementVersion: async function() {
-            this.version = this.version+1
+            this.version = this.version === -1 ? version : this.version+1
             this.proposalHash = await governor.hashProposal(revs, descriptionHash, this.version)
         }
     }

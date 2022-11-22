@@ -14,12 +14,13 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
   const { log, get } = deployments
   const jscJurisdiction = await get("development_JSCJurisdiction")
   const jscGovernorContract = await get("development_JSCGovernor")
-  const jscCabinet = await get("production_JSCCabinet")
+  const jscCabinetContract = await get("development_JSCCabinet")
   const jscTitleTokenContract = await get("development_JSCTitleToken")
 
   log("Initializing development_JSCGovernor...")
   const jscTitleToken:tc.IJSCTitleToken = await ethers.getContractAt("JSCTitleToken", jscTitleTokenContract.address)
   const jscGovernor:tc.IJSCGovernor = await ethers.getContractAt("JSCGovernor", jscGovernorContract.address)
+  const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscGovernor.init(jscJurisdiction.address)
 
   const sampleProposals = await createSampleProposals(jscGovernor, jscCabinet, jscTitleToken)
@@ -33,12 +34,10 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
   log(`development_JSCGovernor Initialized with the following tokens:`)
   log("/------------------------------------------------------------\\")
   const pCount = await (await jscGovernor.proposalCount()).toNumber();
-  log(`pCount: ${pCount}`)
   for (let pi = 0; pi < pCount; pi++) {
     const p = await (await jscGovernor.proposalAtIndex(pi)).toHexString().toLowerCase();
-    log(`Proposal: ${proposalMap[p].description}`)
+    log(`Proposal: ${proposalMap[p].description} (${p})`)
   }
-
   log("\\------------------------------------------------------------/")
 }
 

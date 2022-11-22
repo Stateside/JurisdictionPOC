@@ -50,6 +50,13 @@ contract JSCCabinet is
     }
 
     /**
+     * @dev See {IJSCCabinet-getJurisdiction}.
+     */
+    function getJurisdiction() view external returns (address) {
+        return _jurisdiction;
+    }
+
+    /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId)

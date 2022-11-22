@@ -42,13 +42,13 @@ yarn hardhat node
 ---
 To deploy contracts to the localhost blockchain run
 ```
-yarn hardhat deploy
+yarn hardhat deploy --reset --network localhost
 ```
 
 ---
 To see the addresses of deployed development contracts perform the following series of steps:
 ```
-yarn hardhat deploy
+yarn hardhat deploy --reset --network localhost
 cd ../frontend
 yarn dev
 ```
