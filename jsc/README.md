@@ -14,14 +14,54 @@ We will also have several abstract contracts that act as base classes
 - JSCRevisioned which provides functionality for registering Revisions and executing them.
 - UUPSUpgradeable (or something similar) to allow the smart contract to be upgradeable. 
 
-Tasks
+# Development
 
-- Create JSCRevisioned
-- Create JSCConfigurable
-- Create JSCJurisdiction
-- Create JSCTitleTokens
-- Create JSCGovernor
-- Create JSCCabinet
+To install all dependencies run 
+```
+yarn
+```
+
+---
+To compile all smart contracts and update the typechain-types run
+```
+yarn hardhat compile
+```
+
+---
+To run smart contract unit tests run
+```
+yarn hardhat test
+```
+
+---
+To run an instance of the hardhat blockchain simulation (Starts a JSON-RPC server on top of Hardhat EVM)
+```
+yarn hardhat node
+```
+
+---
+To deploy contracts to the localhost blockchain run
+```
+yarn hardhat deploy
+```
+
+---
+To see the addresses of deployed development contracts perform the following series of steps:
+```
+yarn hardhat deploy
+cd ../frontend
+yarn dev
+```
+Then open your browser and vist the URL http://localhost:3000/api/getContracts
+
+---
+For other commands run
+```
+yarn hardhat --help
+```
+
+# Tasks
+
 - Create UUPSUpgradeable
 - Who pays for everything?
   - Proposals and Voting? Can we allow members to vote using transactions paid for by the jurisdiction?
@@ -33,7 +73,7 @@ Tasks
     - In this case the EIP-2612 mechanism might be useful too
     - It would allow the member to sign a message that let's the website submit vote for them and pay the gas fees
 
-TODO
+# TO DO
 
 - Add payments to the offer transactions in JSCTitleToken
 - Add a parameter to JSVTitleToken to indicate how much ownership transfers cost

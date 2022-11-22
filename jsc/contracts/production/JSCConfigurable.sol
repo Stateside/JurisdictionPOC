@@ -7,7 +7,7 @@ import "./JSCFreezable.sol";
 import "../IJSCConfigurable.sol";
 
 /**
-  This is the base class for all smart contracts that contain configurable parameters that must be
+  @dev This is the base class for all smart contracts that contain configurable parameters that must be
   made available for update using the revisions mechanism. Supported parameter types are: address, bool, uint, and string.
 
   This base class maintains a list of parameters, their current values, and provides functionality to allow the 

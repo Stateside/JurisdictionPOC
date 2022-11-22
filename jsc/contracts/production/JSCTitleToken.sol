@@ -8,7 +8,7 @@ import "../IJSCTitleToken.sol";
 import {JSCTitleTokenLib as tlib} from "libraries/JSCTitleTokenLib.sol";
 
 /**
- * This is the title token smart contract.
+ * @dev This is the title token smart contract.
  *
  * Includes implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard.
  */
