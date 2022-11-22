@@ -7,6 +7,7 @@
     "dev80": "next dev -p 80",
     "build": "next build",
     "start": "next start",
+    "typechain": "cp -r ../jsc/typechain-types .",
     "lint": "next lint"
   },
   "dependencies": {

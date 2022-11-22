@@ -3,8 +3,8 @@ import Router from 'next/router'
 import { useWeb3React } from "@web3-react/core";
 import { connectors } from "@/connectors/index";
 import { getAccountShortName, refreshState } from '@/utils/util'
-import { Button, useDisclosure } from '@chakra-ui/react'
-import WalletIcon from '@/components/icons/WalletIcon'
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, useDisclosure } from '@chakra-ui/react'
+import WalletIcon from '@/components/icons/walletIcon'
 import SelectWalletModal from "@/components/Modal";
 
 type Props = {
@@ -12,38 +12,50 @@ type Props = {
     label: string
     variant: string
     margin?: string
+    showError: boolean
 }
 
 const Connect = (props: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const { account, activate, deactivate, active } = useWeb3React();
+    const { account, activate, deactivate, active, error } = useWeb3React();
     const { label, variant } = props;
-    const path = window.location.pathname;
+
+    const buttonProps:any = {...props}
+    delete buttonProps["showError"]
 
     useEffect(() => {
         const provider = window.localStorage.getItem("provider");
-        if (provider) activate(connectors[provider]);
+        if (provider) activate((connectors as any)[provider], (e) => console.error(e));
     }, []);
+
+    const onclick = () => {
+        if (!active) 
+            onOpen()
+        else
+            ; // nothing to do. User must disconnect using MetaMask itself
+    }
 
     return (
         <>
-            <Button
-                {...props}
+            {!error && <Button
+                {...buttonProps}
                 variant={variant}
                 rightIcon={<WalletIcon />}
-                onClick={!active ? onOpen : () => {
-                    refreshState()
-                    deactivate()
-                    Router.reload(path)
-                }}
+                onClick={onclick}
                 _hover={{
                     background: "brand.javaHover",
                 }}>
                 {
                    !active ? label : getAccountShortName(account)
                 }
-            </Button>
+            </Button>}
             <SelectWalletModal isOpen={isOpen} closeModal={onClose} />
+            {error && props.showError && <Alert status='error'>
+                <AlertIcon />
+                <AlertTitle>Sorry!</AlertTitle>
+                <AlertDescription>{error?.message}</AlertDescription>
+                </Alert>
+            }
         </>
 
     )
