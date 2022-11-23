@@ -56,7 +56,8 @@ const Home: NextPage = () => {
           <Connect 
             variant='Heading'
             w='250px'
-            label={homeLabels.ctaConnect} />
+            label={homeLabels.ctaConnect}
+            showError={true} />
         }
       </Flex>
     </Box>

@@ -119,6 +119,7 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "getAddressParameter(string)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getBoolParameter(string)": FunctionFragment;
+    "getJurisdiction()": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
@@ -179,6 +180,7 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       | "getAddressParameter"
       | "getApproved"
       | "getBoolParameter"
+      | "getJurisdiction"
       | "getNumberParameter"
       | "getRevisionByName"
       | "getStringParameter"
@@ -275,6 +277,10 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getBoolParameter",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getJurisdiction",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getNumberParameter",
@@ -500,6 +506,10 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getBoolParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getJurisdiction",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1061,6 +1071,8 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    getJurisdiction(overrides?: CallOverrides): Promise<[string]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1347,6 +1359,8 @@ export interface JSCTitleTokenTest extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  getJurisdiction(overrides?: CallOverrides): Promise<string>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1624,6 +1638,8 @@ export interface JSCTitleTokenTest extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    getJurisdiction(overrides?: CallOverrides): Promise<string>;
 
     getNumberParameter(
       name: PromiseOrValue<string>,
@@ -2097,6 +2113,8 @@ export interface JSCTitleTokenTest extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getJurisdiction(overrides?: CallOverrides): Promise<BigNumber>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -2375,6 +2393,8 @@ export interface JSCTitleTokenTest extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getJurisdiction(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getNumberParameter(
       name: PromiseOrValue<string>,

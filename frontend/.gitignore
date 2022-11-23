@@ -37,3 +37,4 @@ yarn-error.log*
 /deployments
 /cache
 /artifacts
+/typechain-types

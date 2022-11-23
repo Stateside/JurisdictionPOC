@@ -5,6 +5,7 @@ export const siteMainMenu:Array<MenuItemInterface> = [
     {label: 'Your Properties', url: '/tokens', command: '⌘T'},
     {label: 'Create a Jurisdiction', url: '/create-jurisdiction', command: '⌘J'},
     {label: 'Create a Propossal', url: '/create-propossal', command: '⌘P'},
+    {label: 'List Contracts', url: '/contracts', command: '⌘P'},
 ]
 
 export const siteLayoutData:SiteLayoutData = {
@@ -24,7 +25,35 @@ export const homeLabels:HomeLabels = {
         digital registries`
     },
     ctaConnect: 'Connect with your Wallet'
+}
 
+export const listContractsLabels = {
+    pageTitle: 'Deployed Contracts',
+    heading: "Deployed Contracts"
+}
+
+export const jscJurisdicitonLabels = {
+    pageTitle: 'JSCJurisdiction',
+    heading: "JSCJurisdiction Contracts",
+    tableCaption: "Jurisdiction Contracts"
+}
+
+export const jscCabinetLabels = {
+    pageTitle: 'JSCCabinet',
+    heading: "Cabinet Members",
+    tableCaption: "Cabinet Members"
+}
+
+export const jscGovernorLabels = {
+    pageTitle: 'JSCGovernor',
+    heading: "Current and Past Proposals",
+    tableCaption: "Current and Past Members"
+}
+
+export const jscTitleTokenLabels = {
+    pageTitle: 'JSCTitleToken',
+    heading: "All Title Tokens",
+    tableCaption: "All Title Tokens"
 }
 
 /**

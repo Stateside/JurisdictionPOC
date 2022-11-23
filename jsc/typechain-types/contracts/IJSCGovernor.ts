@@ -126,6 +126,7 @@ export interface IJSCGovernorInterface extends utils.Interface {
     "executeRevision(string,bytes)": FunctionFragment;
     "getAddressParameter(string)": FunctionFragment;
     "getBoolParameter(string)": FunctionFragment;
+    "getJurisdiction()": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
@@ -160,6 +161,7 @@ export interface IJSCGovernorInterface extends utils.Interface {
       | "executeRevision"
       | "getAddressParameter"
       | "getBoolParameter"
+      | "getJurisdiction"
       | "getNumberParameter"
       | "getRevisionByName"
       | "getStringParameter"
@@ -210,6 +212,10 @@ export interface IJSCGovernorInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getBoolParameter",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getJurisdiction",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getNumberParameter",
@@ -329,6 +335,10 @@ export interface IJSCGovernorInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getBoolParameter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getJurisdiction",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -702,6 +712,8 @@ export interface IJSCGovernor extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    getJurisdiction(overrides?: CallOverrides): Promise<[string]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -858,6 +870,8 @@ export interface IJSCGovernor extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  getJurisdiction(overrides?: CallOverrides): Promise<string>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -1005,6 +1019,8 @@ export interface IJSCGovernor extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    getJurisdiction(overrides?: CallOverrides): Promise<string>;
 
     getNumberParameter(
       name: PromiseOrValue<string>,
@@ -1289,6 +1305,8 @@ export interface IJSCGovernor extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getJurisdiction(overrides?: CallOverrides): Promise<BigNumber>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1431,6 +1449,8 @@ export interface IJSCGovernor extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getJurisdiction(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getNumberParameter(
       name: PromiseOrValue<string>,

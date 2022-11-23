@@ -26,6 +26,11 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
   function init(string memory name_, string memory symbol_, string memory baseURI_, address jurisdiction_ ) external;
 
   /**
+   * @dev Returns the address of the jurisdicion of which this contract is a part
+   */
+  function getJurisdiction() view external returns (address);
+
+  /**
    * @dev Returns the amount of title tokens in existence.
    */
   function totalSupply() external view returns (uint256);

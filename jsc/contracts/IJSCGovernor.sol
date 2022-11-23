@@ -111,6 +111,11 @@ interface IJSCGovernor is IJSCConfigurable {
     function init(address jurisdiction) external;
 
     /**
+     * @dev Returns the address of the jurisdicion of which this contract is a part
+     */
+    function getJurisdiction() view external returns (address);
+
+    /**
      * @dev Returns the number of proposals every created
      */
     function proposalCount() external view returns (uint256);

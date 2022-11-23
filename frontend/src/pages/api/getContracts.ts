@@ -3,7 +3,7 @@ import fs from "fs";
 
 const FOLDER = "../jsc/deployments/localhost/"
 
-type ContractInfo = {
+export type ContractInfo = {
   name:string
   address:string
   description:string

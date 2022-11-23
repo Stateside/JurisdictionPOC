@@ -1,8 +1,7 @@
-import * as tc from "../typechain-types"
-// @ts-ignore
-import { ethers } from "hardhat"
+import * as tc from "../../typechain-types"
+import { ethers } from "ethers";
 import { LEGISLATIVE_ROLE } from "../utils/roles"
-import { createProposalVersion, prepareProposal } from "./proposals";
+import { prepareProposal } from "./proposals";
 import { accountsByName } from "../utils/accounts"
 
 /*

@@ -44,6 +44,13 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
   }
 
   /**
+   * @dev See {IJSCCabinet-getJurisdiction}.
+   */
+  function getJurisdiction() view external returns (address) {
+      return _storage.jurisdiction;
+  }
+
+  /**
    * @dev See {IERC165-supportsInterface}.
    */
   function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, JSCConfigurable) returns (bool) {

@@ -1,7 +1,6 @@
-import * as tc from "../typechain-types"
+import * as tc from "../../typechain-types"
 // @ts-ignore
-import { ethers } from "hardhat"
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 /*
    These are some utilities to make working with proposals easier in unit tests and development. Since
