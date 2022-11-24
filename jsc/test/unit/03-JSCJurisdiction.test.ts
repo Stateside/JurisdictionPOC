@@ -42,7 +42,7 @@ describe("JSCJurisdiction", async () => {
   }
 
   beforeEach(async () => {
-    await deployments.fixture(["production", "unittests"])
+    await deployments.fixture(["unittests"])
     jurisdiction = await ethers.getContract("unittests_JSCJurisdiction")
   })
 

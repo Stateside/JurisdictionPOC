@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 /**
-  This library contains code for use by the JSCRevisioned smart contract. It's purpose is primarily to reduce the size of 
+  @dev This library contains code for use by the JSCRevisioned smart contract. It's purpose is primarily to reduce the size of 
   smart contracts that use this contract as a base class and centralize the type and functionality definitions.
  */
 library JSCRevisionsLib {

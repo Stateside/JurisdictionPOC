@@ -7,6 +7,7 @@ export type ContractInfo = {
   name:string
   address:string
   description:string
+  type: "library"|"contract"
 }
 
 /** Loads the contracts that have been deployed by Hardhat on the "localhost" blockchain */
@@ -20,7 +21,8 @@ const getContracts = async (req: NextApiRequest, res: NextApiResponse) => {
       return {
         name: f.substring("development_".length, f.length-".json".length),
         address: json.address,
-        description: json.devdoc.details
+        description: json.devdoc.details,
+        type: json.storageLayout.storage.length == 0 ? "library" : "contract"
       }
     })
 

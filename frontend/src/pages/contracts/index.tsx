@@ -3,7 +3,7 @@ import Head from 'next/head'
 import NextLink from 'next/link'
 import { useEffect, useState } from 'react'
 import { Heading, Box } from "@chakra-ui/layout"
-import { Container, Link, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack } from '@chakra-ui/react'
+import { Container, Link, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack, Text } from '@chakra-ui/react'
 import { listContractsLabels } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import { ContractInfo } from '../api/getContracts'
@@ -53,9 +53,13 @@ const ListContracts: NextPage = () => {
                         {contracts.map(c => 
                           <Tr key={c.address}>
                             <Td>
-                              <NextLink  href={{ pathname: 'contracts/'+c.name, query: { address: c.address } }}>
-                                <Link>{c.name}</Link>
-                              </NextLink>
+                              {c.type === "contract" 
+                                ? 
+                                <NextLink href={{ pathname: 'contracts/'+c.name, query: { address: c.address } }}>
+                                  <Link as='b' color={"darkblue"}>{c.name}</Link>
+                                </NextLink>
+                                : <Text color={"gray"}>{c.name}</Text>
+                                }
                             </Td>
                             <Td>{getAccountShortName(c.address)}</Td>
                             <Td flexWrap={'wrap'}>{c.description}</Td>

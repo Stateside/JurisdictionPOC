@@ -10,7 +10,7 @@ import "./JSCConfigurable.sol";
 import "../IJSCCabinet.sol";
 
 /**
-  @dev This is an implementation of the IJSCCabinet interface. See {IJSCCabinet}.
+  @dev This contract keeps track of the members of the jurisdiction cabinet and their roles.
 */
 contract JSCCabinet is
     Context,

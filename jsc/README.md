@@ -16,39 +16,41 @@ We will also have several abstract contracts that act as base classes
 
 # Development
 
-To install all dependencies run 
+To install all dependencies, type:
 ```
 yarn
 ```
 
 ---
-To compile all smart contracts and update the typechain-types run
+To compile all smart contracts and update the jsc/typechain-types folder, type:
 ```
 yarn hardhat compile
 ```
 
 ---
-To run smart contract unit tests run
+To execute all the smart contract unit tests, type:
 ```
 yarn hardhat test
 ```
 
 ---
-To run an instance of the hardhat blockchain simulation (Starts a JSON-RPC server on top of Hardhat EVM)
+To run an instance of the hardhat blockchain simulation (Starts a JSON-RPC server on top of Hardhat EVM), type:
 ```
-yarn hardhat node
+yarn hardhat node --tags development
 ```
+This will run the "localhost" blockchain with only the "development" contracts deployed.
 
 ---
-To deploy contracts to the localhost blockchain run
+To deploy updated contracts to the running localhost blockchain for testing the frontend, type:
 ```
-yarn hardhat deploy --reset --network localhost
+yarn hardhat deploy --reset --network localhost --tags development
 ```
+This will remove all old deployments (--reset), deploy them to the "localhost" blockchain (rather than the "hardhat" one used for unit testing), and deploy only the development contracts.
 
 ---
-To see the addresses of deployed development contracts perform the following series of steps:
+To see the addresses of deployed development contracts perform the following series of steps, type:
 ```
-yarn hardhat deploy --reset --network localhost
+yarn hardhat deploy --reset --network localhost --tags development
 cd ../frontend
 yarn dev
 ```
@@ -75,14 +77,17 @@ yarn hardhat --help
 
 # TO DO
 
+- Add unit tests for Cabinet
 - Add payments to the offer transactions in JSCTitleToken
 - Add a parameter to JSVTitleToken to indicate how much ownership transfers cost
 - Make sure operators and approvers do not have more permissins than required
 - Add a parameter to the title token to disable NFT support
 - Add a boolean to the individual tokens to enable NFT support
 - Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
-- Add tests for contracts when the gover is the owner
+- Add tests for contracts when the governor is the owner
 - Test frozen jurisdiciton, and governor contracts
 - Switch RevisionMap implementation in JSCRevisioned to use OpenZeppelins EnumerableSet
 - Switch TokenIdList and OfferList implementations in JSCTitleTokens to use OpenZeppelins EnumerableSet
 - Analyze contracts with some vulnerabulity scanners like Mythril, Slither, and Securify
+- Add parameters to contracts to control voting rules for revisions
+- Add mechanism to contracts to allow register to pay for operations performed by members

@@ -7,7 +7,7 @@ const deployJSCTitleTokenTestInit: DeployFunction = async function (hre: Hardhat
   // @ts-ignore
   const { deployments, network } = hre
   const { log, get } = deployments
-  const jscJurisdiction = await get("production_JSCJurisdiction")
+  const jscJurisdiction = await get("unittests_JSCJurisdiction")
   const jscTitleTokenTest = await get("unittests_JSCTitleTokenTest")
 
   log(`Initializing unittests_JSCTitleTokenTest...`)

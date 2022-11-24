@@ -8,10 +8,6 @@ import "../IJSCJurisdiction.sol";
 
 /**
   @dev This is the top level container for all other smart contracts in the jurisdiction.
-
-  It contains references to all the other contracts in the jurisdiction in a mapping whose
-  key is the name of the contract. All contracts should go through the jurisdiction contract
-  to determine the latest contract instances in use.
 */
 contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
   using clib for clib.ParameterMap;

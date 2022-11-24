@@ -11,7 +11,7 @@ describe("JSCRevisionedTest", async () => {
   let owner, bob, jane, sara;
 
   beforeEach(async () => {
-    await deployments.fixture(["production", "unittests"])
+    await deployments.fixture(["unittests"])
     proposable = await ethers.getContract("unittests_JSCRevisionedTest");
     [owner, bob, jane, sara] = await ethers.getSigners();
   })
