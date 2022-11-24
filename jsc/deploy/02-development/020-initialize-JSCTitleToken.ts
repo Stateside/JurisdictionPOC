@@ -11,9 +11,9 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   const { deployments } = hre
   const { log, get } = deployments
   const jscJurisdiction = await get("development_JSCJurisdiction")
-  const jscTitleTokenContract = await get("development_JSCTitleToken")
+  const jscTitleTokenContract = await get("development_JSCTitleTokenTest")
 
-  log("Initializing development_JSCTitleToken...")
+  log("Initializing development_JSCTitleTokenTest...")
   const jscTitleToken:tc.JSCTitleTokenTest = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
   await jscTitleToken.init(
     "Development Tokens",
@@ -166,6 +166,8 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
 
   // In development we will freeze Peters account for testing
   await jscTitleToken.setFrozenOwner(Peter.address, true);
+  const tokenId = await jscTitleToken.titleToTokenId("title-14")
+  await jscTitleToken.setFrozenToken(tokenId, true);
 
   log(`development_JSCTitleToken Initialized with the following tokens:`)
   log("/--------------------------------------------------------------\\")

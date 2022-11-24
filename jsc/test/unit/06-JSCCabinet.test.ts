@@ -22,11 +22,11 @@ describe("JSCCabinet", async () => {
   const zeroAddress = '0x0000000000000000000000000000000000000000';
 
   beforeEach(async () => {
-    await deployments.fixture(["production", "unittests"]); // Reset blockchain to initial state with deployed and initialized contracts
-    cabinet = await ethers.getContract("production_JSCCabinet");
-    jurisdiction = await ethers.getContract("production_JSCJurisdiction");
-    revisionsLib = await ethers.getContract("production_JSCRevisionsLib");
-    configurableLib = await ethers.getContract("production_JSCConfigurableLib");
+    await deployments.fixture(["unittests"]); // Reset blockchain to initial state with deployed and initialized contracts
+    cabinet = await ethers.getContract("unittests_JSCCabinet");
+    jurisdiction = await ethers.getContract("unittests_JSCJurisdiction");
+    revisionsLib = await ethers.getContract("unittests_JSCRevisionsLib");
+    configurableLib = await ethers.getContract("unittests_JSCConfigurableLib");
     [owner, bob, jane, sara, bryan, paul, alex, ...otherAccounts] = await ethers.getSigners();
 
     await (jurisdiction as tc.JSCJurisdiction).transferOwnership(cabinet.address)

@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "contracts/production/JSCTitleToken.sol";
 
 /**
-  @dev This contract is for testing the JSCTitleTokenTest contract.
+ * @dev This is the title token smart contract. It includes an implementation of the https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard.
  */
 contract JSCTitleTokenTest is JSCTitleToken {
   function setFrozenToken(uint tokenId, bool frozen) external { 
