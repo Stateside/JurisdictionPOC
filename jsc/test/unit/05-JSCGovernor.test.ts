@@ -4,6 +4,7 @@ import { deployments, ethers, network } from "hardhat"
 import { expect } from "chai"
 import { BigNumber } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils"
+import "@nomicfoundation/hardhat-chai-matchers/panic"
 
 import * as iid from "../../utils/getInterfaceId"
 import { ProposalState, VoteType } from "../../utils/types"
@@ -315,7 +316,7 @@ describe("JSCGovernor", async () => {
     await expect(await governor.proposalAtIndex(1)).to.equal(p2.proposalHash);
     await expect(await governor.proposalAtIndex(2)).to.equal(p3.proposalHash);
     await expect(await governor.proposalAtIndex(3)).to.equal(p4.proposalHash);
-    await expect(governor.proposalAtIndex(4)).to.be.revertedWithPanic("0x32"); // Array accessed at an out-of-bounds or negative index
+    await expect(governor.proposalAtIndex(4)).to.be.revertedWithPanic(PANIC_CODES.ARRAY_ACCESS_OUT_OF_BOUNDS);
   });
 })
 
