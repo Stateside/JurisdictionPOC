@@ -90,7 +90,8 @@ contract JSCCabinet is
         if (!hasRole(role, account)) {
             super._grantRole(role, account);
             _roleCounts[account]++; // Counts number of roles this account has
-            if (getRoleMemberCount(role) == 1) _roles.add(role); // _roles holds the set of all roles currently in use
+            if (getRoleMemberCount(role) == 1) 
+                _roles.add(role); // _roles holds the set of all roles currently in use
         }
     }
 
@@ -98,7 +99,8 @@ contract JSCCabinet is
         if (hasRole(role, account)) {
             super._revokeRole(role, account);
             _roleCounts[account]--; // Counts number of roles this account has
-            if (getRoleMemberCount(role) == 0) _roles.remove(role); // _roles holds the set of all roles currently in use
+            if (getRoleMemberCount(role) == 0) 
+                _roles.remove(role); // _roles holds the set of all roles currently in use
         }
     }
 
@@ -222,8 +224,10 @@ contract JSCCabinet is
         address account;
         (account) = abi.decode(pdata, (address));
         uint cnt = getRoleCount();
-        for (uint i = 0; i < cnt; i++) {
-            _revokeRole(getRoleAt(i), account);
+        // Go backwards through roles in case a role is removed
+        // Stop when i == 0 since uint's cannot be negative
+        for (uint i = cnt; i > 0; i--) { 
+            _revokeRole(getRoleAt(i-1), account);
         }
     }
 }

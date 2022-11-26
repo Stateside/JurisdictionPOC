@@ -432,7 +432,7 @@ describe("JSCTitleToken", async () => {
     await expect(await titleToken.connect(sara).countOffersToSell(tokenId1)).to.equal(0);
   });
 
-  it('accepts revision to freeze contract', async function() {
+  it('accepts revisions to freeze & unfreeze contract', async function() {
     await expect(await titleToken.isFrozen()).to.equal(false);
     let revArgs = defaultAbiCoder.encode(["bool"],[true]);
     let tresponse = titleToken.executeRevision("FreezeContract", revArgs);
