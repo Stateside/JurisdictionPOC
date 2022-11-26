@@ -77,17 +77,18 @@ yarn hardhat --help
 
 # TO DO
 
-- Add unit tests for Cabinet
 - Add payments to the offer transactions in JSCTitleToken
-- Add a parameter to JSVTitleToken to indicate how much ownership transfers cost
-- Make sure operators and approvers do not have more permissins than required
+- Add a parameters to JSCTitleToken to indicate how much ownership transfers cost (pay fee to registry + pay fee to a maintainer)
 - Add a parameter to the title token to disable NFT support
 - Add a boolean to the individual tokens to enable NFT support
 - Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
 - Add tests for contracts when the governor is the owner
-- Test frozen jurisdiciton, and governor contracts
+- Test frozen jurisdiction, cabinet, and governor contracts
 - Switch RevisionMap implementation in JSCRevisioned to use OpenZeppelins EnumerableSet
 - Switch TokenIdList and OfferList implementations in JSCTitleTokens to use OpenZeppelins EnumerableSet
 - Analyze contracts with some vulnerabulity scanners like Mythril, Slither, and Securify
 - Add parameters to contracts to control voting rules for revisions
-- Add mechanism to contracts to allow register to pay for operations performed by members
+- Add mechanism to contracts to allow the registry to pay for operations performed by members
+  - This can be done by the member signing a request to perform some operation and sending the request to 
+    the registry front end that then performs the operation on the member´s behalf. This can be done
+    using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol

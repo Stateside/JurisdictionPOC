@@ -115,7 +115,7 @@ library JSCTitleTokenLib {
 
   /** Adds the given tokenId. Fails if the tokenId already exists in the list */
   function addTokenId(TokenIdList storage self, uint tokenId) public {
-    require(self.indexes[tokenId] == 0, "TokenId already exists");
+    require(self.indexes[tokenId] == 0, "tokenId already exists");
 
     self.arr.push(tokenId);
     self.indexes[tokenId] = self.arr.length;
@@ -123,7 +123,7 @@ library JSCTitleTokenLib {
   
   /** Removes the given tokenId. Fails if the tokenId doesn not exist in the list */
   function removeTokenId(TokenIdList storage self, uint tokenId) public {
-    require(self.indexes[tokenId] > 0, "TokenId does not exist");
+    require(self.indexes[tokenId] > 0, "tokenId does not exist");
 
     if (self.indexes[tokenId] < self.arr.length)
       self.arr[self.indexes[tokenId]-1] = self.arr[self.arr.length-1];
@@ -151,7 +151,7 @@ library JSCTitleTokenLib {
 
   /** Adds the given offer. Overwrites any existing offer for the same address */
   function addOffer(OfferList storage self, address buyer, uint amount) public {
-    require(amount > 0, "Amount must not be zero");
+    require(amount > 0, "amount must not be zero");
 
     Offer memory o = Offer(buyer, amount, block.timestamp);
     if (self.indexes[buyer] != 0)
@@ -164,7 +164,7 @@ library JSCTitleTokenLib {
 
   /** Removes the offer from the given offer. Fails if the offer does not exist in the list */
   function removeOffer(OfferList storage self, address buyer) public {
-    require(self.indexes[buyer] > 0, "No offer found");
+    require(self.indexes[buyer] > 0, "no offer found");
 
     if (self.indexes[buyer] < self.arr.length)
       self.arr[self.indexes[buyer]-1] = self.arr[self.arr.length-1];

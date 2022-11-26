@@ -392,6 +392,8 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IJSCTitleToken-acceptOfferToBuy}.
    */
   function acceptOfferToBuy(uint256 tokenId, address buyer) external unfrozenContract {
+    address owner = ownerOf(tokenId);
+    require(_msgSender() == owner, "only the owner can accept an offer to buy");
     _cancelOfferToBuyFrom(tokenId, buyer);
     safeTransferFrom(_msgSender(), buyer, tokenId);
   }

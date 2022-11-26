@@ -20,7 +20,7 @@ describe("JSCTitleToken", async () => {
   let configurableLib: any
   let titleTokenLib: tc.JSCTitleTokenLib
 
-  let owner, bob, jane, sara, otherAccounts;
+  let owner, bob, jane, sara, bryan, otherAccounts;
 
   const zeroAddress = '0x0000000000000000000000000000000000000000';
   const badTokenId1 = 12345;
@@ -47,7 +47,7 @@ describe("JSCTitleToken", async () => {
     revisionsLib = await ethers.getContract("unittests_JSCRevisionsLib");
     configurableLib = await ethers.getContract("unittests_JSCConfigurableLib");
     titleTokenLib = await ethers.getContract("unittests_JSCTitleTokenLib");
-    [owner, bob, jane, sara, ...otherAccounts] = await ethers.getSigners();
+    [owner, bob, jane, sara, bryan, ...otherAccounts] = await ethers.getSigners();
   });
 
   it('remains frozen until initialized', async function() {
@@ -121,6 +121,7 @@ describe("JSCTitleToken", async () => {
     await titleToken.mint(bob.address, titleId1);
     let tokenId = await titleToken.titleToTokenId(titleId1);
     expect(await titleToken.connect(bob).approve(sara.address, tokenId)).to.emit(titleToken, 'Approval').withArgs(bob.address, sara.address, tokenId);
+    expect(titleToken.connect(sara).approve(jane.address, tokenId)).to.be.revertedWith("approve caller is not token owner nor approved for all");
     expect(await titleToken.getApproved(tokenId)).to.equal(sara.address);
     await titleToken.connect(bob).approve(zeroAddress, tokenId);
     expect(await titleToken.getApproved(tokenId)).to.equal(zeroAddress);
@@ -154,7 +155,7 @@ describe("JSCTitleToken", async () => {
     expect(await titleToken.ownerOf(tokenId)).to.equal(sara.address);
   });
 
-  it('(ERC721) correctly transfers NFT from approved address', async function() {
+  it('(ERC721) correctly transfers NFT using approved sender', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId = await titleToken.titleToTokenId(titleId1);
     
@@ -737,6 +738,51 @@ describe("JSCTitleToken", async () => {
   it('reverts write operations when token frozen', async function() {
     await testFrozenToken(true);
   });
+  
+  it('does not allow operators to accept or make offers on behalf of owners', async function() {
+    const ownerAccount = bob
+    const operator = sara
+    const approved = jane
+    const otherAccount = bryan
+
+    expect(await titleTokenTest.mint(ownerAccount.address, titleId1)).to.not.be.reverted;
+    let tokenId1 = await titleTokenTest.titleToTokenId(titleId1);
+    expect(await titleTokenTest.mint(otherAccount.address, titleId2)).to.not.be.reverted;
+    let tokenId2 = await titleTokenTest.titleToTokenId(titleId2);
+    
+    expect(await titleTokenTest.connect(ownerAccount).approve(approved.address, tokenId1)).to.not.be.reverted;
+    expect(titleToken.connect(ownerAccount).setApprovalForAll(operator.address, true)).to.not.be.reverted;
+
+    await expect(titleTokenTest.connect(ownerAccount).offerToBuy(tokenId2, 1000), "owner offers to buy other account's token").to.not.be.reverted;
+    await expect(titleTokenTest.connect(operator).cancelOfferToBuy(tokenId1), "operator cancels offer to buy other account's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(approved).cancelOfferToBuy(tokenId1), "approved cancels offer to buy other account's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, ownerAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
+    await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, ownerAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
+    await expect(titleTokenTest.connect(ownerAccount).cancelOfferToBuy(tokenId2), "owner cancels offer to buy").to.not.be.reverted;
+
+    await expect(titleTokenTest.connect(otherAccount).offerToBuy(tokenId1, 1000), "other account offers to buy owner's token").to.not.be.reverted;
+    await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, otherAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
+    await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, otherAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
+    await expect(titleTokenTest.connect(operator).cancelOfferToBuy(tokenId1), "operator cancels offer to buy owner's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(approved).cancelOfferToBuy(tokenId1), "approved cancels offer to buy owner's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(otherAccount).cancelOfferToBuy(tokenId1), "other account cancels offer to buy").to.not.be.reverted;
+
+    await expect(titleTokenTest.connect(operator).offerToSell(tokenId1, otherAccount.address, 1000), "operator offers to sell owner's token to other account").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(approved).offerToSell(tokenId1, otherAccount.address, 1000), "approved offers to sell owner's token to other account").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(ownerAccount).offerToSell(tokenId1, otherAccount.address, 1000), "owner offers to sell their token to other account").to.not.be.reverted;
+    await expect(titleTokenTest.connect(operator).acceptOfferToSell(tokenId1), "operator accepts offer to sell owner's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(approved).acceptOfferToSell(tokenId1), "approved accepts offer to sell owner's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(operator).cancelOfferToSell(tokenId1, ownerAccount.address), "operator cancels offer to sell owner's token").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(approved).cancelOfferToSell(tokenId1, ownerAccount.address), "approved cancels offer to sell owner's token").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(ownerAccount).cancelOfferToSell(tokenId1, otherAccount.address), "owner cancels offer to sell").to.not.be.reverted;
+
+    await expect(titleTokenTest.connect(otherAccount).offerToSell(tokenId2, ownerAccount.address, 1000), "other account offers to sell their token to owner").to.not.be.reverted;
+    await expect(titleTokenTest.connect(operator).acceptOfferToSell(tokenId2), "operator accepts offer to sell other account's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(approved).acceptOfferToSell(tokenId2), "approved accepts offer to sell other account's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(operator).cancelOfferToSell(tokenId2, ownerAccount.address), "operator cancels offer to sell other account's token").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(approved).cancelOfferToSell(tokenId2, ownerAccount.address), "approved cancels offer to sell other account's token").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(otherAccount).cancelOfferToSell(tokenId2, ownerAccount.address), "other account cancels offer to sell to owner").to.not.be.reverted;
+  })
 
   /**
    * Pending:
