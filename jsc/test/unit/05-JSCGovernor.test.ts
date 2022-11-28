@@ -5,6 +5,7 @@ import { expect } from "chai"
 import { BigNumber } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils"
 import "@nomicfoundation/hardhat-chai-matchers/panic"
+import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
 
 import * as iid from "../../utils/getInterfaceId"
 import { ProposalState, VoteType } from "../../utils/types"
