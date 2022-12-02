@@ -48,13 +48,6 @@ export function Header(props: Props) {
                         </Flex>
                     </Link>
                 </NextLink>
-                {/* <NextLink 
-                    passHref 
-                    href='/' >
-                    <Link>
-                        
-                    </Link>
-                </NextLink> */}
             </Container>
             <Container
                 display='flex'
