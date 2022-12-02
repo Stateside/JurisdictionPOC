@@ -29,9 +29,7 @@ export function Layout(props: Props) {
         padding='0'
       >
         <Header siteTitle={title} ctaText={ctaConnect} menu={siteMainMenu} />
-          <SimpleGrid minChildWidth='1140px' columns={12} spacing={'30px'}>
-            {props.children}
-          </SimpleGrid>
+        {props.children}
         <Footer />
       </Container>
     </Box>
