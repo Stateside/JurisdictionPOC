@@ -10,7 +10,7 @@ const PropertyDetails: NextPage = () => {
       <Head>
         <title>Stateside Governance Test Accounts - Property Details</title>
       </Head>
-      <PropertyDetailsContext text="hi">
+      <PropertyDetailsContext>
         <PropertyDetailsMain />
       </PropertyDetailsContext>
     </>

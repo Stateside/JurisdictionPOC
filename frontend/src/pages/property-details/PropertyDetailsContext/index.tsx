@@ -51,7 +51,6 @@ const newSellFormModel: SellFormModel = {
 };
 
 const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
-  text: 'here',
   actionName: '',
   isOpen: false,
   propertyId: '',
@@ -86,7 +85,6 @@ const PropertyDetailsProvider = function ({
   // Context states
   // ----------------------------------------------------------------
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [t, setT] = useState<string | undefined>(text);
   const [actionName, setActionName] = useState<ActionNames>('');
   const [actionButtonDisabled, setActionButtonDisabled] =
     useState<boolean>(true);
@@ -352,7 +350,6 @@ const PropertyDetailsProvider = function ({
   return (
     <PropertyDetailsContext.Provider
       value={{
-        text: t,
         actionName,
         propertyId,
         propertyInfo,

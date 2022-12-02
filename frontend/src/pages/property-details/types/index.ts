@@ -55,7 +55,6 @@ export type ModelFieldSetter = {
 export type ActionNames = '' | 'sell' | 'accept';
 
 export type PropertyDetailsContextDefoTypes = {
-  text?: string;
   actionName: ActionNames;
   isOpen: boolean;
   propertyId: string;

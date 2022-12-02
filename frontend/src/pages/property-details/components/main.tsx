@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import NextLink from 'next/link';
 import { Box, Spacer } from '@chakra-ui/layout';
 import {
   Image,
@@ -50,10 +51,12 @@ export default function PropertyDetailsMain() {
         <GridItem colSpan={12}>
           <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
             <BreadcrumbItem h={{ base: '30px' }}>
-              <BreadcrumbLink href="/dashboard">
-                <ArrowBack w={{ base: '28px' }} />
-                Back to dashboard
-              </BreadcrumbLink>
+              <NextLink passHref href="/dashboard">
+                <BreadcrumbLink>
+                  <ArrowBack w={{ base: '28px' }} />
+                  Back to dashboard
+                </BreadcrumbLink>
+              </NextLink>
             </BreadcrumbItem>
             <BreadcrumbItem h={{ base: '30px' }}>
               <BreadcrumbLink href="#" isCurrentPage>
@@ -122,7 +125,6 @@ export default function PropertyDetailsMain() {
             Active Offers
           </Box>
         </GridItem>
-        {/* <GridItem colStart={2} colEnd={6} h='10' bg='papayawhip'></GridItem> */}
         <GridItem colSpan={12}>
           {activeOffers.map(
             ({ tokenId, price, fromAddress, expiresAfter, type }, i) => {
