@@ -27,7 +27,7 @@ export default function PropertyDetailsModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent maxW="container.lg" p={30}>
-        <ModalHeader p="0">
+        <ModalHeader p={{ base: '16px 0' }}>
           <Box as="span" fontWeight="400" fontSize={{ base: '60px' }}>
             {modalHeader}
           </Box>
@@ -41,7 +41,7 @@ export default function PropertyDetailsModal({
         >
           {modalBody}
         </ModalBody>
-        <ModalFooter p="0">{modalFooter}</ModalFooter>
+        <ModalFooter p={{ base: '16px 0' }}>{modalFooter}</ModalFooter>
       </ModalContent>
     </Modal>
   );
