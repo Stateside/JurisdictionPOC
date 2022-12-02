@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 import { ObjectHashInterface, RecentActivityInterface, ActivityInterface } from "@/interfaces/index";
 import Tag from "@/components/Tag";
 import PaymentsIcon from '@/components/icons/paymentsIcon';
@@ -37,9 +37,13 @@ export default function RecentActivity({ activities, ...props }: RecentActivityI
                                 {getIcon(type)}
                                 {type !== 'sellingMe' && <PaymentsIcon />}
                             </Flex>
-                            <Flex marginLeft='10px'>
+                            <Text 
+                                variant={{base: '13/16', sm: '13/16', md: '15/20', lg: '15/20'}}
+                                fontSize={{base: '0 20px', sm: '0 20px', md: '0 30px', lg: '0 45px' }}
+                                padding={{base: '0 10px 0 0', sm: '0 10px 0 0', md: '0', lg: '0' }}
+                                marginLeft='10px'>
                                 {buildActivity(item)}
-                            </Flex>
+                            </Text>
                         </Tag>
                     )
                 })

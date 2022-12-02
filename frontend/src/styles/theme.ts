@@ -134,6 +134,13 @@ const components = {
         letterSpacing: '0px',
         textAlign: 'left',
       },
+      "13/16": {
+        fontSize: '13px',
+        fontWeight: '400',
+        lineHeight: '16px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      },
       "15/20": {
         fontSize: '15px',
         fontWeight: '400',

@@ -1,7 +1,7 @@
 import React from 'react'
 import NextLink from 'next/link'
 import { useWeb3React } from "@web3-react/core";
-import { Container, Text, HStack, Image, Link } from '@chakra-ui/react'
+import { Container, Text, HStack, Image, Link, Flex } from '@chakra-ui/react'
 import { MenuItemInterface } from '@/interfaces/index'
 import Menu from '@/components/Menu'
 import Connect from '@/components/Connect'
@@ -18,7 +18,7 @@ export function Header(props: Props) {
     const { active } = useWeb3React();
 
     return (
-        <HStack padding='2rem 0' margin='0 0 40px 0'>
+        <HStack padding='30px 0' margin='0 0 40px 0'>
             <Container
                 display='flex'
                 width='100%'
@@ -27,23 +27,34 @@ export function Header(props: Props) {
                 maxWidth={'100%'}
                 padding='0'>
                 <NextLink passHref href='/' >
-                    <Link><Image src='/imgs/logo.svg' boxSize='2.6rem' alt='Jurisdiction Logo' marginRight={'11px'} /></Link>
-                </NextLink>
-                <NextLink passHref href='/' >
                     <Link>
-                        <Text
-                            marginInlineStart='0'
-                            maxWidth={{ base: '221px' }}
-                            fontSize={{ base: '15px' }}
-                            fontWeight='700'
-                            lineHeight='20px'
-                            letterSpacing='0px'
-                            textAlign='left'
-                            color='brand.black'>
-                            {siteTitle}
-                        </Text>
+                        <Flex>
+                            <Image 
+                                src='/imgs/logo.svg' 
+                                boxSize={{base: '40px', sm: '40px', md: '40px', lg: '40px' }}
+                                alt='Jurisdiction Logo' 
+                                marginRight={'11px'} />
+                            <Text
+                                marginInlineStart='0'
+                                maxWidth={{ base: '221px' }}
+                                fontSize={{ base: '12px', sm: '12px', md: '15px', lg: '15px'  }}
+                                fontWeight='700'
+                                lineHeight='20px'
+                                letterSpacing='0px'
+                                textAlign='left'
+                                color='brand.black'>
+                                {siteTitle}
+                            </Text>
+                        </Flex>
                     </Link>
                 </NextLink>
+                {/* <NextLink 
+                    passHref 
+                    href='/' >
+                    <Link>
+                        
+                    </Link>
+                </NextLink> */}
             </Container>
             <Container
                 display='flex'
