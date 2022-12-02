@@ -9,8 +9,8 @@ export function Footer(props: Props) {
     return (
         <HStack 
             width='100%'
-            position={{ base: 'absolute', sm: 'relative', md: 'relative', lg: 'absolute' }}
-            marginTop={{base: '50px', sm: '50px', md: '50px', lg: '0' }}
+            position={{ base: 'relative', sm: 'relative', md: 'relative', lg: 'absolute' }}
+            marginTop={{base: '100px', sm: '50px', md: '50px', lg: '0' }}
             bottom='0'
             padding='1rem 0' {...props} >
             <Container 

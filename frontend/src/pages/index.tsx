@@ -16,9 +16,9 @@ const Home: NextPage = () => {
 
   //To-do: Connect this to real Smart COntracts and BC
   const fakeRecentActivity = [
-    {tokenID:'001-456-87654-E', price:'180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097'},
-    {tokenId:'001-456-87654-E', price:'130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097'},
-    {tokenId:'001-456-876534-S', price: '57.4 ETH', type: 'made'},
+    { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
+    { tokenId: '001-456-87654-E', price: '130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
+    { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
   ]
 
 
@@ -53,25 +53,41 @@ const Home: NextPage = () => {
             label={homeLabels.ctaConnect}
             showError={true} />
           :
-          <VStack>    
-            <Box w='100%' margin='20px 0 30px 0'>       
+          <VStack>
+            <Box w='100%' margin='20px 0 30px 0'>
               <Text marginBottom='20px' variant={'15/20-BOLD'}>Recent Activity</Text>
               <RecentActivity activities={fakeRecentActivity} />
             </Box>
             <Flex justify={'space-between'} w='100%' h='300px' direction={{ base: 'column', md: 'row', lg: 'row' }}>
-              <Box width={'100%'} maxWidth='330px'>
+              <Box
+                width={'100%'}
+                maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
-                <Tag><Text variant={'15/20'}>Costa Rica</Text></Tag>
-                <Tag><Text variant={'15/20'}>{`Paul’s Jurisdiction`}</Text></Tag>
-                <Tag><Text variant={'15/20'}>{`Bryan’s Jurisdiction`}</Text></Tag>
+                <Tag>
+                  <Text variant={'15/20'}>Costa Rica</Text>
+                </Tag>
+                <Tag>
+                  <Text variant={'15/20'}>{`Paul’s Jurisdiction`}</Text>
+                </Tag>
+                <Tag>
+                  <Text variant={'15/20'}>{`Bryan’s Jurisdiction`}</Text>
+                </Tag>
               </Box>
-              <Box width={'100%'} maxWidth='330px'>
+              <Box
+                width={'100%'}
+                maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
-                <Tag><Text variant={'15/20'}>{`Add new Member James`}</Text></Tag>
+                <Tag>
+                  <Text variant={'15/20'}>{`Add new Member James`}</Text>
+                </Tag>
               </Box>
-              <Box width={'100%'} maxWidth='330px'>
+              <Box
+                width={'100%'}
+                maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
-                <Tag><Text variant={'15/20'}>{`001-456-87654-E`}</Text></Tag>
+                <Tag>
+                  <Text variant={'15/20'}>{`001-456-87654-E`}</Text>
+                </Tag>
               </Box>
             </Flex>
           </VStack>

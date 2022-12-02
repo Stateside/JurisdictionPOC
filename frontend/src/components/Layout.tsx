@@ -19,7 +19,7 @@ export function Layout(props: Props) {
       backgroundSize={{ base: '100%', sm: '100%', md: '80%', lg: '65%' }}
       backgroundRepeat='no-repeat'
       margin='0 auto'
-      padding='0 45px'
+      padding={{base: '0 20px', sm: '0 20px', md: '0 30px', lg: '0 45px' }}
     >
       <Container
         position='relative'

@@ -7,6 +7,12 @@ export default function Tag({ type = 'default', ...props }: TagInterface) {
 
     return (
         <Flex
+            _hover={{
+                padding:'6px 8px 8px 8px',
+                border:'3px solid',
+                borderColor: type === 'sellingMe' ? 'brand.grey04' : 'brand.javaHover',
+            }}
+            alignItems='center'
             boxShadow='0px 0px 15px rgba(0, 0, 0, 0.1)'
             borderRadius='8px'
             position='relative'
@@ -16,7 +22,7 @@ export default function Tag({ type = 'default', ...props }: TagInterface) {
             h={'40px'}
             width='100%'
             margin='0 0 10px 0'
-            padding='8px 8px 8px 16px'
+            padding= {{base: '6px 6px 6px 6px', sm: '6px 6px 6px 6px', md: '8px 8px 8px 16px', lg: '8px 8px 8px 16px' }}
             {...props}>
             {props.children}
             <Flex position='absolute' right='0'>
