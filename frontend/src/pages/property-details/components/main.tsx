@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Box } from '@chakra-ui/layout';
+import { Box, Spacer } from '@chakra-ui/layout';
 import {
   Image,
   Button,
@@ -8,10 +8,14 @@ import {
   BreadcrumbLink,
   Grid,
   GridItem,
+  Flex,
+  Text,
 } from '@chakra-ui/react';
+import Tag from '@/components/Tag';
 import HeartPlusIcon from '@/components/icons/heartPlusIcon';
 import RealStateAgentIcon from '@/components/icons/realStateAgentIcon';
 import ArrowBack from '@/components/icons/smallArrowBackIcon';
+import CallReceivedIcon from '@/components/icons/callReceivedIcon';
 import PropertyDetailsModal from '../modal';
 import PropertyDetailsModalHeader from '../modal/modalHeader';
 import SellPropertyModal from '../modal/sellPropertyModal';
@@ -30,6 +34,7 @@ export default function PropertyDetailsMain() {
     activeOffers,
     showSellModal,
     showAcceptOfferModal,
+    buildActivity,
   } = useContext(PropertyDetailsContext);
   return (
     <>
@@ -119,29 +124,57 @@ export default function PropertyDetailsMain() {
         </GridItem>
         {/* <GridItem colStart={2} colEnd={6} h='10' bg='papayawhip'></GridItem> */}
         <GridItem colSpan={12}>
-          <Grid templateColumns={gridLayout}>
-            {activeOffers.map(
-              ({ tokenId, recipientAddress, price, expiresAfter }, i) => {
-                return (
-                  <GridItem colSpan={12} key={i}>
-                    <Button
-                      variant="Header"
-                      rightIcon={<RealStateAgentIcon w={{ base: '25px' }} />}
-                      mt={{ base: '30px' }}
-                      onClick={() => {
-                        showAcceptOfferModal(i);
-                      }}
-                      _hover={{
-                        background: 'brand.javaHover',
-                      }}
-                    >
-                      Accept offer {i + 1}
-                    </Button>
-                  </GridItem>
-                );
-              }
-            )}
-          </Grid>
+          {activeOffers.map(
+            ({ tokenId, price, fromAddress, expiresAfter, type }, i) => {
+              return (
+                <Tag type={type} key={i} noCaret>
+                  <Flex
+                    width={{ base: '100%' }}
+                    align="center"
+                    justify="middle"
+                  >
+                    <Box height={{ base: '100%' }}>
+                      <CallReceivedIcon />
+                    </Box>
+                    <Box height={{ base: '100%' }}>
+                      <Text m={{ base: '0 20px' }}>
+                        {buildActivity({
+                          tokenId,
+                          price,
+                          fromAddress,
+                          expiresAfter,
+                          type,
+                        })}
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Text>Expires in {expiresAfter} days</Text>
+                    </Box>
+                    <Spacer />
+                    <Box height={{ base: '100%' }}>
+                      <Text mr="8px" fontWeight="700">
+                        {price} ETH
+                      </Text>
+                    </Box>
+                    <Box height={{ base: '100%' }}>
+                      <Button
+                        h={{ base: '30px' }}
+                        variant="Header"
+                        onClick={() => {
+                          showAcceptOfferModal(i);
+                        }}
+                        _hover={{
+                          background: 'brand.javaHover',
+                        }}
+                      >
+                        Accept
+                      </Button>
+                    </Box>
+                  </Flex>
+                </Tag>
+              );
+            }
+          )}
         </GridItem>
       </Grid>
 

@@ -10,8 +10,6 @@ export default function PropertyDetailsModalActions({}: PropertyDetailsModalActi
   return (
     <Button
       variant="Header"
-      mt={{ base: '30px' }}
-      mr={3}
       onClick={propertyDetailsModalAction}
       _hover={{
         background: 'brand.javaHover',

@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react';
+import { ChangeEvent, ReactNode } from 'react';
 
 export type PropertyImage = {
   src: string;
@@ -33,6 +33,7 @@ export type Offer = {
   fromAddress: string;
   price: string | number | null;
   expiresAfter: string | number | null;
+  type: string;
 };
 
 export type Validators = {
@@ -71,6 +72,7 @@ export type PropertyDetailsContextDefoTypes = {
   propertyDetailsModalAction: () => void;
   showSellModal: () => void;
   showAcceptOfferModal: (index: number) => void;
+  buildActivity: (activity: Offer) => ReactNode | string;
   onOpen: () => void;
   onClose: () => void;
 };

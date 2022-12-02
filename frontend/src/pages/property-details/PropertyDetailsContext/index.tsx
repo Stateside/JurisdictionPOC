@@ -1,6 +1,7 @@
 import { createContext, useState, ReactNode, ChangeEvent } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
-import { deepCopy } from 'utils/util';
+import { deepCopy, getAccountShortName } from 'utils/util';
+import { ObjectHashInterface, ActivityInterface } from '@/interfaces/index';
 import {
   SellFormModel,
   PropertyDetailsContextDefoTypes,
@@ -67,6 +68,7 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   propertyDetailsModalAction: () => {},
   showSellModal: () => {},
   showAcceptOfferModal: () => {},
+  buildActivity: () => '',
   onClose: () => {},
   onOpen: () => {},
 };
@@ -137,18 +139,21 @@ const PropertyDetailsProvider = function ({
       fromAddress: '0xe26fcf2850fb519bc1f7ca7607b148f5437137d9',
       price: 180,
       expiresAfter: 7,
+      type: 'received',
     },
     {
       tokenId: 'AAAAAA-111-AAAA-2',
       fromAddress: '0xe26fcf2850fb519bc1f7ca7607b148f5437137d9',
       price: 180,
       expiresAfter: 7,
+      type: 'received',
     },
     {
       tokenId: 'BBBBBB-222-BBBB-3',
       fromAddress: '0xe26fcf2850fb519bc1f7ca7607b148f5437137d9',
       price: 180,
       expiresAfter: 7,
+      type: 'received',
     },
   ]);
   const [selectedOfferIndex, setSelectedOfferIndex] = useState<number | null>(
@@ -331,6 +336,19 @@ const PropertyDetailsProvider = function ({
     onOpen();
   }
 
+  function buildActivity(offer: Offer) {
+    const copy: ObjectHashInterface = {
+      received:
+        offer.fromAddress &&
+        `You have a new offer from ${getAccountShortName(offer.fromAddress)}`,
+      made: 'You made an offer on token ID',
+      sellingMe:
+        offer.fromAddress &&
+        `${getAccountShortName(offer.fromAddress)}  is selling you token ID`,
+    };
+    return `${copy[offer.type]}`;
+  }
+
   return (
     <PropertyDetailsContext.Provider
       value={{
@@ -351,6 +369,7 @@ const PropertyDetailsProvider = function ({
         propertyDetailsModalAction,
         showSellModal,
         showAcceptOfferModal,
+        buildActivity,
         onClose,
         onOpen,
       }}
