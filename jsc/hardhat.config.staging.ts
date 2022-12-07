@@ -8,13 +8,21 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      chainId: 31338,
+      chainId: 31337,
     },
     localhost: {
-      chainId: 31338,
+      chainId: 31337,
     },
   },
-  solidity: "0.8.13",
+  solidity: {
+    version: "0.8.13",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   namedAccounts: {
     deployer: {
       default: 0, // here this will by default take the first account as deployer

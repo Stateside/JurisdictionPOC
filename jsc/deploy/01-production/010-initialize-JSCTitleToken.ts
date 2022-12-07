@@ -1,7 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
@@ -10,20 +8,21 @@ const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRunt
   const { deployments } = hre
   const { log, get } = deployments
   const jscJurisdiction = await get("production_JSCJurisdiction")
-  const jscTitleToken = await get("production_JSCTitleToken")
+  const jscTitleTokenContract = await get("production_JSCTitleToken")
+  const jscTitleToken = await ethers.getContractAt("JSCTitleToken", jscTitleTokenContract.address)
+  const zeroAddress = '0x0000000000000000000000000000000000000000';
 
   log("----------------------------------------------------")
   log(`Initializing production_JSCTitleToken...`)
-  await init(jscTitleToken.address, "Demo", "DEMO", "https://stateside.agency/jsc/tokens/", jscJurisdiction.address); 
-}
-
-const init = async (jscTitleTokenAddress:string, name: string, symbol:string, uri:string, jscJurisdictionAddress:string) => {
-  const jscTitleToken = await ethers.getContractAt("JSCTitleToken", jscTitleTokenAddress)
   await jscTitleToken.init(
-    name,
-    symbol,
-    uri,
-    jscJurisdictionAddress
+    "Demo", 
+    "DEMO", 
+    "https://stateside.agency/jsc/tokens/",
+    jscJurisdiction.address,
+    zeroAddress,
+    0,
+    zeroAddress,
+    0
   )
 }
 

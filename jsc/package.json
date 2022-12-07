@@ -1,7 +1,9 @@
 {
   "scripts": {
-    "dev": "hardhat node",
-    "staging": "hardhat --config hardhat.config.staging.ts node --hostname 0.0.0.0"
+    "dev": "hardhat node --tags development",
+    "test": "hardhat test",
+    "deploy": "yarn hardhat deploy --reset --network localhost --tags development",
+    "staging": "hardhat --config hardhat.config.staging.ts node --hostname 0.0.0.0 --tags development"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",

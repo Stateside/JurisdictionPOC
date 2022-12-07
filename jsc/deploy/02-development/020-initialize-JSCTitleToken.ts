@@ -6,12 +6,16 @@ import * as tc from "../../typechain-types"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
+const eth2WEI = (eth:number):ethers.BigNumber => ethers.utils.parseEther(eth.toString())
+const payETH = (eth:number):ethers.PayableOverrides => ({ value: eth2WEI(eth) })
+
 const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
   const { deployments } = hre
   const { log, get } = deployments
   const jscJurisdiction = await get("development_JSCJurisdiction")
   const jscTitleTokenContract = await get("development_JSCTitleTokenTest")
+  const zeroAddress = '0x0000000000000000000000000000000000000000';
 
   log("Initializing development_JSCTitleTokenTest...")
   const jscTitleToken:tc.JSCTitleTokenTest = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
@@ -19,7 +23,11 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     "Development Tokens",
     "DEV",
     "http://localhost:3000/tokens/",
-    jscJurisdiction.address
+    jscJurisdiction.address,
+    zeroAddress,
+    0,
+    zeroAddress,
+    0
   )
 
   const { Bob, Sara, Jane, Bryan, Rich, Alex, Peter } = accountsByName
@@ -155,11 +163,11 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
         const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
         for (let b = 0; b < t.offersToBuy.length; b++) {
           const o = t.offersToBuy[b];
-          await jscTitleToken.connect(walletsByName[o.buyer.name]).offerToBuy(tokenId, o.amt)
+          await jscTitleToken.connect(walletsByName[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
         }
         for (let s = 0; s < t.offersToSell.length; s++) {
           const o = t.offersToSell[s];
-          await jscTitleToken.connect(walletsByName[owner.name]).offerToSell(tokenId, o.buyer.address, o.amt)
+          await jscTitleToken.connect(walletsByName[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
         }
       }
   }

@@ -9,20 +9,19 @@ export const siteMainMenu:Array<MenuItemInterface> = [
 ]
 
 export const siteLayoutData:SiteLayoutData = {
-    title: `Blockchain Jurisdictions 
-    & Land Registries`,
+    title: `Blockchain Estate Registry`,
     ctaConnect: 'Connect',
 };
 
 export const homeLabels:HomeLabels = {
-    pageTitle: 'Dashboard Jurisdiction',
+    pageTitle: 'BER Dashboard',
     mainTitle: {
         regular: `Welcome,
         Please connect your 
         wallet to access the 
         platform`,
-        vip: `Welcome to your 
-        digital registries`
+        vip: `Welcome to the 
+        Blockchain Estate Registry`
     },
     ctaConnect: 'Connect with your Wallet'
 }
@@ -34,7 +33,7 @@ export const listContractsLabels = {
 
 export const jscJurisdicitonLabels = {
     pageTitle: 'JSCJurisdiction',
-    heading: "JSCJurisdiction Contracts",
+    heading: "Jurisdiction Contracts",
     tableCaption: "Jurisdiction Contracts"
 }
 
