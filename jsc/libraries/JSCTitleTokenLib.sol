@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
+import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 
 /**
   @dev This library contains code for use by the JSCTitleToken smart contract. It's purpose is primarily to reduce the size of 
@@ -73,6 +74,27 @@ library JSCTitleTokenLib {
       OfferList offersToBuy;
   }
 
+  function getRegistryFeeParam(uint256 registryFee) public pure returns(clib.NumberParameter memory) { return clib.NumberParameter("jsc.fees.registry", "Transfer fee paid to registry", registryFee); }
+  function getRegistryAccountParam(address registryAccount) public pure returns(clib.AddressParameter memory) { return clib.AddressParameter("jsc.accounts.registry", "Account where registry fees are paid", registryAccount); }
+  function getMaintainerFeeParam(uint256 maintainerFee) public pure returns(clib.NumberParameter memory) { return clib.NumberParameter("jsc.fees.maintainer", "Transfer fee paid to maintainer", maintainerFee); }
+  function getMaintainerAccountParam(address maintainerAccount) public pure returns(clib.AddressParameter memory) { return clib.AddressParameter("jsc.accounts.maintainer", "Account where maintainer fees are paid", maintainerAccount); }
+
+  function requireAddress(address a) public pure {
+    require(a != address(0), "address zero is not a valid owner");
+  }
+
+  function requireTokenOwner(address a) public pure {
+    require(a != address(0), "invalid token ID");
+  }
+
+  function requireReceived(address from, address to, uint256 tokenId, bytes memory data) public {
+    require(
+      checkOnERC721Received(from, to, tokenId, data),
+      "transfer to non ERC721Receiver implementer"
+    );
+  }
+  
+
   /**
     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
     * The call is not executed if the target address is not a contract.
@@ -107,13 +129,13 @@ library JSCTitleTokenLib {
     }
   }
 
-  /** Maintains an list of token IDs. Does not guarantee the order of the items in the list. In particular, removing an item can change the order */
+  /** @dev Maintains an list of token IDs. Does not guarantee the order of the items in the list. In particular, removing an item can change the order */
   struct TokenIdList {
     uint[] arr;
     mapping(uint => uint) indexes;
   }
 
-  /** Adds the given tokenId. Fails if the tokenId already exists in the list */
+  /** @dev Adds the given tokenId. Fails if the tokenId already exists in the list */
   function addTokenId(TokenIdList storage self, uint tokenId) public {
     require(self.indexes[tokenId] == 0, "tokenId already exists");
 
@@ -121,7 +143,7 @@ library JSCTitleTokenLib {
     self.indexes[tokenId] = self.arr.length;
   }
   
-  /** Removes the given tokenId. Fails if the tokenId doesn not exist in the list */
+  /** @dev Removes the given tokenId. Fails if the tokenId doesn not exist in the list */
   function removeTokenId(TokenIdList storage self, uint tokenId) public {
     require(self.indexes[tokenId] > 0, "tokenId does not exist");
 
@@ -131,25 +153,29 @@ library JSCTitleTokenLib {
     delete self.indexes[tokenId];
   }
 
-  /** Returns the number of tokenIds in the given list */
+  /** @dev Returns the number of tokenIds in the given list */
   function countTokenIds(TokenIdList storage self) public view returns (uint) {
     return self.arr.length;
   }
 
-  /** Returns the token ID at the given index */
+  /** @dev Returns the token ID at the given index */
   function getTokenAt(TokenIdList storage self, uint index) public view returns (uint) {
     require(index < self.arr.length, "index out of bounds");
     return self.arr[index];
   }
 
 
-  /** Maintains a list of offers. Does not guarantee the order of the items in the list. In particular, removing an item can change the order */
+  /**
+   * @dev Maintains a list of offers. Offers can be offers to buy or offers to sell. 
+   * They are always distinguished using the buyers address. Does not guarantee the order of the items in the list. 
+   * In particular, removing an item can change the order 
+   */
   struct OfferList {
     Offer[] arr;
     mapping(address => uint) indexes; // map of buyer addresses to index in arr
   }
 
-  /** Adds the given offer. Overwrites any existing offer for the same address */
+  /** @dev Adds the given offer. Overwrites any existing offer for the same address */
   function addOffer(OfferList storage self, address buyer, uint amount) public {
     require(amount > 0, "amount must not be zero");
 
@@ -162,7 +188,7 @@ library JSCTitleTokenLib {
     }
   }
 
-  /** Removes the offer from the given offer. Fails if the offer does not exist in the list */
+  /** @dev Removes the offer from the given offer. Fails if the offer does not exist in the list */
   function removeOffer(OfferList storage self, address buyer) public {
     require(self.indexes[buyer] > 0, "no offer found");
 
@@ -172,15 +198,71 @@ library JSCTitleTokenLib {
     delete self.indexes[buyer];
   }
 
-  /** Returns the number of offers in the given list */
+  /** @dev Returns the number of offers in the given list */
   function countOffers(OfferList storage self) public view returns (uint) {
     return self.arr.length;
   }
 
-  /** Returns the offer at the given index */
+  /** @dev Returns the offer at the given index */
   function getOfferAt(OfferList storage self, uint index) public view returns (Offer storage) {
     require(index < self.arr.length, "index out of bounds");
     return self.arr[index];
+  }
+
+  /** @dev Returns the offer for the given buyer */
+  function getOfferFrom(OfferList storage self, address buyer) public view returns (uint) {
+    require(self.indexes[buyer] > 0, "no offer found");
+    return self.arr[self.indexes[buyer]-1].amount;
+  }
+
+  /** 
+   * @dev Adds an offer to buy the given token for the given amount. 
+   * That amount of crypto currency must be available in the callers account. 
+   * It will be transferred to this contract until the offer is is cancelled or the owner accepts the offer.
+   */
+  function offerToBuy(Storage storage self, address buyer, uint256 tokenId, uint256 value, uint256 amount) public {
+    requireMinted(self, tokenId);
+    requireFrozenToken(self, tokenId, false);
+    requireFrozenOwner(self, self.tokens[tokenId].owner, false);
+
+    requireFrozenOwner(self, buyer, false);
+
+    TitleToken storage t = self.tokens[tokenId];
+    require(buyer != t.owner, "owner cannot buy their own token");
+    require(value == amount, "bad payment");
+
+    addOffer(t.offersToBuy, buyer, amount);
+  }
+
+  function cancelOfferToBuyFrom(Storage storage self, uint256 tokenId, address buyer) public {
+    requireMinted(self, tokenId);
+
+    TitleToken storage t = self.tokens[tokenId];
+    removeOffer(t.offersToBuy, buyer);
+  }
+
+  function cancelOfferToSell(Storage storage self, address owner, uint256 tokenId, address buyer) public {
+    requireMinted(self, tokenId);
+
+    TitleToken storage t = self.tokens[tokenId];
+    require(owner == t.owner, "caller is not token owner");
+    removeOffer(t.offersToSell, buyer);
+  }
+
+  /** 
+   * @dev Adds an offer to sell the given token to the given buyer for the given amount 
+   */
+  function offerToSell(Storage storage self, address owner, uint256 tokenId, address buyer, uint256 amount ) public {
+    require(owner != buyer, "owners cannot sell to themselves");
+    requireMinted(self, tokenId);
+    requireFrozenToken(self, tokenId, false);
+    requireFrozenOwner(self, buyer, false);
+
+    TitleToken storage t = self.tokens[tokenId];
+    require(owner == t.owner, "caller is not token owner");
+    requireFrozenOwner(self, t.owner, false);
+
+    addOffer(t.offersToSell, buyer, amount);
   }
 
   /**
@@ -208,6 +290,15 @@ library JSCTitleTokenLib {
   function getTitleToken(Storage storage self, uint tokenId) public view returns (TitleToken storage) {
     requireMinted(self, tokenId);
     return self.tokens[tokenId];
+  }
+
+  /**
+   * @dev Pays `amt` to the payee in a payable transaction that offered `value` in crypto
+   */
+  function pay(uint value, uint amt, address payable payee) public {
+    require(value == amt, "bad payment");
+    (bool sent, ) = payee.call{value: amt}("");
+    require(sent, "failed to pay owner");
   }
 
   /**
@@ -300,6 +391,26 @@ library JSCTitleTokenLib {
       approve(self, address(0), tokenId);
 
     emit Transfer(from, to, tokenId);
+  }
+
+  /**
+    * @dev Approve `to` to operate on `tokenId` owned by `owner`
+    *
+    * Emits an {Approval} event.
+    */
+  function validateAndApprove(Storage storage self, address sender, address to, uint256 tokenId) public {
+    address owner = self.tokens[tokenId].owner;
+    require(to != owner, "approval to current owner");
+    requireFrozenToken(self, tokenId, false);
+    requireFrozenOwner(self, owner, false);
+    requireFrozenOwner(self, to, false);
+
+    require(
+      sender == owner || self.operatorApprovals[owner][sender],
+      "approve caller is not token owner nor approved for all"
+    );
+
+    approve(self, to, tokenId);
   }
 
   /**

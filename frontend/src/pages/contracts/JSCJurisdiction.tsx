@@ -19,10 +19,10 @@ type JurisdictionContracts = {
 }
 
 const getPathForContract = (key:string) => {
-  switch(key) {
-    case "jsc.cabinet": return "/contracts/JSCCabinet"
-    case "jsc.governor": return "/contracts/JSCGovernor"
-    case "jsc.tokens": return "/contracts/JSCTitleToken"
+  switch(key.replace("jsc.contracts.","")) {
+    case "cabinet": return "/contracts/JSCCabinet"
+    case "governor": return "/contracts/JSCGovernor"
+    case "tokens": return "/contracts/JSCTitleToken"
   }
 }
 

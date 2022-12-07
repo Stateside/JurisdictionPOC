@@ -196,7 +196,7 @@ describe("JSCGovernor", async () => {
       name: "AddContract",
       pdata: defaultAbiCoder.encode(
         ["string", "string", "address"],
-        ["jsc.contract.myontract", "A contract", "0x111122223333444455556666777788889999aAaa"])
+        ["jsc.contracts.myontract", "A contract", "0x111122223333444455556666777788889999aAaa"])
     }, {
       target: jurisdiction.address,
       name: "FreezeContract",
@@ -204,10 +204,10 @@ describe("JSCGovernor", async () => {
     }], "Add a contract and then freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(await jurisdiction.isFrozen()).to.equal(false);
-    await expect(jurisdiction.getAddressParameter("jsc.contract.myontract")).to.be.revertedWith("Trying to access non-existant parameter")
+    await expect(jurisdiction.getAddressParameter("jsc.contracts.myontract")).to.be.revertedWith("Trying to access non-existant parameter")
     await testWinningProposal(proposal)
     await expect(await jurisdiction.isFrozen()).to.equal(true);
-    await expect(await jurisdiction.getAddressParameter("jsc.contract.myontract")).to.equal("0x111122223333444455556666777788889999aAaa")
+    await expect(await jurisdiction.getAddressParameter("jsc.contracts.myontract")).to.equal("0x111122223333444455556666777788889999aAaa")
   });
 
   const testLosingProposal = async (proposal:PreparedProposal) => {

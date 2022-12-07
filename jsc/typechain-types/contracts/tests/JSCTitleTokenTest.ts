@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -123,7 +124,7 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
-    "init(string,string,string,address)": FunctionFragment;
+    "init(string,string,string,address,address,uint256,address,uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isFrozen()": FunctionFragment;
     "isFrozenOwner(address)": FunctionFragment;
@@ -300,7 +301,11 @@ export interface JSCTitleTokenTestInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
-      PromiseOrValue<string>
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
@@ -1010,7 +1015,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     acceptOfferToSell(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     approve(
@@ -1097,6 +1102,10 @@ export interface JSCTitleTokenTest extends BaseContract {
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
       jurisdiction_: PromiseOrValue<string>,
+      registryAccount_: PromiseOrValue<string>,
+      registryFee_: PromiseOrValue<BigNumberish>,
+      maintainerAccount_: PromiseOrValue<string>,
+      maintainerFee_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1153,7 +1162,7 @@ export interface JSCTitleTokenTest extends BaseContract {
     offerToBuy(
       tokenId: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     offerToBuyAtIndex(
@@ -1298,7 +1307,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
   acceptOfferToSell(
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   approve(
@@ -1381,6 +1390,10 @@ export interface JSCTitleTokenTest extends BaseContract {
     symbol_: PromiseOrValue<string>,
     baseURI_: PromiseOrValue<string>,
     jurisdiction_: PromiseOrValue<string>,
+    registryAccount_: PromiseOrValue<string>,
+    registryFee_: PromiseOrValue<BigNumberish>,
+    maintainerAccount_: PromiseOrValue<string>,
+    maintainerFee_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1437,7 +1450,7 @@ export interface JSCTitleTokenTest extends BaseContract {
   offerToBuy(
     tokenId: PromiseOrValue<BigNumberish>,
     amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   offerToBuyAtIndex(
@@ -1661,6 +1674,10 @@ export interface JSCTitleTokenTest extends BaseContract {
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
       jurisdiction_: PromiseOrValue<string>,
+      registryAccount_: PromiseOrValue<string>,
+      registryFee_: PromiseOrValue<BigNumberish>,
+      maintainerAccount_: PromiseOrValue<string>,
+      maintainerFee_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2052,7 +2069,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     acceptOfferToSell(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     approve(
@@ -2135,6 +2152,10 @@ export interface JSCTitleTokenTest extends BaseContract {
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
       jurisdiction_: PromiseOrValue<string>,
+      registryAccount_: PromiseOrValue<string>,
+      registryFee_: PromiseOrValue<BigNumberish>,
+      maintainerAccount_: PromiseOrValue<string>,
+      maintainerFee_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2191,7 +2212,7 @@ export interface JSCTitleTokenTest extends BaseContract {
     offerToBuy(
       tokenId: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     offerToBuyAtIndex(
@@ -2333,7 +2354,7 @@ export interface JSCTitleTokenTest extends BaseContract {
 
     acceptOfferToSell(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     approve(
@@ -2416,6 +2437,10 @@ export interface JSCTitleTokenTest extends BaseContract {
       symbol_: PromiseOrValue<string>,
       baseURI_: PromiseOrValue<string>,
       jurisdiction_: PromiseOrValue<string>,
+      registryAccount_: PromiseOrValue<string>,
+      registryFee_: PromiseOrValue<BigNumberish>,
+      maintainerAccount_: PromiseOrValue<string>,
+      maintainerFee_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2472,7 +2497,7 @@ export interface JSCTitleTokenTest extends BaseContract {
     offerToBuy(
       tokenId: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     offerToBuyAtIndex(

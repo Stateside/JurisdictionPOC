@@ -53,7 +53,7 @@ export default function AcceptOfferModal({ gridLayout }: AcceptOfferModal) {
           borderBottom="1px solid"
           borderColor={'brand.grey.grey02'}
         >
-          <GridItem colSpan={3}>Ammount:</GridItem>
+          <GridItem colSpan={3}>Amount:</GridItem>
           <GridItem colSpan={6}>{offerSelected.price}</GridItem>
         </Grid>
         <Grid templateColumns={gridLayout} pt={30} pb={30}>

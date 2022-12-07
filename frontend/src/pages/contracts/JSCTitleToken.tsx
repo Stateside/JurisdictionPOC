@@ -10,6 +10,7 @@ import { useRouter } from 'next/router'
 import Loader from '@/components/Loader'
 import { accountsByAddress } from '@/utils/accounts'
 import Link from 'next/link'
+import { ethers } from 'ethers'
 
 type Offer = {
   buyer: string
@@ -31,6 +32,7 @@ const showJSCTitleToken: NextPage = () => {
   const { active, account, library, error } = useWeb3React();
   const router = useRouter()
   const [tokens, setTokens] = useState<Token[]>([])
+  const [loading, setLoading] = useState(true)
 
   const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken|undefined>(undefined)
   const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
@@ -64,15 +66,15 @@ const showJSCTitleToken: NextPage = () => {
           for (let obi = 0; obi < obCount; obi++) {
             const ob = await jscTitleToken.offerToBuyAtIndex(t, obi);
             offersToBuy.push({
-              amount: ob.amount.toNumber(),
+              amount: parseFloat(ethers.utils.formatEther(ob.amount)),
               buyer: accountsByAddress[ob.buyer.toLowerCase()].name,
             })
           }
           const osCount = (await jscTitleToken.countOffersToSell(t)).toNumber()
-          for (let osi = 0; osi < obCount; osi++) {
+          for (let osi = 0; osi < osCount; osi++) {
             const os = await jscTitleToken.offerToSellAtIndex(t, osi);
             offersToSell.push({
-              amount: os.amount.toNumber(),
+              amount: parseFloat(ethers.utils.formatEther(os.amount)),
               buyer: accountsByAddress[os.buyer.toLowerCase()].name,
             })
           }
@@ -87,10 +89,12 @@ const showJSCTitleToken: NextPage = () => {
             })
         }
         setTokens(_tokens)
+        setLoading(false)
       }
       loadData().catch(err => {
         console.log(err)
         setLocalError(err.toString())
+        setLoading(false)
       })
     }
   }, [jscTitleToken])
@@ -121,7 +125,12 @@ const showJSCTitleToken: NextPage = () => {
                       <AlertTitle>Error!</AlertTitle>
                       <AlertDescription>{lastError}</AlertDescription>
                     </Alert> :
-                  (tokens.length == 0 ? <Loader /> : 
+                  (loading ? <Loader /> : tokens.length == 0 ? 
+                    <Alert status='info'>
+                      <AlertIcon />
+                      <AlertTitle>Oops!</AlertTitle>
+                      <AlertDescription>No Tokens Found!</AlertDescription>
+                    </Alert> : 
                     <TableContainer whiteSpace={'normal'}>
                       <Table variant='simple'>
                         <TableCaption>{jscTitleTokenLabels.tableCaption}</TableCaption>

@@ -83,8 +83,8 @@ const showJSCGovernor: NextPage = () => {
     const getAddresses = async () => {
       if (library && router.query.address && jscJurisdiction)
         try {
-          setJSCCabinet(tc.IJSCCabinet__factory.connect(await jscJurisdiction.getContractAddress('jsc.cabinet') as string, library))
-          setJSCTitleToken(tc.IJSCTitleToken__factory.connect(await jscJurisdiction.getContractAddress('jsc.tokens') as string, library))
+          setJSCCabinet(tc.IJSCCabinet__factory.connect(await jscJurisdiction.getContractAddress('jsc.contracts.cabinet') as string, library))
+          setJSCTitleToken(tc.IJSCTitleToken__factory.connect(await jscJurisdiction.getContractAddress('jsc.contracts.tokens') as string, library))
         } catch(err) {
           setLocalError((err as any).toString())
         }

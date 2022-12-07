@@ -77,7 +77,7 @@ yarn hardhat --help
 
 # TO DO
 
-- Add payments to the offer transactions in JSCTitleToken
+- Register offers to sell I have received
 - Add a parameters to JSCTitleToken to indicate how much ownership transfers cost (pay fee to registry + pay fee to a maintainer)
 - Add a parameter to the title token to disable NFT support
 - Add a boolean to the individual tokens to enable NFT support
@@ -86,9 +86,16 @@ yarn hardhat --help
 - Test frozen jurisdiction, cabinet, and governor contracts
 - Switch RevisionMap implementation in JSCRevisioned to use OpenZeppelins EnumerableSet
 - Switch TokenIdList and OfferList implementations in JSCTitleTokens to use OpenZeppelins EnumerableSet
-- Analyze contracts with some vulnerabulity scanners like Mythril, Slither, and Securify
+- Analyze contracts with some vulnerability scanners like Mythril, Slither, and Securify
 - Add parameters to contracts to control voting rules for revisions
 - Add mechanism to contracts to allow the registry to pay for operations performed by members
   - This can be done by the member signing a request to perform some operation and sending the request to 
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
+
+
+Payments
+1. Pay registry fees
+2. Pay maintainer fees
+3. revisions to withdraw or deposit 
+4. add initializer modifier

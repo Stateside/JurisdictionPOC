@@ -47,7 +47,7 @@ describe("JSCTitleToken", async () => {
     revisionsLib = await ethers.getContract("unittests_JSCRevisionsLib");
     configurableLib = await ethers.getContract("unittests_JSCConfigurableLib");
     titleTokenLib = await ethers.getContract("unittests_JSCTitleTokenLib");
-    [owner, bob, jane, sara, bryan, ...otherAccounts] = await ethers.getSigners();
+    [owner, bob, sara, jane, bryan, ...otherAccounts] = await ethers.getSigners();
   });
 
   it('remains frozen until initialized', async function() {
@@ -64,7 +64,7 @@ describe("JSCTitleToken", async () => {
 
   it('fails on second init()', async function() {
     await expect(await titleToken.isFrozen()).to.equal(false);
-    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address)).to.be.revertedWith('init() cannot be called twice');
+    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address, zeroAddress, 0, zeroAddress, 0)).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('correctly checks interfaces IDs', async function() {
@@ -321,6 +321,10 @@ describe("JSCTitleToken", async () => {
     }
   });
 
+  const eth2WEI = (eth:number):ethers.BigNumber => ethers.utils.parseEther(eth.toString())
+  const wei2ETH = (wei:number):ethers.BigNumber => ethers.utils.formatEther(wei)
+  const payETH = (eth:number):ethers.PayableOverrides => ({ value: eth2WEI(eth) })
+
   it('receives and iterates offers to buy', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
@@ -328,23 +332,57 @@ describe("JSCTitleToken", async () => {
     let b1:any = await retrieveLastBlock();
 
     await helpers.time.setNextBlockTimestamp(b1.timestamp + ONE_MINUTE);
-    await expect(await titleToken.connect(sara).offerToBuy(tokenId1, 1000)).to.emit(titleToken, 'OfferToBuy').withArgs(tokenId1, sara.address, 1000);
+
+    // Get sara's and contract's balances before transaction
+    let buyerPreBalance = await ethers.provider.getBalance(sara.address);
+    let contractPreBalance = await ethers.provider.getBalance(titleToken.address);
+
+    // Send transaction
+    let tx = await titleToken.connect(sara).offerToBuy(tokenId1, eth2WEI(1), payETH(1))
+    await expect(tx).to.emit(titleToken, 'OfferToBuy').withArgs(tokenId1, sara.address, eth2WEI(1));
+
+    // Get receipt, gas used, and sara's new balance
+    let receipt = await tx.wait()
+    let gas = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+    let buyerPostBalance = await ethers.provider.getBalance(sara.address);
+    let contractPostBalance = await ethers.provider.getBalance(titleToken.address);
+
+    // Check balances after transaction
+    await expect(buyerPostBalance).to.equal(buyerPreBalance.sub(gas).sub(eth2WEI(1)))
+    await expect(contractPostBalance).to.equal(contractPreBalance.add(eth2WEI(1)))
     let b2:any = await retrieveLastBlock();
 
     await helpers.time.setNextBlockTimestamp(b2.timestamp + ONE_MINUTE);
-    await expect(await titleToken.connect(jane).offerToBuy(tokenId1, 2000)).to.emit(titleToken, 'OfferToBuy').withArgs(tokenId1, jane.address, 2000);
+
+    // Get jane's and contract's balances before transaction
+    buyerPreBalance = await ethers.provider.getBalance(jane.address);
+    contractPreBalance = await ethers.provider.getBalance(titleToken.address);
+
+    // Send transaction
+    tx = await titleToken.connect(jane).offerToBuy(tokenId1, eth2WEI(2), payETH(2))
+    await expect(tx).to.emit(titleToken, 'OfferToBuy').withArgs(tokenId1, jane.address, eth2WEI(2));
+
+    // Get receipt, gas used, and sara's new balance
+    receipt = await tx.wait()
+    gas = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+    buyerPostBalance = await ethers.provider.getBalance(jane.address);
+    contractPostBalance = await ethers.provider.getBalance(titleToken.address);
+
+    // Check balances after transaction
+    await expect(buyerPostBalance).to.equal(buyerPreBalance.sub(gas).sub(eth2WEI(2)))
+    await expect(contractPostBalance).to.equal(contractPreBalance.add(eth2WEI(2)))
     let b3:any = await retrieveLastBlock();
 
     await expect(await titleToken.connect(bob).countOffersToBuy(tokenId1)).to.equal(2);
     
     let o = await titleToken.connect(bob).offerToBuyAtIndex(tokenId1, 0);
     await expect(o.buyer).to.equal(sara.address);
-    await expect(o.amount).to.equal(1000);
+    await expect(o.amount).to.equal(eth2WEI(1));
     await expect(o.offeredOn).to.equal(b2.timestamp);
 
     o = await titleToken.connect(bob).offerToBuyAtIndex(tokenId1, 1);
     await expect(o.buyer).to.equal(jane.address);
-    await expect(o.amount).to.equal(2000);
+    await expect(o.amount).to.equal(eth2WEI(2));
     await expect(o.offeredOn).to.equal(b3.timestamp);
 
     await expect(titleToken.connect(bob).offerToBuyAtIndex(tokenId1, 2), "offerToBuyAtIndex(2) did not revert").to.be.revertedWith('unknown offer to buy');
@@ -353,28 +391,62 @@ describe("JSCTitleToken", async () => {
   it('cancels offers to buy', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
+
+    // Get sara's and contract's balances before transaction
+    let saraPreBalance = await ethers.provider.getBalance(sara.address);
+    let contractPreBalance = await ethers.provider.getBalance(titleToken.address);
     
-    await expect(titleToken.connect(sara).offerToBuy(tokenId1, 1000)).not.to.be.reverted;
-    await expect(titleToken.connect(jane).offerToBuy(tokenId1, 2000)).not.to.be.reverted;
+    let tx = await titleToken.connect(sara).offerToBuy(tokenId1, eth2WEI(1), payETH(1))
+    let receipt = await tx.wait()
+    let gasUsedBySara = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+
+    await expect(tx).not.to.be.reverted;
+    await expect(titleToken.connect(jane).offerToBuy(tokenId1, eth2WEI(2), payETH(2))).not.to.be.reverted;
     await expect(await titleToken.connect(bob).countOffersToBuy(tokenId1)).to.equal(2);
 
-    await expect(await titleToken.connect(sara).cancelOfferToBuy(tokenId1)).to.emit(titleToken, 'OfferToBuyCancelled').withArgs(tokenId1, sara.address);
+    tx = await titleToken.connect(sara).cancelOfferToBuy(tokenId1)
+    receipt = await tx.wait()
+    gasUsedBySara = gasUsedBySara.add(receipt.gasUsed.mul(receipt.effectiveGasPrice))
+
+    await expect(tx).to.emit(titleToken, 'OfferToBuyCancelled').withArgs(tokenId1, sara.address);
     await expect(await titleToken.connect(bob).countOffersToBuy(tokenId1)).to.equal(1);
     let o = await titleToken.connect(bob).offerToBuyAtIndex(tokenId1, 0);
     await expect(o.buyer).to.equal(jane.address);
+
+    let saraPostBalance = await ethers.provider.getBalance(sara.address);
+    let contractPostBalance = await ethers.provider.getBalance(titleToken.address);
+    await expect(saraPostBalance).to.equal(saraPreBalance.sub(gasUsedBySara))
+    await expect(contractPostBalance).to.equal(contractPreBalance+eth2WEI(2)) // Includes just Jane's offer
   });
 
   it('accepts offers to buy', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
-    
-    await expect(titleToken.connect(sara).offerToBuy(tokenId1, 1000)).not.to.be.reverted;
-    await expect(await titleToken.connect(bob).acceptOfferToBuy(tokenId1, sara.address))
+
+    let saraPreBalance = await ethers.provider.getBalance(sara.address);
+    let bobPreBalance = await ethers.provider.getBalance(bob.address);
+
+    let tx = await titleToken.connect(sara).offerToBuy(tokenId1, eth2WEI(1), payETH(1))
+    await expect(tx).not.to.be.reverted;
+    let receipt = await tx.wait()
+    let gasUsedBySara = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+
+    tx = await titleToken.connect(bob).acceptOfferToBuy(tokenId1, sara.address)
+    await expect(tx).not.to.be.reverted;
+    receipt = await tx.wait()
+    let gasUsedByBob = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+
+    await expect(tx)
       .to.emit(titleToken, 'Transfer').withArgs(bob.address, sara.address, tokenId1)
-      .to.emit(titleToken, 'OfferToBuyCancelled').withArgs(tokenId1, sara.address);
+      .to.not.emit(titleToken, 'OfferToBuyCancelled');
 
     expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
     await expect(await titleToken.connect(sara).countOffersToBuy(tokenId1)).to.equal(0);
+
+    let saraPostBalance = await ethers.provider.getBalance(sara.address);
+    let bobPostBalance = await ethers.provider.getBalance(bob.address);
+    await expect(saraPostBalance, "sara's balance is off").to.equal(saraPreBalance.sub(gasUsedBySara).sub(eth2WEI(1)))
+    await expect(bobPostBalance, "bob's balance is off").to.equal(bobPreBalance.sub(gasUsedByBob).add(eth2WEI(1)))
   });
 
   it('receives and iterates offers to sell', async function() {
@@ -423,14 +495,31 @@ describe("JSCTitleToken", async () => {
   it('accepts offers to sell', async function() {
     await titleToken.mint(bob.address, titleId1);
     let tokenId1 = await titleToken.titleToTokenId(titleId1);
-    
-    await expect(titleToken.connect(bob).offerToSell(tokenId1, sara.address, 1000)).not.to.be.reverted;
-    await expect(await titleToken.connect(sara).acceptOfferToSell(tokenId1))
+
+    let saraPreBalance = await ethers.provider.getBalance(sara.address);
+    let bobPreBalance = await ethers.provider.getBalance(bob.address);
+
+    let tx = await titleToken.connect(bob).offerToSell(tokenId1, sara.address, eth2WEI(1))
+    await expect(tx).not.to.be.reverted;
+    let receipt = await tx.wait()
+    let gasUsedByBob = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+
+    tx = await titleToken.connect(sara).acceptOfferToSell(tokenId1, payETH(1))
+    await expect(tx).not.to.be.reverted;
+    receipt = await tx.wait()
+    let gasUsedBySara = receipt.gasUsed.mul(receipt.effectiveGasPrice)
+
+    await expect(tx)
       .to.emit(titleToken, 'Transfer').withArgs(bob.address, sara.address, tokenId1)
-      .to.emit(titleToken, 'OfferToSellCancelled').withArgs(tokenId1, sara.address);
+      .to.not.emit(titleToken, 'OfferToSellCancelled');
     
     expect(await titleToken.ownerOf(tokenId1)).to.equal(sara.address);
     await expect(await titleToken.connect(sara).countOffersToSell(tokenId1)).to.equal(0);
+
+    let saraPostBalance = await ethers.provider.getBalance(sara.address);
+    let bobPostBalance = await ethers.provider.getBalance(bob.address);
+    await expect(saraPostBalance, "sara's balance is off").to.equal(saraPreBalance.sub(gasUsedBySara).sub(eth2WEI(1)))
+    await expect(bobPostBalance, "bob's balance is off").to.equal(bobPreBalance.sub(gasUsedByBob).add(eth2WEI(1)))
   });
 
   it('accepts revisions to freeze & unfreeze contract', async function() {
@@ -518,21 +607,21 @@ describe("JSCTitleToken", async () => {
     await checkRevert(expect(contract.connect(bob)['safeTransferFrom(address,address,uint256)'](bob.address, sara.address, tokenId), "safe transfer from bob to sara"));
     if (!expectRevert) await checkRevert(expect(contract.connect(sara)['safeTransferFrom(address,address,uint256)'](sara.address, bob.address, tokenId), "safe transfer from sara to bob"));
 
-    await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy"));
+    await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, eth2WEI(1), payETH(1)), "sara offers to buy"));
     if (!expectRevert) await checkRevert(expect(contract.connect(sara).cancelOfferToBuy(tokenId), "sara cancels offer to buy"));
 
-    await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy again"));
+    await checkRevert(expect(contract.connect(sara).offerToBuy(tokenId, eth2WEI(1), payETH(1)), "sara offers to buy again"));
     if (!expectRevert) {
       await checkRevert(expect(contract.connect(bob).acceptOfferToBuy(tokenId, sara.address), "accepts sara's offer to buy"));
       await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob after accepting offer to buy"));
     }
 
-    await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara"));
+    await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, eth2WEI(1)), "offer to sell to sara"));
     if (!expectRevert) await checkRevert(expect(contract.connect(bob).cancelOfferToSell(tokenId, sara.address), "cancel offer to sell to sara"));
 
-    await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara again"));
+    await checkRevert(expect(contract.connect(bob).offerToSell(tokenId, sara.address, eth2WEI(1)), "offer to sell to sara again"));
     if (!expectRevert) {
-      await checkRevert(expect(contract.connect(sara).acceptOfferToSell(tokenId), "accepts bob's offer to sell"));
+      await checkRevert(expect(contract.connect(sara).acceptOfferToSell(tokenId, payETH(1)), "accepts bob's offer to sell"));
       await checkRevert(expect(contract.connect(sara).transferFrom(sara.address, bob.address, tokenId), "transfer from sara to bob after accepting offer to sell"));
     }
 
@@ -595,17 +684,17 @@ describe("JSCTitleToken", async () => {
     await checkRevert(expect(titleTokenTest.connect(bob)['safeTransferFrom(address,address,uint256)'](bob.address, targetAccount.address, tokenId2), "safe transfer from bob to target"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(targetAccount)['safeTransferFrom(address,address,uint256)'](targetAccount.address, bob.address, tokenId2), "safe transfer from target to bob"));
 
-    await checkRevert(expect(titleTokenTest.connect(sara).offerToBuy(tokenId1, 1000), "sara offers to buy target's token"));
+    await checkRevert(expect(titleTokenTest.connect(sara).offerToBuy(tokenId1, eth2WEI(1), payETH(1)), "sara offers to buy target's token"));
     if (!expectRevert) await expect(titleTokenTest.connect(sara).cancelOfferToBuy(tokenId1)).not.to.be.reverted; // CancelOffer always works even if owner of token is frozen
 
-    await checkRevert(expect(titleTokenTest.connect(targetAccount).offerToBuy(tokenId2, 1000), "target offers to buy bob's token"));
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).offerToBuy(tokenId2, eth2WEI(1), payETH(1)), "target offers to buy bob's token"));
     if (!expectRevert) await expect(titleTokenTest.connect(targetAccount).cancelOfferToBuy(tokenId2), "target cancels offer to buy bob's token").not.to.be.reverted; // CancelOffer always works even if offerer is frozen
 
     // To test cancelOfferToBuy() when offerer is frozen, they must have made an offer before being frozen
     let targetFrozenState = await titleTokenTest.isFrozenOwner(targetAccount.address);
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(targetAccount).offerToBuy(tokenId2, 1000), "target offers to buy sara's token").not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).offerToBuy(tokenId2, eth2WEI(1), payETH(1)), "target offers to buy sara's token").not.to.be.reverted;
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
     await expect(titleTokenTest.connect(targetAccount).cancelOfferToBuy(tokenId2), "target cancels offer to buy sara's token").not.to.be.reverted;
@@ -614,20 +703,20 @@ describe("JSCTitleToken", async () => {
     targetFrozenState = await titleTokenTest.isFrozenOwner(targetAccount.address);
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(sara).offerToBuy(tokenId1, 1000), "sara offers to buy again").not.to.be.reverted;
+    await expect(titleTokenTest.connect(sara).offerToBuy(tokenId1, eth2WEI(1), payETH(1)), "sara offers to buy again").not.to.be.reverted;
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
     await checkRevert(expect(titleTokenTest.connect(targetAccount).acceptOfferToBuy(tokenId1, sara.address), "accepts sara's offer to buy"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, targetAccount.address, tokenId1), "transfer from sara to target after accepting offer to buy"));
 
-    await checkRevert(expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, 1000), "offer to sell to sara"));
+    await checkRevert(expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, eth2WEI(1)), "offer to sell to sara"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(targetAccount).cancelOfferToSell(tokenId1, sara.address), "cancel offer to sell to sara"));
 
     // To test cancelOfferToSell() when offerer is frozen, they must have made an offer before being frozen
     targetFrozenState = await titleTokenTest.isFrozenOwner(targetAccount.address);
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, 1000), "target offers to sell token to sara").not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, eth2WEI(1)), "target offers to sell token to sara").not.to.be.reverted;
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
     await expect(titleTokenTest.connect(targetAccount).cancelOfferToSell(tokenId1, sara.address), "target cancels offer to sell token to sara").not.to.be.reverted;
@@ -635,10 +724,10 @@ describe("JSCTitleToken", async () => {
     // To test acceptOfferToSell(), someone must have made an offer to sell to the targetAccount before it was frozen
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, 1000)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(targetAccount).offerToSell(tokenId1, sara.address, eth2WEI(1))).not.to.be.reverted;
     if (targetFrozenState)
       await expect(titleTokenTest.setFrozenOwner(targetAccount.address, true)).not.to.be.reverted;
-    await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId1), "accepts target's offer to sell"));
+    await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId1, payETH(1)), "accepts target's offer to sell"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, targetAccount.address, tokenId1), "transfer from sara to target after accepting offer to sell"));
 
     await titleTokenTest.burn(tokenId1); // burn() is onlyOwner and should work regardless of whether the contract is frozen
@@ -678,14 +767,14 @@ describe("JSCTitleToken", async () => {
     await checkRevert(expect(titleTokenTest.connect(account)['safeTransferFrom(address,address,uint256)'](account.address, sara.address, tokenId), "safe transfer from target to sara"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara)['safeTransferFrom(address,address,uint256)'](sara.address, account.address, tokenId), "safe transfer from sara to target"));
 
-    await checkRevert(expect(titleTokenTest.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy target's token"));
+    await checkRevert(expect(titleTokenTest.connect(sara).offerToBuy(tokenId, eth2WEI(1), payETH(1)), "sara offers to buy target's token"));
     if (!expectRevert) await expect(titleTokenTest.connect(sara).cancelOfferToBuy(tokenId)).not.to.be.reverted; // CancelOffer always works even if token is frozen
   
     // To test cancelOfferToBuy() when token is frozen, you must have made an offer before is was frozen
     let tokenFrozenState = await titleTokenTest.isFrozenToken(tokenId);
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(account).offerToBuy(tokenId2, 1000), "target offers to buy sara's token").not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).offerToBuy(tokenId2, eth2WEI(1), payETH(1)), "target offers to buy sara's token").not.to.be.reverted;
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
     await expect(titleTokenTest.connect(account).cancelOfferToBuy(tokenId2), "target cancels offer to buy sara's token").not.to.be.reverted;
@@ -694,20 +783,20 @@ describe("JSCTitleToken", async () => {
     tokenFrozenState = await titleTokenTest.isFrozenToken(tokenId);
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(sara).offerToBuy(tokenId, 1000), "sara offers to buy again").not.to.be.reverted;
+    await expect(titleTokenTest.connect(sara).offerToBuy(tokenId, eth2WEI(1), payETH(1)), "sara offers to buy again").not.to.be.reverted;
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
     await checkRevert(expect(titleTokenTest.connect(account).acceptOfferToBuy(tokenId, sara.address), "accepts sara's offer to buy"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, account.address, tokenId), "transfer from sara to target after accepting offer to buy"));
 
-    await checkRevert(expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, 1000), "offer to sell to sara"));
+    await checkRevert(expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, eth2WEI(1)), "offer to sell to sara"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(account).cancelOfferToSell(tokenId, sara.address), "cancel offer to sell to sara"));
 
     // To test cancelOfferToSell() when token is frozen, you must have made an offer before it was frozen
     tokenFrozenState = await titleTokenTest.isFrozenToken(tokenId);
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, 1000), "target offers to sell token to sara").not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, eth2WEI(1)), "target offers to sell token to sara").not.to.be.reverted;
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
     await expect(titleTokenTest.connect(account).cancelOfferToSell(tokenId, sara.address), "target cancels offer to sell token to sara").not.to.be.reverted;
@@ -715,10 +804,10 @@ describe("JSCTitleToken", async () => {
     // To test acceptOfferToSell(), someone must have made an offer to sell to the targetAccount before it was frozen
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, false)).not.to.be.reverted;
-    await expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, 1000)).not.to.be.reverted;
+    await expect(titleTokenTest.connect(account).offerToSell(tokenId, sara.address, eth2WEI(1))).not.to.be.reverted;
     if (tokenFrozenState)
       await expect(titleTokenTest.setFrozenToken(tokenId, true)).not.to.be.reverted;
-    await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId), "accepts target's offer to sell"));
+    await checkRevert(expect(titleTokenTest.connect(sara).acceptOfferToSell(tokenId, payETH(1)), "accepts target's offer to sell"));
     if (!expectRevert) await checkRevert(expect(titleTokenTest.connect(sara).transferFrom(sara.address, account.address, tokenId), "transfer from sara to target after accepting offer to sell"));
 
     // Note: Revision for unfreezing token tested above in 'accepts revision to freeze token'
@@ -745,40 +834,40 @@ describe("JSCTitleToken", async () => {
     const approved = jane
     const otherAccount = bryan
 
-    expect(await titleTokenTest.mint(ownerAccount.address, titleId1)).to.not.be.reverted;
+    await expect(titleTokenTest.mint(ownerAccount.address, titleId1)).to.not.be.reverted;
     let tokenId1 = await titleTokenTest.titleToTokenId(titleId1);
-    expect(await titleTokenTest.mint(otherAccount.address, titleId2)).to.not.be.reverted;
+    await expect(titleTokenTest.mint(otherAccount.address, titleId2)).to.not.be.reverted;
     let tokenId2 = await titleTokenTest.titleToTokenId(titleId2);
     
-    expect(await titleTokenTest.connect(ownerAccount).approve(approved.address, tokenId1)).to.not.be.reverted;
-    expect(titleToken.connect(ownerAccount).setApprovalForAll(operator.address, true)).to.not.be.reverted;
+    await expect(titleTokenTest.connect(ownerAccount).approve(approved.address, tokenId1)).to.not.be.reverted;
+    await expect(titleToken.connect(ownerAccount).setApprovalForAll(operator.address, true)).to.not.be.reverted;
 
-    await expect(titleTokenTest.connect(ownerAccount).offerToBuy(tokenId2, 1000), "owner offers to buy other account's token").to.not.be.reverted;
+    await expect(titleTokenTest.connect(ownerAccount).offerToBuy(tokenId2, eth2WEI(1), payETH(1)), "owner offers to buy other account's token").to.not.be.reverted;
     await expect(titleTokenTest.connect(operator).cancelOfferToBuy(tokenId1), "operator cancels offer to buy other account's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(approved).cancelOfferToBuy(tokenId1), "approved cancels offer to buy other account's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, ownerAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
     await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, ownerAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
     await expect(titleTokenTest.connect(ownerAccount).cancelOfferToBuy(tokenId2), "owner cancels offer to buy").to.not.be.reverted;
 
-    await expect(titleTokenTest.connect(otherAccount).offerToBuy(tokenId1, 1000), "other account offers to buy owner's token").to.not.be.reverted;
+    await expect(titleTokenTest.connect(otherAccount).offerToBuy(tokenId1, eth2WEI(1), payETH(1)), "other account offers to buy owner's token").to.not.be.reverted;
     await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, otherAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
     await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, otherAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
     await expect(titleTokenTest.connect(operator).cancelOfferToBuy(tokenId1), "operator cancels offer to buy owner's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(approved).cancelOfferToBuy(tokenId1), "approved cancels offer to buy owner's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(otherAccount).cancelOfferToBuy(tokenId1), "other account cancels offer to buy").to.not.be.reverted;
 
-    await expect(titleTokenTest.connect(operator).offerToSell(tokenId1, otherAccount.address, 1000), "operator offers to sell owner's token to other account").to.be.revertedWith("caller is not token owner");
-    await expect(titleTokenTest.connect(approved).offerToSell(tokenId1, otherAccount.address, 1000), "approved offers to sell owner's token to other account").to.be.revertedWith("caller is not token owner");
-    await expect(titleTokenTest.connect(ownerAccount).offerToSell(tokenId1, otherAccount.address, 1000), "owner offers to sell their token to other account").to.not.be.reverted;
-    await expect(titleTokenTest.connect(operator).acceptOfferToSell(tokenId1), "operator accepts offer to sell owner's token").to.be.revertedWith("no offer found");
-    await expect(titleTokenTest.connect(approved).acceptOfferToSell(tokenId1), "approved accepts offer to sell owner's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(operator).offerToSell(tokenId1, otherAccount.address, eth2WEI(1)), "operator offers to sell owner's token to other account").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(approved).offerToSell(tokenId1, otherAccount.address, eth2WEI(1)), "approved offers to sell owner's token to other account").to.be.revertedWith("caller is not token owner");
+    await expect(titleTokenTest.connect(ownerAccount).offerToSell(tokenId1, otherAccount.address, eth2WEI(1)), "owner offers to sell their token to other account").to.not.be.reverted;
+    await expect(titleTokenTest.connect(operator).acceptOfferToSell(tokenId1, payETH(1)), "operator accepts offer to sell owner's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(approved).acceptOfferToSell(tokenId1, payETH(1)), "approved accepts offer to sell owner's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(operator).cancelOfferToSell(tokenId1, ownerAccount.address), "operator cancels offer to sell owner's token").to.be.revertedWith("caller is not token owner");
     await expect(titleTokenTest.connect(approved).cancelOfferToSell(tokenId1, ownerAccount.address), "approved cancels offer to sell owner's token").to.be.revertedWith("caller is not token owner");
     await expect(titleTokenTest.connect(ownerAccount).cancelOfferToSell(tokenId1, otherAccount.address), "owner cancels offer to sell").to.not.be.reverted;
 
-    await expect(titleTokenTest.connect(otherAccount).offerToSell(tokenId2, ownerAccount.address, 1000), "other account offers to sell their token to owner").to.not.be.reverted;
-    await expect(titleTokenTest.connect(operator).acceptOfferToSell(tokenId2), "operator accepts offer to sell other account's token").to.be.revertedWith("no offer found");
-    await expect(titleTokenTest.connect(approved).acceptOfferToSell(tokenId2), "approved accepts offer to sell other account's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(otherAccount).offerToSell(tokenId2, ownerAccount.address, eth2WEI(1)), "other account offers to sell their token to owner").to.not.be.reverted;
+    await expect(titleTokenTest.connect(operator).acceptOfferToSell(tokenId2, payETH(1)), "operator accepts offer to sell other account's token").to.be.revertedWith("no offer found");
+    await expect(titleTokenTest.connect(approved).acceptOfferToSell(tokenId2, payETH(1)), "approved accepts offer to sell other account's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(operator).cancelOfferToSell(tokenId2, ownerAccount.address), "operator cancels offer to sell other account's token").to.be.revertedWith("caller is not token owner");
     await expect(titleTokenTest.connect(approved).cancelOfferToSell(tokenId2, ownerAccount.address), "approved cancels offer to sell other account's token").to.be.revertedWith("caller is not token owner");
     await expect(titleTokenTest.connect(otherAccount).cancelOfferToSell(tokenId2, ownerAccount.address), "other account cancels offer to sell to owner").to.not.be.reverted;
@@ -786,8 +875,7 @@ describe("JSCTitleToken", async () => {
 
   /**
    * Pending:
-   *   Add payment to offers
-   *   
+   *   Test zero offers
    *   Test if approval clear after transfer
    *   Test if approval can transfer ownership after cancelling
    *   Test if operator can transfer ownership after cancelling

@@ -23,7 +23,16 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
   /**
    * @dev Initializes the contract by setting a `name` and a `symbol` for the token collection and connecting this contract to a jurisdiction
    */
-  function init(string memory name_, string memory symbol_, string memory baseURI_, address jurisdiction_ ) external;
+  function init(
+      string memory name_, 
+      string memory symbol_, 
+      string memory baseURI_, 
+      address jurisdiction_,
+      address registryAccount_,
+      uint256 registryFee_,
+      address maintainerAccount_,
+      uint256 maintainerFee_
+    ) external;
 
   /**
    * @dev Returns the address of the jurisdicion of which this contract is a part
@@ -94,8 +103,12 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
   /** Returns count of offers to buy from other addresses */
   function offerToBuyAtIndex(uint256 tokenId, uint256 index) external view returns (tlib.Offer memory);
 
-  /** Adds an offer to buy the given token for the given amount */
-  function offerToBuy(uint256 tokenId, uint256 amount) external;
+  /** 
+   * Adds an offer to buy the given token for the given amount. 
+   * That amount of crypto currency must be available in the callers account. 
+   * It will be transferred to this contract until the offer is is cancelled or the owner accepts the offer.
+   */
+  function offerToBuy(uint256 tokenId, uint256 amount) external payable;
 
   /** Accepts an existing offer to buy from the given buyer */
   function acceptOfferToBuy(uint256 tokenId, address buyer) external;
@@ -112,8 +125,12 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
   /** Adds an offer to sell the given token to the given buyer for the given amount */
   function offerToSell(uint256 tokenId, address buyer, uint256 amount ) external;
 
-  /** Accepts an existing offer to sell the given */
-  function acceptOfferToSell(uint256 tokenId) external;
+  /** 
+   * Accepts an existing offer to sell the given. 
+   * The offerred amount of crypto currency must be available in the callers account. 
+   * It will be transferred to this owner while the token's ownership will be transferred to the caller.
+   */
+  function acceptOfferToSell(uint256 tokenId) external payable;
 
   /** Cancels an offer to sell the given token to the given buyer. Fails if no such offer exists */
   function cancelOfferToSell(uint256 tokenId, address buyer) external;
