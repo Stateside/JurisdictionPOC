@@ -17,7 +17,7 @@ const deployJSCJurisdictionInit: DeployFunction = async function (hre: HardhatRu
   const jscJurisdiction = await ethers.getContractAt("JSCJurisdiction", jscJurisdictionContract.address)
   await jscJurisdiction.init(
     "DemoJurisdiction",
-    ["jsc.cabinet",               "jsc.governor",               "jsc.tokens"],
+    ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
     [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address],
     [
       "Manage the members of the jurisdiction and their roles",

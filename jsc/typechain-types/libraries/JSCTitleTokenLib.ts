@@ -74,12 +74,44 @@ export declare namespace JSCRevisionsLib {
   };
 }
 
+export declare namespace JSCConfigurableLib {
+  export type AddressParameterStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    value: PromiseOrValue<string>;
+  };
+
+  export type AddressParameterStructOutput = [string, string, string] & {
+    name: string;
+    description: string;
+    value: string;
+  };
+
+  export type NumberParameterStruct = {
+    name: PromiseOrValue<string>;
+    description: PromiseOrValue<string>;
+    value: PromiseOrValue<BigNumberish>;
+  };
+
+  export type NumberParameterStructOutput = [string, string, BigNumber] & {
+    name: string;
+    description: string;
+    value: BigNumber;
+  };
+}
+
 export interface JSCTitleTokenLibInterface extends utils.Interface {
   functions: {
     "getChangeOwnerRevision()": FunctionFragment;
     "getFreezeOwnerRevision()": FunctionFragment;
     "getFreezeTokenRevision()": FunctionFragment;
+    "getMaintainerAccountParam(address)": FunctionFragment;
+    "getMaintainerFeeParam(uint256)": FunctionFragment;
+    "getRegistryAccountParam(address)": FunctionFragment;
+    "getRegistryFeeParam(uint256)": FunctionFragment;
     "getRevisions()": FunctionFragment;
+    "requireAddress(address)": FunctionFragment;
+    "requireTokenOwner(address)": FunctionFragment;
   };
 
   getFunction(
@@ -87,7 +119,13 @@ export interface JSCTitleTokenLibInterface extends utils.Interface {
       | "getChangeOwnerRevision"
       | "getFreezeOwnerRevision"
       | "getFreezeTokenRevision"
+      | "getMaintainerAccountParam"
+      | "getMaintainerFeeParam"
+      | "getRegistryAccountParam"
+      | "getRegistryFeeParam"
       | "getRevisions"
+      | "requireAddress"
+      | "requireTokenOwner"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -103,8 +141,32 @@ export interface JSCTitleTokenLibInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getMaintainerAccountParam",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMaintainerFeeParam",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRegistryAccountParam",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRegistryFeeParam",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRevisions",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requireAddress",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requireTokenOwner",
+    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -120,7 +182,31 @@ export interface JSCTitleTokenLibInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getMaintainerAccountParam",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMaintainerFeeParam",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRegistryAccountParam",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRegistryFeeParam",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getRevisions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requireAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requireTokenOwner",
     data: BytesLike
   ): Result;
 
@@ -196,6 +282,26 @@ export interface JSCTitleTokenLib extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[JSCRevisionsLib.RevisionStructOutput]>;
 
+    getMaintainerAccountParam(
+      maintainerAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[JSCConfigurableLib.AddressParameterStructOutput]>;
+
+    getMaintainerFeeParam(
+      maintainerFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[JSCConfigurableLib.NumberParameterStructOutput]>;
+
+    getRegistryAccountParam(
+      registryAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[JSCConfigurableLib.AddressParameterStructOutput]>;
+
+    getRegistryFeeParam(
+      registryFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[JSCConfigurableLib.NumberParameterStructOutput]>;
+
     getRevisions(
       overrides?: CallOverrides
     ): Promise<
@@ -203,6 +309,16 @@ export interface JSCTitleTokenLib extends BaseContract {
         result: JSCRevisionsLib.RevisionStructOutput[];
       }
     >;
+
+    requireAddress(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
+    requireTokenOwner(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
   };
 
   getChangeOwnerRevision(
@@ -217,9 +333,39 @@ export interface JSCTitleTokenLib extends BaseContract {
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+  getMaintainerAccountParam(
+    maintainerAccount: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCConfigurableLib.AddressParameterStructOutput>;
+
+  getMaintainerFeeParam(
+    maintainerFee: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<JSCConfigurableLib.NumberParameterStructOutput>;
+
+  getRegistryAccountParam(
+    registryAccount: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<JSCConfigurableLib.AddressParameterStructOutput>;
+
+  getRegistryFeeParam(
+    registryFee: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<JSCConfigurableLib.NumberParameterStructOutput>;
+
   getRevisions(
     overrides?: CallOverrides
   ): Promise<JSCRevisionsLib.RevisionStructOutput[]>;
+
+  requireAddress(
+    a: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
+  requireTokenOwner(
+    a: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   callStatic: {
     getChangeOwnerRevision(
@@ -234,9 +380,39 @@ export interface JSCTitleTokenLib extends BaseContract {
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput>;
 
+    getMaintainerAccountParam(
+      maintainerAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCConfigurableLib.AddressParameterStructOutput>;
+
+    getMaintainerFeeParam(
+      maintainerFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<JSCConfigurableLib.NumberParameterStructOutput>;
+
+    getRegistryAccountParam(
+      registryAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<JSCConfigurableLib.AddressParameterStructOutput>;
+
+    getRegistryFeeParam(
+      registryFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<JSCConfigurableLib.NumberParameterStructOutput>;
+
     getRevisions(
       overrides?: CallOverrides
     ): Promise<JSCRevisionsLib.RevisionStructOutput[]>;
+
+    requireAddress(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    requireTokenOwner(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -270,7 +446,37 @@ export interface JSCTitleTokenLib extends BaseContract {
 
     getFreezeTokenRevision(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getMaintainerAccountParam(
+      maintainerAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMaintainerFeeParam(
+      maintainerFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRegistryAccountParam(
+      registryAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRegistryFeeParam(
+      registryFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getRevisions(overrides?: CallOverrides): Promise<BigNumber>;
+
+    requireAddress(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    requireTokenOwner(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -286,6 +492,36 @@ export interface JSCTitleTokenLib extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getMaintainerAccountParam(
+      maintainerAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMaintainerFeeParam(
+      maintainerFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRegistryAccountParam(
+      registryAccount: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRegistryFeeParam(
+      registryFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getRevisions(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    requireAddress(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    requireTokenOwner(
+      a: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
   };
 }

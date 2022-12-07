@@ -92,3 +92,10 @@ yarn hardhat --help
   - This can be done by the member signing a request to perform some operation and sending the request to 
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
+
+
+Payments
+1. Pay registry fees
+2. Pay maintainer fees
+3. revisions to withdraw or deposit 
+4. add initializer modifier

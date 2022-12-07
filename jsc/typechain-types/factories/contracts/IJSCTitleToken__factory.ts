@@ -474,7 +474,7 @@ const _abi = [
     ],
     name: "acceptOfferToSell",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -822,6 +822,26 @@ const _abi = [
         name: "jurisdiction_",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "registryAccount_",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "registryFee_",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "maintainerAccount_",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "maintainerFee_",
+        type: "uint256",
+      },
     ],
     name: "init",
     outputs: [],
@@ -1051,7 +1071,7 @@ const _abi = [
     ],
     name: "offerToBuy",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
