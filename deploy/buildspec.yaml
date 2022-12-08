@@ -27,6 +27,7 @@ phases:
       - yarn
       - rm -rf typechain-types
       - yarn typechain
+      - yarn build
       - cd ..
 artifacts:
   files:
