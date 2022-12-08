@@ -14,14 +14,11 @@ phases:
     runtime-versions:
       nodejs: 16
     commands:
-      - echo install yarn...
       - npm install -g yarn
-      - echo yarn -v
       - yarn -v
   build:
     on-failure: ABORT
     commands:
-      - echo Build started on `date`
       - cd jsc
       - yarn 
       - yarn hardhat compile
