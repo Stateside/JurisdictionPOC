@@ -1,0 +1,30 @@
+version: 0.2
+
+env:
+  variables:
+    NODE_ENV: development
+
+cache:
+  paths:
+    - node_modules/**/*
+
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      nodejs: 16
+  build:
+    on-failure: ABORT
+    commands:
+      - cd jsc
+      - yarn 
+      - yarn hardhat compile
+      - cd ..
+      - cd frontend
+      - yarn
+      - rm -rf typechain-types
+      - yarn typechain
+      - cd ..
+artifacts:
+  files:
+    - "**/*"

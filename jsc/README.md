@@ -93,6 +93,12 @@ yarn hardhat --help
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
 
+Deployments
+cfn to 
+  create server
+  create pipeline
+  
+set up 
 
 Payments
 1. Pay registry fees

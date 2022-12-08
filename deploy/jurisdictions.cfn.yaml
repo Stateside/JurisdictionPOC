@@ -1,0 +1,280 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CFN template for Jurisdiciton and Estate Registry deployment
+Parameters:
+  AMI:
+    Description: ID of AMI used for web instance
+    Type: AWS::EC2::Image::Id
+    Default: ami-0b0dcb5067f052a63
+  GitHubRepository:
+    Type: String
+    Default: Stateside/JurisdictionPOC/devops
+    Description:  owner/repository/branch
+  GitHubOAuthToken:
+    Type: String
+    Default:  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
+    Description:  CodePipeline requires an OAuthToken    
+  InstanceType:
+    Description: Server EC2 instance type
+    Type: String
+    Default: t2.medium
+    ConstraintDescription: must be a valid EC2 instance type
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instances
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: must be the name of an existing EC2 KeyPair
+    Default: ec2-ssh-key-pair
+  Region:
+    Type: String
+    Default: us-east-2 
+  SSLCloudFrontCertificateARN:
+    Type: String
+    AllowedPattern: ^arn:aws:acm:[a-z]{2}-[a-z]+-\d{1}:\d{12}:certificate/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
+    ConstraintDescription: Invalid SSL Certificate ARN. It must be in this arn:aws:acm:<region>:<account-id>:certificate/<resourceid> format.
+    Description: Provide ARN of the SSL certificate imported in AWS Certificate Manager. It must be in this arn:aws:acm:<region>:<account-id>:certificate/<resourceid> format.
+    Default: arn:aws:acm:us-east-1:400298284850:certificate/c413b6a6-1e9a-4b08-92f6-fd14067cfddc
+
+Resources:
+
+# Server
+  WebServerInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - !Ref WebServerSecurityGroup
+      KeyName: !Ref KeyName
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP access via port 3000
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+#CodeDeploy
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub CodeBuildRole-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codebuild.amazonaws.com"
+          Action: "sts:AssumeRole"
+  CodePipelineRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub CodePipelineRole-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codepipeline.amazonaws.com"
+          Action: "sts:AssumeRole"
+  CodeBuildPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: !Sub CodeBuildPolicy-${AWS::StackName}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogGroups
+            - logs:FilterLogEvents
+            - logs:DescribeLogStreams
+            - logs:DeleteLogGroup
+            - s3:putObject
+            - s3:getObject
+            - codebuild:*
+            - 'cloudformation:List*'
+            - 'cloudformation:Get*'
+            - 'cloudformation:PreviewStackUpdate'
+            - 'cloudformation:ValidateTemplate'
+            - 'cloudformation:CreateStack'
+            - 'cloudformation:CreateUploadBucket'
+            - 'cloudformation:DeleteStack'
+            - 'cloudformation:Describe*'
+            - 'cloudformation:UpdateStack'
+            - 'lambda:Get*'
+            - 'lambda:List*'
+            - 'lambda:CreateFunction'
+            - 'lambda:AddPermission'
+            - 'lambda:CreateAlias'
+            - 'lambda:DeleteFunction'
+            - 'lambda:InvokeFunction'
+            - 'lambda:PublishVersion'
+            - 'lambda:RemovePermission'
+            - 'lambda:Update*'
+            - 'apigateway:GET'
+            - 'apigateway:POST'
+            - 'apigateway:PUT'
+            - 'apigateway:DELETE'
+            - 's3:CreateBucket'
+            - 's3:DeleteBucket'
+            - 's3:ListBucket'
+            - 's3:ListBucketVersions'
+            - 's3:PutObject'
+            - 's3:GetObject'
+            - 's3:DeleteObject'
+            - 'iam:PassRole'
+            - 'kinesis:*'
+            - 'iam:GetRole'
+            - 'iam:CreateRole'
+            - 'iam:PutRolePolicy'
+            - 'iam:DeleteRolePolicy'
+            - 'iam:DeleteRole'
+            - 'cloudwatch:GetMetricStatistics'
+            - 'events:Put*'
+            - 'events:Remove*'
+            - 'events:Delete*'
+            - 'dynamodb:*'
+          Resource: "*"
+      Roles:
+        -  !Ref CodeBuildRole
+  CodePipelinePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: !Sub CodePipelinePolicy-${AWS::StackName}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - s3:putObject
+            - s3:getObject
+            - codebuild:*
+          Resource:
+            - "*"
+      Roles:
+        -  !Ref CodePipelineRole
+  S3:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub code-pipeline-${AWS::StackName}-${AWS::Region}
+  WebBuild:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: Web-Build
+      Description: CodeBuild project to build website
+      ServiceRole: !Ref CodeBuildRole
+      TimeoutInMinutes: 5
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yaml
+      Environment:
+        Type: "LINUX_CONTAINER"
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/nodejs:10.1.0
+      Artifacts:
+        Type: CODEPIPELINE
+
+  Pipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      Name: !Sub code-pipeline-${AWS::StackName}
+      ArtifactStore:
+        Location: !Ref S3
+        Type: S3
+      RestartExecutionOnUpdate: true
+      RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}
+      Stages:
+
+        # Stage 1:  Get the source from GitHub:
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: "1"
+              Configuration:
+                Owner: !Select [0, !Split [ "/" , !Ref GitHubRepository ]]
+                Repo: !Select [1, !Split [ "/" , !Ref GitHubRepository ]]
+                Branch: !Select [2, !Split [ "/" , !Ref GitHubRepository ]]
+                PollForSourceChanges: false
+                OAuthToken: !Ref GitHubOAuthToken
+              OutputArtifacts:
+                - Name: TheSourceCode
+
+        # Stage 2:  Run build with buildspec.yaml
+        - Name: WebBuild
+          Actions:
+            - Name: Web-Build
+              RunOrder: 1
+              InputArtifacts:
+                - Name: TheSourceCode
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName:  !Ref WebBuild
+              OutputArtifacts:
+                - Name: TheArtifact
+
+# CloudFront
+  JurisdictionCloudFront:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName: !Sub ${WebServerInstance.PublicDnsName}
+          Id: WebOrigin
+          CustomOriginConfig:
+            HTTPPort: 3000
+            OriginProtocolPolicy: http-only
+        Enabled: true
+        Comment: CDN for Jurisdiction website
+        DefaultRootObject: index.js
+        Aliases:
+        - jurisdictions.stateside.agency
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - HEAD
+          - GET
+          - OPTIONS
+          Compress: true
+          TargetOriginId: WebOrigin
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+
+# Parameter Store
+  RegionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: REGION
+      Type: String
+      Value: !Ref Region 
+
+Outputs:
+  WebURL:
+    Description: The URL of the Jurisdiction website
+    Value: !Sub http://${WebServerInstance.PublicDnsName}:3000
