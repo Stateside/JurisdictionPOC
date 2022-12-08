@@ -27,9 +27,6 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
     ConstraintDescription: must be the name of an existing EC2 KeyPair
     Default: ec2-ssh-key-pair
-  Region:
-    Type: String
-    Default: us-east-1 
   SSLCloudFrontCertificateARN:
     Type: String
     AllowedPattern: ^arn:aws:acm:[a-z]{2}-[a-z]+-\d{1}:\d{12}:certificate/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
@@ -40,14 +37,42 @@ Parameters:
 Resources:
 
 # Server
-  WebServerInstance:
-    Type: 'AWS::EC2::Instance'
+  WebServerInstanceRole:
+    Type: "AWS::IAM::Role"
     Properties:
-      ImageId: !Ref AMI
-      InstanceType: !Ref InstanceType
-      SecurityGroups:
-        - !Ref WebServerSecurityGroup
-      KeyName: !Ref KeyName
+      RoleName: !Sub ${AWS::StackName}-WebServerInstanceRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonCognitoPowerUser
+        - arn:aws:iam::aws:policy/AmazonESCognitoAccess
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-pipeline-service-role-policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "autoscaling:Describe*"
+                  - "cloudformation:Describe*"
+                  - "cloudformation:GetTemplate"
+                  - "s3:*"
+                  - "codeartifact:*"
+                Resource: "*"
+  WebServerInstanceRoleInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      InstanceProfileName: !Sub ${AWS::StackName}-WebServerInstanceProfile
+      Path: /
+      Roles:
+        - !Ref WebServerInstanceRole
   WebServerSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -61,7 +86,87 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
-
+  WebServerInstance:
+    Type: 'AWS::EC2::Instance'
+    Metadata:
+      Comment1: Install simple website for testing
+      Comment2: Install Cloud Formation helper scripts - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
+      Comment3: Install CodeDeploy Agent - https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-linux.html
+      Comment4: See for more info - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-init.html
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallAndConfigure:
+            - Install
+            - Configure
+        Install:
+          packages:
+            yum:
+              httpd: []
+              ruby: []
+              wget: []
+          files:
+            /var/www/html/index.html:
+              content: Hello World!!
+              mode: "000600"
+              owner: apache
+              group: apache
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |+
+                    [main]
+                    stack=${AWS::StackId}
+                    region=${AWS::Region}
+              mode: "000400"
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |+
+                    [cfn-auto-reloader-hook]
+                    triggers=post.update
+                    path=Resources.WebServerInstance.Metadata.AWS::CloudFormation::Init
+                    action=/opt/aws/bin/cfn-init -v --stack '${AWS::StackName}' --resource WebServerInstance --configsets InstallAndConfigure --region '${AWS::Region}' --role ${WebServerInstanceRole}
+                    runas=root
+          services:
+            sysvinit:
+              httpd:
+                enabled: "true"
+                ensureRunning: "true"
+              cfn-hup:
+                enabled: "true"
+                ensureRunning: "true"
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+        Configure:
+          commands:
+            01_Download_And_Install_Code_Deploy:
+              cwd: /home/ec2-user
+              command: !Sub |+
+                wget https://aws-codedeploy-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/latest/install
+                chmod +x ./install
+                ./install auto
+                rm install
+      IamInstanceProfile: !Ref WebServerInstanceRoleInstanceProfile
+    Properties:
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - !Ref WebServerSecurityGroup
+      IamInstanceProfile: !Ref WebServerInstanceRoleInstanceProfile
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: "Type"
+          Value: "WebServer"
+        - Key: "Name"
+          Value: "Web Server"
+      UserData:
+        Fn::Base64:
+          !Sub |+
+              #!/bin/bash -x
+              #Run CloudFormation helper script to perform initialization that is described in the metadata for this instance
+              /opt/aws/bin/cfn-init -v --stack '${AWS::StackName}' --resource WebServerInstance --configsets InstallAndConfigure --region '${AWS::Region}' --role ${WebServerInstanceRole}
+              #Signal Cloud Formation that this EC2 instance is ready
+              /opt/aws/bin/cfn-signal -e $? --stack '${AWS::StackName}' --resource WebServerInstance  --region '${AWS::Region}'
+  
 #CodeDeploy
   CodeBuildRole:
     Type: "AWS::IAM::Role"
@@ -74,6 +179,41 @@ Resources:
           Principal:
             Service: "codebuild.amazonaws.com"
           Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-web-build-service-role-logs-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Resource: "*"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}*"
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:GetBucketAcl"
+                  - "s3:GetBucketLocation"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${AWS::StackName}-web-build-project-*"
+                Action:
+                  - "codebuild:CreateReportGroup"
+                  - "codebuild:CreateReport"
+                  - "codebuild:UpdateReport"
+                  - "codebuild:BatchPutTestCases"
+                  - "codebuild:BatchPutCodeCoverages"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
   CodePipelineRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -85,98 +225,49 @@ Resources:
           Principal:
             Service: "codepipeline.amazonaws.com"
           Action: "sts:AssumeRole"
-  CodeBuildPolicy:
-    Type: "AWS::IAM::Policy"
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-pipeline-service-role-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+                - s3:putObject
+                - s3:getObject
+                - codebuild:*
+                - codedeploy:*
+                - codestar-connections:*
+              Resource:
+                - "*"
+  CodeDeployServiceRole:
+    Type: "AWS::IAM::Role"
     Properties:
-      PolicyName: !Sub CodeBuildPolicy-${AWS::StackName}
-      PolicyDocument:
-        Version: "2012-10-17"
+      RoleName: !Sub ${AWS::StackName}-web-deploy-service-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
         Statement:
-          Effect: Allow
-          Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            - logs:DescribeLogGroups
-            - logs:FilterLogEvents
-            - logs:DescribeLogStreams
-            - logs:DeleteLogGroup
-            - s3:putObject
-            - s3:getObject
-            - codebuild:*
-            - 'cloudformation:List*'
-            - 'cloudformation:Get*'
-            - 'cloudformation:PreviewStackUpdate'
-            - 'cloudformation:ValidateTemplate'
-            - 'cloudformation:CreateStack'
-            - 'cloudformation:CreateUploadBucket'
-            - 'cloudformation:DeleteStack'
-            - 'cloudformation:Describe*'
-            - 'cloudformation:UpdateStack'
-            - 'lambda:Get*'
-            - 'lambda:List*'
-            - 'lambda:CreateFunction'
-            - 'lambda:AddPermission'
-            - 'lambda:CreateAlias'
-            - 'lambda:DeleteFunction'
-            - 'lambda:InvokeFunction'
-            - 'lambda:PublishVersion'
-            - 'lambda:RemovePermission'
-            - 'lambda:Update*'
-            - 'apigateway:GET'
-            - 'apigateway:POST'
-            - 'apigateway:PUT'
-            - 'apigateway:DELETE'
-            - 's3:CreateBucket'
-            - 's3:DeleteBucket'
-            - 's3:ListBucket'
-            - 's3:ListBucketVersions'
-            - 's3:PutObject'
-            - 's3:GetObject'
-            - 's3:DeleteObject'
-            - 'iam:PassRole'
-            - 'kinesis:*'
-            - 'iam:GetRole'
-            - 'iam:CreateRole'
-            - 'iam:PutRolePolicy'
-            - 'iam:DeleteRolePolicy'
-            - 'iam:DeleteRole'
-            - 'cloudwatch:GetMetricStatistics'
-            - 'events:Put*'
-            - 'events:Remove*'
-            - 'events:Delete*'
-            - 'dynamodb:*'
-          Resource: "*"
-      Roles:
-        -  !Ref CodeBuildRole
-  CodePipelinePolicy:
-    Type: "AWS::IAM::Policy"
-    Properties:
-      PolicyName: !Sub CodePipelinePolicy-${AWS::StackName}
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          Effect: Allow
-          Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            - s3:putObject
-            - s3:getObject
-            - codebuild:*
-            - codestar-connections:*
-          Resource:
-            - "*"
-      Roles:
-        -  !Ref CodePipelineRole
-  S3:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+  ArtifactBucket:
     Type: "AWS::S3::Bucket"
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
       BucketName: !Sub code-pipeline-${AWS::StackName}-${AWS::Region}
   WebBuild:
     Type: "AWS::CodeBuild::Project"
     Properties:
-      Name: Web-Build
+      Name: !Sub ${AWS::StackName}-web-build-project
       Description: CodeBuild project to build website
       ServiceRole: !Ref CodeBuildRole
       TimeoutInMinutes: 5
@@ -186,15 +277,121 @@ Resources:
       Environment:
         Type: "LINUX_CONTAINER"
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: "aws/codebuild/standard:5.0"
+        Image: aws/codebuild/standard:6.0
       Artifacts:
         Type: CODEPIPELINE
+  WebDeploymentApp:
+    Type: "AWS::CodeDeploy::Application"
+    Properties:
+      ApplicationName: !Sub jurisdictions-${AWS::StackName}
+      ComputePlatform: Server
+  WebDeploymentGroup:
+    Type: "AWS::CodeDeploy::DeploymentGroup"
+    Properties:
+      ApplicationName: !Ref WebDeploymentApp
+      DeploymentGroupName: !Sub jurisdictions-${AWS::StackName}
+      DeploymentConfigName: CodeDeployDefault.AllAtOnce
+      ServiceRoleArn: !Sub ${CodeDeployServiceRole.Arn}
+      DeploymentStyle:
+        DeploymentType: IN_PLACE
+        DeploymentOption: WITHOUT_TRAFFIC_CONTROL
+      Ec2TagSet:
+        Ec2TagSetList:
+          - Ec2TagGroup:
+            - Type: KEY_AND_VALUE
+              Key: "Type"
+              Value: "WebServer"
+  InvalidationBuildServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-invalidation-build-service-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-invalidation-build-service-role-logs-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AWS::StackName}-invalidation-build-log"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AWS::StackName}-invalidation-build-log:*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${AWS::StackName}-invalidate-cloudfront-build-project"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${AWS::StackName}-invalidate-cloudfront-build-project:*"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}*"
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:GetBucketAcl"
+                  - "s3:GetBucketLocation"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${AWS::StackName}-invalidate-cloudfront-build-project-*"
+                Action:
+                  - "codebuild:CreateReportGroup"
+                  - "codebuild:CreateReport"
+                  - "codebuild:UpdateReport"
+                  - "codebuild:BatchPutTestCases"
+                  - "codebuild:BatchPutCodeCoverages"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${JurisdictionCloudFront}"
+                Action:
+                  - cloudfront:CreateInvalidation
+  InvalidationBuildProject:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: !Sub ${AWS::StackName}-invalidate-cloudfront-build-project
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: !Sub |+
+          version: 0.2
+          phases:
+            build:
+              commands:
+                aws cloudfront create-invalidation --distribution-id ${JurisdictionCloudFront} --paths "/*"
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: "aws/codebuild/amazonlinux2-x86_64-standard:2.0"
+        ComputeType: BUILD_GENERAL1_SMALL
+        ImagePullCredentialsType: CODEBUILD
+      ServiceRole: !Ref InvalidationBuildServiceRole
+      EncryptionKey: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Sub ${AWS::StackName}-invalidation-build-log
+          StreamName: !Sub ${AWS::StackName}-invalidation-build-log
+        S3Logs:
+          Status: DISABLED
+          EncryptionDisabled: false
   Pipeline:
     Type: "AWS::CodePipeline::Pipeline"
     Properties:
       Name: !Sub code-pipeline-${AWS::StackName}
       ArtifactStore:
-        Location: !Ref S3
+        Location: !Ref ArtifactBucket
         Type: S3
       RestartExecutionOnUpdate: true
       RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${CodePipelineRole}
@@ -216,7 +413,7 @@ Resources:
                 BranchName: !Ref GitHubBranch
                 DetectChanges: true
               OutputArtifacts:
-                - Name: TheSourceCode
+                - Name: SourceArtifact
 
         # Stage 2:  Run build with buildspec.yaml
         - Name: WebBuild
@@ -224,7 +421,7 @@ Resources:
             - Name: Web-Build
               RunOrder: 1
               InputArtifacts:
-                - Name: TheSourceCode
+                - Name: SourceArtifact
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -233,7 +430,41 @@ Resources:
               Configuration:
                 ProjectName:  !Ref WebBuild
               OutputArtifacts:
-                - Name: TheArtifact
+                - Name: BuildArtifact
+
+        # Stage 3:  Deploy to server
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CodeDeploy
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                ApplicationName: !Sub jurisdictions-${AWS::StackName}
+                DeploymentGroupName: !Sub jurisdictions-${AWS::StackName}
+              InputArtifacts:
+                - Name: BuildArtifact
+              Region: !Sub ${AWS::Region}
+              Namespace: DeployVariables
+
+        # Stage 4:  Invalidate CloudFront cache
+        - Name: InvalidateCache
+          Actions:
+            - Name: InvalidateCache
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                ProjectName: !Ref InvalidationBuildProject
+              InputArtifacts:
+                - Name: BuildArtifact
+              Region: !Sub ${AWS::Region}
 
 # CloudFront
   JurisdictionCloudFront:
