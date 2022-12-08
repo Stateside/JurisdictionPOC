@@ -5,14 +5,18 @@ Parameters:
     Description: ID of AMI used for web instance
     Type: AWS::EC2::Image::Id
     Default: ami-0b0dcb5067f052a63
+  GitHubBranch:
+    Type: String
+    Default: devops
+    Description: GitHub branch that will be deployed
+  GitHubConnectionArn:
+    Type: String
+    Default: arn:aws:codestar-connections:us-east-1:397500405596:connection/f6426d72-603e-43e5-8ce9-fcc770b43ae8
+    Description: GitHub Connection ARN from AWS CodePipeline Developer tools Settings 
   GitHubRepository:
     Type: String
-    Default: Stateside/JurisdictionPOC/devops
-    Description:  owner/repository/branch
-  GitHubOAuthToken:
-    Type: String
-    Default:  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
-    Description:  CodePipeline requires an OAuthToken    
+    Default: Stateside/JurisdictionPOC
+    Description: owner/repository
   InstanceType:
     Description: Server EC2 instance type
     Type: String
@@ -25,13 +29,13 @@ Parameters:
     Default: ec2-ssh-key-pair
   Region:
     Type: String
-    Default: us-east-2 
+    Default: us-east-1 
   SSLCloudFrontCertificateARN:
     Type: String
     AllowedPattern: ^arn:aws:acm:[a-z]{2}-[a-z]+-\d{1}:\d{12}:certificate/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$
     ConstraintDescription: Invalid SSL Certificate ARN. It must be in this arn:aws:acm:<region>:<account-id>:certificate/<resourceid> format.
     Description: Provide ARN of the SSL certificate imported in AWS Certificate Manager. It must be in this arn:aws:acm:<region>:<account-id>:certificate/<resourceid> format.
-    Default: arn:aws:acm:us-east-1:400298284850:certificate/c413b6a6-1e9a-4b08-92f6-fd14067cfddc
+    Default: arn:aws:acm:us-east-1:397500405596:certificate/cf52d399-0f8b-4417-a8ae-d916f1363775
 
 Resources:
 
@@ -160,6 +164,7 @@ Resources:
             - s3:putObject
             - s3:getObject
             - codebuild:*
+            - codestar-connections:*
           Resource:
             - "*"
       Roles:
@@ -177,7 +182,7 @@ Resources:
       TimeoutInMinutes: 5
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec.yaml
+        BuildSpec: deploy/buildspec.yaml
       Environment:
         Type: "LINUX_CONTAINER"
         ComputeType: BUILD_GENERAL1_SMALL
@@ -203,15 +208,14 @@ Resources:
               RunOrder: 1
               ActionTypeId:
                 Category: Source
-                Owner: ThirdParty
-                Provider: GitHub
+                Owner: AWS
+                Provider: CodeStarSourceConnection 
                 Version: "1"
               Configuration:
-                Owner: !Select [0, !Split [ "/" , !Ref GitHubRepository ]]
-                Repo: !Select [1, !Split [ "/" , !Ref GitHubRepository ]]
-                Branch: !Select [2, !Split [ "/" , !Ref GitHubRepository ]]
-                PollForSourceChanges: false
-                OAuthToken: !Ref GitHubOAuthToken
+                ConnectionArn: !Ref GitHubConnectionArn
+                FullRepositoryId: !Ref GitHubRepository
+                BranchName: !Ref GitHubBranch
+                DetectChanges: true
               OutputArtifacts:
                 - Name: TheSourceCode
 
@@ -265,14 +269,6 @@ Resources:
           AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
           MinimumProtocolVersion: TLSv1.2_2019
           SslSupportMethod: sni-only
-
-# Parameter Store
-  RegionParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: REGION
-      Type: String
-      Value: !Ref Region 
 
 Outputs:
   WebURL:
