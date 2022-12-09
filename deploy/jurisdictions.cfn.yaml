@@ -406,6 +406,8 @@ Resources:
         Comment: CDN for Jurisdiction website
         Aliases:
         - jurisdictions.stateside.agency
+        - estates.stateside.agency
+        - land.stateside.agency
         DefaultCacheBehavior:
           AllowedMethods:
           - HEAD
