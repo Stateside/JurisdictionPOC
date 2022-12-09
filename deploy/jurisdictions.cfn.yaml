@@ -415,24 +415,7 @@ Resources:
               OutputArtifacts:
                 - Name: SourceArtifact
 
-        # Stage 2:  Run build with buildspec.yaml
-        - Name: WebBuild
-          Actions:
-            - Name: Web-Build
-              RunOrder: 1
-              InputArtifacts:
-                - Name: SourceArtifact
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: "1"
-              Configuration:
-                ProjectName:  !Ref WebBuild
-              OutputArtifacts:
-                - Name: BuildArtifact
-
-        # Stage 3:  Deploy to server
+        # Stage 2:  Deploy to server
         - Name: Deploy
           Actions:
             - Name: Deploy
@@ -446,11 +429,11 @@ Resources:
                 ApplicationName: !Sub jurisdictions-${AWS::StackName}
                 DeploymentGroupName: !Sub jurisdictions-${AWS::StackName}
               InputArtifacts:
-                - Name: BuildArtifact
+                - Name: SourceArtifact
               Region: !Sub ${AWS::Region}
               Namespace: DeployVariables
 
-        # Stage 4:  Invalidate CloudFront cache
+        # Stage 3:  Invalidate CloudFront cache
         - Name: InvalidateCache
           Actions:
             - Name: InvalidateCache
@@ -463,7 +446,7 @@ Resources:
               Configuration:
                 ProjectName: !Ref InvalidationBuildProject
               InputArtifacts:
-                - Name: BuildArtifact
+                - Name: SourceArtifact
               Region: !Sub ${AWS::Region}
 
 # CloudFront

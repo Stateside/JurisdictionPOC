@@ -1,12 +1,12 @@
 import React from 'react'
 import { Icon } from '@chakra-ui/react'
 
-type Props = {}
+type Props = {width?: string, height?: string}
 
 const MenuIcon = (props: Props) => {
     return (
         <Icon xmlns="http://www.w3.org/2000/svg" width="18px" height="19px" fill="none" {...props}>
-            <mask id="mask0_206_505" style={{ maskType: 'alpha' }} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+            <mask id="mask0_206_505" style={{ maskType: 'alpha' } as any} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
                 <rect width="24" height="24" fill="#D9D9D9" />
             </mask>
             <g mask="url(#mask0_206_505)">
