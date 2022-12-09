@@ -7,7 +7,7 @@ Parameters:
     Default: ami-0b0dcb5067f052a63
   GitHubBranch:
     Type: String
-    Default: devops
+    Default: main
     Description: GitHub branch that will be deployed
   GitHubConnectionArn:
     Type: String
@@ -81,6 +81,10 @@ Resources:
         - IpProtocol: tcp
           FromPort: 3000
           ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8545
+          ToPort: 8545
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 22
@@ -400,7 +404,6 @@ Resources:
             OriginProtocolPolicy: http-only
         Enabled: true
         Comment: CDN for Jurisdiction website
-        DefaultRootObject: index.js
         Aliases:
         - jurisdictions.stateside.agency
         DefaultCacheBehavior:
