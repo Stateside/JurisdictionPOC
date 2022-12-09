@@ -11,7 +11,7 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
   const { deployments } = hre
   const { log, get } = deployments
   const jscCabinetContract = await get("development_JSCCabinet")
-  const jscTitleTokenContract = await get("development_JSCTitleToken")
+  const jscTitleTokenContract = await get("development_JSCTitleTokenTest")
   const jscGovernorContract = await get("development_JSCGovernor")
   const jscJurisdictionContract = await get("development_JSCJurisdiction")
 

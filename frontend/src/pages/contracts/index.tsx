@@ -19,6 +19,9 @@ const ListContracts: NextPage = () => {
     .then((json:ContractInfo[]) => setContracts(json))
   }, [])
 
+  const filterContracts = (c:ContractInfo) => 
+    ["JSCCabinet", "JSCGovernor", "JSCJurisdiction", "JSCTitleTokenTest"].includes(c.name)
+
   return (
     <Box width='100%' >
       <Head>
@@ -50,7 +53,7 @@ const ListContracts: NextPage = () => {
                         </Tr>
                       </Thead>
                       <Tbody>
-                        {contracts.map(c => 
+                        {contracts.filter(filterContracts).map(c => 
                           <Tr key={c.address}>
                             <Td>
                               {c.type === "contract" 
