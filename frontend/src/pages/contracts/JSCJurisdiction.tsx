@@ -33,7 +33,7 @@ const showJSCJurisdiction: NextPage = () => {
   const [contracts, setContracts] = useState<JurisdictionContracts[]>([])
 
   const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction|undefined>(undefined)
-  const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
+  const lastError = useMemo(() => localError || error?.cause as unknown as string, [localError, error])
 
   useEffect(() => {
     if (library && router.query.address)

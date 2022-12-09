@@ -23,8 +23,16 @@ import SellPropertyModal from '../modal/sellPropertyModal';
 import AcceptOfferModal from '../modal/acceptOfferModal';
 import PropertyDetailsModalActions from '../modal/modalActions';
 import { PropertyDetailsContext } from '../PropertyDetailsContext';
+import { PropertyInfo } from '@/utils/property-types';
 
 const gridLayout = 'repeat(12, 1fr)';
+
+// Temporary fix to remove errors from build
+declare global {
+  namespace JSX {
+      interface IntrinsicAttributes { w?: any, style?: any, _focus?: any }
+  }
+}
 
 export default function PropertyDetailsMain() {
   const {
@@ -73,7 +81,7 @@ export default function PropertyDetailsMain() {
         <GridItem colSpan={7}>
           <Grid templateColumns={gridLayout}>
             <GridItem colSpan={12}>
-              {propertyInfo.map(({ infoLabel, infoValue }) => (
+              {propertyInfo.map(({ infoLabel, infoValue }:PropertyInfo) => (
                 <Grid
                   templateColumns={gridLayout}
                   key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}

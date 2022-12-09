@@ -13,7 +13,7 @@ import {
   PropertyImage,
   ActionNames,
   Offer,
-} from '../types';
+} from '../../../utils/property-types';
 
 interface PropertyDetailsContextProps {
   text?: string;

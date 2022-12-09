@@ -1,0 +1,19 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /opt/jurisdictions
+hooks:
+  AfterInstall:
+    - location: deploy/scripts/install_os_dependencies.sh
+      timeout: 300
+      runas: root
+    - location: deploy/scripts/install_node_dependencies.sh
+      runas: root
+  ApplicationStart:
+    - location: deploy/scripts/start_server.sh
+      runas: root
+  ApplicationStop:
+    - location: deploy/scripts/stop_server.sh
+      timeout: 300
+      runas: root

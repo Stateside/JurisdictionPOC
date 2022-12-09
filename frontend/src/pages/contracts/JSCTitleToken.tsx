@@ -35,7 +35,7 @@ const showJSCTitleToken: NextPage = () => {
   const [loading, setLoading] = useState(true)
 
   const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken|undefined>(undefined)
-  const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
+  const lastError = useMemo(() => localError || error?.cause as unknown as string, [localError, error])
 
   // Connect to JSCTitleToken contract
   useEffect(() => {
