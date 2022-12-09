@@ -17,7 +17,7 @@ echo "Installing global required packages"
 npm install -g yarn pm2
 
 echo "Building frontend"
-cd frontend
+cd /opt/jurisdictions/frontend
 rm -rf node_modules
 yarn
 yarn build
