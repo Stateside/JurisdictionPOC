@@ -16,15 +16,17 @@ nvm use 16
 echo "Installing global required packages"
 npm install -g yarn pm2
 
-echo "Building frontend"
-cd /opt/jurisdictions/frontend
-rm -rf node_modules
-yarn
-yarn build
-cd ..
-
 echo "Building backend"
 cd jsc
 rm -rf node_modules
 yarn
+yarn hardhat compile
+cd ..
+
+echo "Building frontend"
+cd /opt/jurisdictions/frontend
+rm -rf node_modules
+yarn
+yarn typechain
+yarn build
 cd ..
