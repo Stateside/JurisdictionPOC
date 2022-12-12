@@ -55,6 +55,13 @@ export const jscTitleTokenLabels = {
     tableCaption: "All Title Tokens"
 }
 
+export const useBlockchainLabels = {
+    warning: "Warning",
+    error: "Error",
+    pleaseLogin: "Please click 'Connect' to log into MetaMask",
+    pleaseInstall: "Please install the MetaMask browser extension"
+}
+
 /**
  * Return Label vip when account is available, or regular when
  * account is empty

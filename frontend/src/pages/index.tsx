@@ -1,18 +1,17 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Head from 'next/head'
-import Connect from '@/components/Connect'
+import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Text } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
 
 
 const Home: NextPage = () => {
-  const [error, setError] = useState<string>("")
-  const { active, account } = useWeb3React();
+  const { active } = useWeb3React();
 
   //To-do: Connect this to real Smart COntracts and BC
   const fakeRecentActivity = [
@@ -30,13 +29,6 @@ const Home: NextPage = () => {
         margin={0}
         flexDirection='column'
       >
-        {error &&
-          <Alert status='error'>
-            <AlertIcon />
-            <AlertTitle>Error!</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        }
         <Heading
           variant={'80'}
           whiteSpace='pre-line'
@@ -47,11 +39,10 @@ const Home: NextPage = () => {
         </Heading>
 
         {!active ?
-          <Connect
-            variant='Heading'
-            w='250px'
-            label={homeLabels.ctaConnect}
-            showError={true} />
+            <Connect
+              variant='Heading'
+              w='250px'
+              label={homeLabels.ctaConnect} />
           :
           <VStack>
             <Box w='100%' margin='20px 0 30px 0'>
