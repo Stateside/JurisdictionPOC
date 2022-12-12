@@ -20,7 +20,7 @@ const ListContracts: NextPage = () => {
   }, [])
 
   const filterContracts = (c:ContractInfo) => 
-    ["JSCCabinet", "JSCGovernor", "JSCJurisdiction", "JSCTitleTokenTest"].includes(c.name)
+    ["JSCTitleToken"].includes(c.name) == false
 
   return (
     <Box width='100%' >

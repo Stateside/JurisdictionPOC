@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 /**
   @dev This library contains code for use by the JSCRevisioned smart contract. It's purpose is primarily to reduce the size of 
-  smart contracts that use this contract as a base class and centralize the type and functionality definitions.
+  the smart contract and centralize the type and functionality definitions.
  */
 library JSCRevisionsLib {
   enum ParamType { t_address, t_bool, t_number, t_string }
