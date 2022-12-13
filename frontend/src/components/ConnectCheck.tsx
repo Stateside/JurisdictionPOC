@@ -17,8 +17,6 @@ const ConnectCheck = () => {
     
     const expectedChainId:string = "0x"+parseInt(process.env.NEXT_PUBLIC_CHAIN_ID||"0").toString(16)
 
-    console.log("chain", chainId, expectedChainId)
-
     const addChain = async () => {
         try {
             await web3Provider.provider.request({
