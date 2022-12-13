@@ -39,7 +39,7 @@ const showJSCJurisdiction: NextPage = () => {
     if (library && router.query.address)
       try {
         setJSCJurisdiction(tc.IJSCJurisdiction__factory.connect(router.query.address as string, library))
-      } catch(err) {
+      } catch(err:any) {
         setLocalError(err?err.toString():"unknown error")
       }
   }, [library, router.query.address])

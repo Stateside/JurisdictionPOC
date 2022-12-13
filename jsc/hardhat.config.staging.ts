@@ -8,10 +8,10 @@ const config: HardhatUserConfig = {
   defaultNetwork: "localhost",
   networks: {
     hardhat: {
-      chainId: 31338,
+      chainId: 40506,
     },
     localhost: {
-      chainId: 31338,
+      chainId: 40506,
     },
   },
   solidity: {

@@ -6,7 +6,7 @@ A CI/CD pipeline needs the following:
 
 1. An EC2 server with:
    - the frontend and backend running, and eventually the database - described in [the CloudFormation template](./jurisdictions.cfn.yaml)
-   - access to the Hardhat dev blockchain with id 31338 using port 8545
+   - access to the Hardhat dev blockchain with id 40506 using port 8545
 2. A CodeDeploy project that copies the project to the server and restarts the apps
    - The AWS resources are described in [the CloudFormation template](./jurisdictions.cfn.yaml)
    - Several scripts determine how the app is installed, started, and stopped:

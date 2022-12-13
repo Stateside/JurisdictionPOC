@@ -9,6 +9,7 @@ export const injected = new InjectedConnector({
         10, 
         42, 
         31337, 
+        40506, 
         42161
     ]
 })

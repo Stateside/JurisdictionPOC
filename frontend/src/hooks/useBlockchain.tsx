@@ -6,8 +6,9 @@ import { useBlockchainLabels } from "@/store/initial";
 type UseBlockchainType = {
     account?: null | string;
     active: boolean
-    chainId?: number;
+    chainId?: number
     error?: Error|undefined
+    web3Provider?: any
 }
 
 const isError = (err:Error|undefined) => err && (err.name || err.message)
@@ -16,7 +17,7 @@ const isError = (err:Error|undefined) => err && (err.name || err.message)
  * This hook activates and connects to the injected provider or returns an appropriate error message 
  */
 const useBlockChain = ():UseBlockchainType => {
-    const { account, activate, active, chainId, error, setError } = useWeb3React();
+    const { account, activate, active, chainId, error, library, setError } = useWeb3React();
 
     useEffect(() => {
         const provider = window.localStorage.getItem("provider");
@@ -37,7 +38,8 @@ const useBlockChain = ():UseBlockchainType => {
         account,
         active,
         chainId,
-        error: isError(error) ? error : undefined
+        error: isError(error) ? error : undefined,
+        web3Provider: library
     }
 }
 
