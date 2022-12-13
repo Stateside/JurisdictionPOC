@@ -4,7 +4,7 @@ import { useWeb3React } from "@web3-react/core";
 import { Container, Text, HStack, Image, Link, Flex } from '@chakra-ui/react'
 import { MenuItemInterface } from '@/interfaces/index'
 import Menu from '@/components/Menu'
-import Connect from '@/components/Connect'
+import Connect from '@/components/ConnectButton'
 
 
 type Props = {
@@ -60,8 +60,7 @@ export function Header(props: Props) {
                     w='125px'
                     variant='Header'
                     margin='0 10px 0 0'
-                    label={ctaText} 
-                    showError={false}/>
+                    label={ctaText} />
                 { 
                     active &&
                     <Menu items={menu} />

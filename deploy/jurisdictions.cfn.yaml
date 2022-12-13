@@ -413,6 +413,43 @@ Resources:
           - HEAD
           - GET
           - OPTIONS
+          - POST
+          Compress: true
+          TargetOriginId: WebOrigin
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+
+  HardhatCloudFront:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName: !Sub ${WebServerInstance.PublicDnsName}
+          Id: WebOrigin
+          CustomOriginConfig:
+            HTTPPort: 8545
+            OriginProtocolPolicy: http-only
+        Enabled: true
+        Comment: CDN for Hardhat blockchain
+        Aliases:
+        - jurisdictions-hh.stateside.agency
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - HEAD
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - PATCH
+          - DELETE
           Compress: true
           TargetOriginId: WebOrigin
           ForwardedValues:
