@@ -2,7 +2,9 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { Tabs, TabList, TabPanels, Tab, TabPanel, Box } from '@chakra-ui/react';
 
+import Contracts from './Contracts';
 import Members from './Members';
+
 
 const Jurisdiction: NextPage = () => {
   return (
@@ -23,7 +25,7 @@ const Jurisdiction: NextPage = () => {
             <Members />
           </TabPanel>
           <TabPanel>
-            <p>Contracts Tabs</p>
+            <Contracts />
           </TabPanel>
           <TabPanel>
             <p>Proposals Tab</p>
