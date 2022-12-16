@@ -1,24 +1,71 @@
 import { useEffect, useState } from 'react';
 import { Button, HStack, Select, VStack } from '@chakra-ui/react';
+import { ParamType } from '@/utils/types';
+import { useWeb3React } from '@web3-react/core';
+import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';
 import ReloadIcon from '@/components/icons/reloadIcon';
+import * as tc from '../../../typechain-types';
 
-import { ContractInfo } from '../api/getContracts';
+type JurisdictionContracts = {
+  name: string;
+  address: string;
+  description: string;
+};
 
 const Contracts = () => {
+  const [localError, setLocalError] = useState<string>('');
+  const { active, library, error, connector } = useWeb3React();
+  const router = useRouter();
   
-  const [contracts, setContracts] = useState<ContractInfo[]>([]);
+  const [contracts, setContracts] = useState<JurisdictionContracts[]>([]);
+
+  const [jscJurisdiction, setJSCJurisdiction] = useState<
+    tc.IJSCJurisdiction | undefined
+  >(undefined);
 
   useEffect(() => {
-    fetch('api/getContracts')
-      .then((res: Response) => res.json())
-      .then((json: ContractInfo[]) => setContracts(json));
-  }, []);
+    if (library)
+      try {
+        setJSCJurisdiction(
+          tc.IJSCJurisdiction__factory.connect(
+            '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+            library
+          )
+        );
+      } catch (err: any) {
+        setLocalError(err ? err.toString() : 'unknown error');
+      }
+  }, [library]);
 
+  useEffect(() => {
+    if (jscJurisdiction) {
+      const loadData = async () => {
+        let _contracts: JurisdictionContracts[] = [];
+        let i = await jscJurisdiction.iterateParameters();
+        while (await jscJurisdiction.isValidParameterIterator(i)) {
+          const p = await jscJurisdiction.parameterIteratorGet(i);
+          if (p.ptype == ParamType.t_address) {
+            let a = await jscJurisdiction.getAddressParameter(p.name);
+            _contracts.push({
+              name: p.name,
+              address: a,
+              description: p.description,
+            });
+            i = await jscJurisdiction.nextParameter(i);
+          }
+        }
+        setContracts(_contracts);
+      };
+      loadData().catch(err =>
+        setLocalError(err ? err.toString() : 'unknown error')
+      );
+    }
+  }, [jscJurisdiction]);
 
   return (
     <VStack alignItems="flex-start">
-      {contracts.map((contract: ContractInfo) => {
+      {contracts.map((contract: JurisdictionContracts) => {
         return (
           <HStack width="100%" key={contract.address}>
             <p style={{ width: '20%' }}>{contract.name}</p>
