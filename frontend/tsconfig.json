@@ -22,6 +22,7 @@
       "@/utils/*": ["utils/*"],
       "@/interfaces/*": ["interfaces/*"],
       "@/connectors/*": ["connectors/*"],
+      "@/hooks/*": ["hooks/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
