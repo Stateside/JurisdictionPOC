@@ -58,7 +58,7 @@ export const jscTitleTokenLabels = {
 export const useBlockchainLabels = {
     warning: "Warning",
     error: "Error",
-    pleaseLogin: "Please click 'Connect' to log into MetaMask",
+    pleaseLogin: "Please sign in to MetaMask",
     pleaseInstall: "Please install the MetaMask browser extension"
 }
 

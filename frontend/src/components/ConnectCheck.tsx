@@ -51,14 +51,21 @@ const ConnectCheck = () => {
     }
 
     useEffect(() => {
-        setStatus(Status.Okay)
-        if (web3Provider && chainId && chainId.toString() !== process.env.NEXT_PUBLIC_CHAIN_ID)
-            setStatus(Status.SwitchChain)
-    }, [chainId, expectedChainId, web3Provider])
+        if (error) {
+            if (status !== Status.Okay)
+                setStatus(Status.Error)
+        }
+        else {
+            if (web3Provider && chainId && chainId.toString() !== process.env.NEXT_PUBLIC_CHAIN_ID)
+                setStatus(Status.SwitchChain)
+            else if (status !== Status.Okay)
+                setStatus(Status.Okay)
+        }
+    }, [chainId, web3Provider, error])
 
     return (
         <>
-            {error && error?.message === useBlockchainLabels.pleaseInstall &&
+            {error && error.message === useBlockchainLabels.pleaseInstall &&
                 <Alert status='error'>
                     <AlertIcon />
                     <AlertTitle>{error?.name || connectCheckLabels.error}</AlertTitle>
@@ -66,7 +73,7 @@ const ConnectCheck = () => {
                 </Alert>
             }
 
-            {error && error?.message !== useBlockchainLabels.pleaseInstall &&
+            {error && error.message && error.message !== useBlockchainLabels.pleaseInstall &&
                 <Alert status='error'>
                     <AlertIcon />
                     <AlertTitle>{error?.name || connectCheckLabels.error}</AlertTitle>
