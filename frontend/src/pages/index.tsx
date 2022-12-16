@@ -1,26 +1,29 @@
 import React, { useState } from 'react'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import Connect from '@/components/Connect'
-import RecentActivity from "@/components/RecentActivity";
-import Tag from '@/components/Tag';
+import RecentActivity from "@/components/RecentActivity"
+import Tag from '@/components/Tag'
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Text } from '@chakra-ui/react'
 import { homeLabels, getLabel } from '@/store/initial'
-import { useWeb3React } from "@web3-react/core";
-import type { NextPage } from 'next';
-
+import { useWeb3React } from "@web3-react/core"
+import type { NextPage } from 'next'
+import useJSCTitleToken from '@/hooks/useJSCTitleToken'
 
 const Home: NextPage = () => {
-  const [error, setError] = useState<string>("")
-  const { active, account } = useWeb3React();
+  const [error_dashboard, setError] = useState<string>("")
+  const { active, account, library } = useWeb3React()
+  const router = useRouter()
+  const [tokens, loading, errorTitleToken] = useJSCTitleToken()
 
-  //To-do: Connect this to real Smart COntracts and BC
+
+  //To-do: Get recent activity from Tokens info from custom hook useJSCTitleToken
   const fakeRecentActivity = [
     { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
     { tokenId: '001-456-87654-E', price: '130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
     { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
   ]
-
 
   return (
     <Box width='100%'>
@@ -30,11 +33,11 @@ const Home: NextPage = () => {
         margin={0}
         flexDirection='column'
       >
-        {error &&
+        {error_dashboard &&
           <Alert status='error'>
             <AlertIcon />
             <AlertTitle>Error!</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{error_dashboard}</AlertDescription>
           </Alert>
         }
         <Heading
@@ -45,7 +48,9 @@ const Home: NextPage = () => {
           marginBottom='48px'>
           {getLabel(active, homeLabels.mainTitle)}
         </Heading>
-
+        {
+          console.log('ALEF BET', tokens, loading)
+        }
         {!active ?
           <Connect
             variant='Heading'

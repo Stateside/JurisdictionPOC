@@ -41,3 +41,18 @@ export interface TagInterface {
 export interface ObjectHashInterface {
   [key: string]: any;
 }
+
+export interface Offer {
+  buyer: string
+  amount: number
+}
+
+export interface Token {
+  tokenId: string
+  titleId: string
+  owner: string
+  frozen?: boolean
+  offersToBuy: Offer[]
+  offersToSell: Offer[]
+  url?: string
+}

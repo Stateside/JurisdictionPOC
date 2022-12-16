@@ -11,21 +11,7 @@ import Loader from '@/components/Loader'
 import { accountsByAddress } from '@/utils/accounts'
 import Link from 'next/link'
 import { ethers } from 'ethers'
-
-type Offer = {
-  buyer: string
-  amount: number
-}
-
-type Token = {
-  tokenId: string
-  titleId: string
-  owner: string
-  frozen: boolean
-  offersToBuy: Offer[]
-  offersToSell: Offer[]
-  url: string
-}
+import { Token, Offer} from '@/interfaces/index'
 
 const showJSCTitleToken: NextPage = () => {
   const [localError, setLocalError] = useState<string>("")
