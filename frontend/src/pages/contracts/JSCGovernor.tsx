@@ -28,7 +28,7 @@ const showJSCGovernor: NextPage = () => {
   const [jscGovernor, setJSCGovernor] = useState<tc.IJSCGovernor|undefined>(undefined)
   const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet|undefined>(undefined)
   const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken|undefined>(undefined)
-  const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
+  const lastError = useMemo(() => localError || error?.cause as unknown as string, [localError, error])
 
   // Create a map of address -> Contract name
   const localContracts:{[name:string]: string} = {}

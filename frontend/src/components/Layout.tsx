@@ -1,8 +1,9 @@
 import React, { ReactNode } from 'react'
-import { Container, Box, SimpleGrid } from '@chakra-ui/react'
+import { Container, Box } from '@chakra-ui/react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { siteLayoutData, siteMainMenu } from '@/store/initial'
+import ConnectCheck from './ConnectCheck'
 
 type Props = {
   children: ReactNode
@@ -29,6 +30,7 @@ export function Layout(props: Props) {
         padding='0'
       >
         <Header siteTitle={title} ctaText={ctaConnect} menu={siteMainMenu} />
+        <ConnectCheck />
         {props.children}
         <Footer />
       </Container>

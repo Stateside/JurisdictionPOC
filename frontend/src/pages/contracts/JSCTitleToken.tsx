@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { Heading, Box } from "@chakra-ui/layout"
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Checkbox, Container, List, ListItem, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, UnorderedList, VStack } from '@chakra-ui/react'
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Checkbox, Container, List, ListItem, Table, TableCaption, TableContainer, Tbody, Td, Text, Th, Thead, Tr, UnorderedList, VStack } from '@chakra-ui/react'
 import { jscTitleTokenLabels } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import * as tc from "../../../typechain-types"
@@ -11,7 +11,8 @@ import Loader from '@/components/Loader'
 import { accountsByAddress } from '@/utils/accounts'
 import Link from 'next/link'
 import { ethers } from 'ethers'
-import { Token, Offer} from '@/interfaces/index'
+import { Token, Offer } from '@/interfaces/index'
+
 
 const showJSCTitleToken: NextPage = () => {
   const [localError, setLocalError] = useState<string>("")
@@ -21,7 +22,7 @@ const showJSCTitleToken: NextPage = () => {
   const [loading, setLoading] = useState(true)
 
   const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken|undefined>(undefined)
-  const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
+  const lastError = useMemo(() => localError || error?.cause as unknown as string, [localError, error])
 
   // Connect to JSCTitleToken contract
   useEffect(() => {
@@ -69,10 +70,11 @@ const showJSCTitleToken: NextPage = () => {
             titleId,
             frozen,
             owner: accountsByAddress[owner.toLowerCase()].name,
+            ownerFrozen: await jscTitleToken.isFrozenOwner(owner),
             url,
             offersToBuy,
             offersToSell
-            })
+          })
         }
         setTokens(_tokens)
         setLoading(false)
@@ -125,7 +127,8 @@ const showJSCTitleToken: NextPage = () => {
                             <Th>ID</Th>
                             <Th>Owner</Th>
                             <Th>URL</Th>
-                            <Th>Frozen</Th>
+                            <Th>Frozen Token</Th>
+                            <Th>Frozen Owner</Th>
                             <Th>Offers</Th>
                           </Tr>
                         </Thead>
@@ -135,7 +138,8 @@ const showJSCTitleToken: NextPage = () => {
                               <Td>{t.titleId}</Td>
                               <Td>{t.owner}</Td>
                               <Td><Link href={t.url}>{t.url}</Link></Td>
-                              <Td><Checkbox checked={t.frozen} readOnly={true} /></Td>
+                              <Td><Checkbox isChecked={t.frozen} readOnly={true} /></Td>
+                              <Td><Checkbox isChecked={t.ownerFrozen} readOnly={true} /></Td>
                               <Td>
                                 <List>
                                 {t.offersToBuy.map((o,i) =>

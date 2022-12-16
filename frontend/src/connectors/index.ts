@@ -1,12 +1,8 @@
-import { InjectedConnector } from "@web3-react/injected-connector";
+import { injected } from '@/utils/connectors';
+import { AbstractConnector } from '@web3-react/abstract-connector';
 
-
-const injected = new InjectedConnector({
-  supportedChainIds: [31337, 1, 3, 4, 5, 42]
-});
-
-export const connectors = {
-  injected: injected,
+export const connectors:{[key:string]: AbstractConnector} = {
+  "injected": injected,
 //   walletConnect: walletconnect,
 //   coinbaseWallet: walletlink
 };

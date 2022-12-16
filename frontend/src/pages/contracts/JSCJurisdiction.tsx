@@ -28,19 +28,19 @@ const getPathForContract = (key:string) => {
 
 const showJSCJurisdiction: NextPage = () => {
   const [localError, setLocalError] = useState<string>("")
-  const { active, account, library, error } = useWeb3React();
+  const { active, library, error, connector } = useWeb3React();
   const router = useRouter()
   const [contracts, setContracts] = useState<JurisdictionContracts[]>([])
 
   const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction|undefined>(undefined)
-  const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
+  const lastError = useMemo(() => localError || error?.cause?.toString(), [localError, error])
 
   useEffect(() => {
     if (library && router.query.address)
       try {
         setJSCJurisdiction(tc.IJSCJurisdiction__factory.connect(router.query.address as string, library))
-      } catch(err) {
-        setLocalError(err as string)
+      } catch(err:any) {
+        setLocalError(err?err.toString():"unknown error")
       }
   }, [library, router.query.address])
 
@@ -59,7 +59,7 @@ const showJSCJurisdiction: NextPage = () => {
         }
         setContracts(_contracts)
       }
-      loadData().catch(err => setLocalError(err))
+      loadData().catch(err => setLocalError(err?err.toString():"unknown error"))
     }
   }, [jscJurisdiction])
 

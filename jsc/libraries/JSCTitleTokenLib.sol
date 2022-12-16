@@ -8,7 +8,7 @@ import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 
 /**
   @dev This library contains code for use by the JSCTitleToken smart contract. It's purpose is primarily to reduce the size of 
-  smart contracts that use this contract as a base class and centralize the type and functionality definitions.
+  the smart contract and centralize the type and functionality definitions.
  */
 library JSCTitleTokenLib {
   using rlib for rlib.RevisionMap;

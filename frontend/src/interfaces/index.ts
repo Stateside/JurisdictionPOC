@@ -51,8 +51,9 @@ export interface Token {
   tokenId: string
   titleId: string
   owner: string
-  frozen?: boolean
+  ownerFrozen: boolean
+  frozen: boolean
   offersToBuy: Offer[]
   offersToSell: Offer[]
-  url?: string
+  url: string
 }

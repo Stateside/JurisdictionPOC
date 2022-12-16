@@ -30,7 +30,7 @@ const showJSCCabinet: NextPage = () => {
   const [members, setMembers] = useState<CabinetMember[]>([])
 
   const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet|undefined>(undefined)
-  const lastError = useMemo(() => localError || error?.cause as string, [localError, error])
+  const lastError = useMemo(() => localError || error?.cause as unknown as string, [localError, error])
 
   useEffect(() => {
     if (library && router.query.address)

@@ -55,6 +55,20 @@ export const jscTitleTokenLabels = {
     tableCaption: "All Title Tokens"
 }
 
+export const useBlockchainLabels = {
+    warning: "Warning",
+    error: "Error",
+    pleaseLogin: "Please sign in to MetaMask",
+    pleaseInstall: "Please install the MetaMask browser extension"
+}
+
+export const connectCheckLabels = {
+    error: "Error",
+    warning: "Warning",
+    switchChain: `MetaMask is not connected to the correct chain. Please connect to the "${process.env.NEXT_PUBLIC_CHAIN_NAME}" chain...`,
+    addChain: `MetaMask does not have the correct chain installed. Please install the "${process.env.NEXT_PUBLIC_CHAIN_NAME}" chain...`
+}
+
 /**
  * Return Label vip when account is available, or regular when
  * account is empty

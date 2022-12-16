@@ -71,10 +71,6 @@ yarn hardhat --help
     - We can do something similar to EIP-2612. The members sign their vote and give it to a web application hosted by the property registry who submits the vote for them and pays the gas fees. The vote is signed and so there is no possibility of fraud
     - There is sample code here: @openzeppelin\contracts\governance\Governor.sol:castVoteBySig()
 
-  - Transfer ownership? Owner + buyer (two transactions)
-    - In this case the EIP-2612 mechanism might be useful too
-    - It would allow the member to sign a message that let's the website submit vote for them and pay the gas fees
-
 # TO DO
 
 - Register offers to sell I have received
@@ -92,7 +88,6 @@ yarn hardhat --help
   - This can be done by the member signing a request to perform some operation and sending the request to 
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
-
 
 Payments
 1. Pay registry fees
