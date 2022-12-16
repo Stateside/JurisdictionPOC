@@ -5,7 +5,7 @@ import { ethers } from 'ethers'
 import { Token, Offer } from '@/interfaces/index'
 import * as tc from "../../typechain-types"
 
-const useJSCTitleToken = () => {
+const useJSCTitleToken = (jscTitleTokenConnect: string) => {
     const [error, setError] = useState<string>("")
     const [loading, setLoading] = useState(true)
     const { active, account, library } = useWeb3React()
@@ -15,7 +15,7 @@ const useJSCTitleToken = () => {
     useEffect(() => {
         if (active && account && library)
             try {
-                setJSCTitleToken(tc.IJSCTitleToken__factory.connect('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853' as string, library))
+                setJSCTitleToken(tc.IJSCTitleToken__factory.connect(jscTitleTokenConnect as string, library))
             } catch (err) {
                 setError(err as string)
             }
@@ -28,12 +28,15 @@ const useJSCTitleToken = () => {
                 const tokensCounter = await getTotalTokens(jscTitleToken)
                 for (let ti = 0; ti < tokensCounter; ti++) {
                     const t = await jscTitleToken.tokenAtIndex(ti)
-                    const { owner, titleId, offersToBuy, offersToSell } = await getTokenData(jscTitleToken, t)
+                    const { owner, titleId, offersToBuy, offersToSell, frozen, url } = await getTokenData(jscTitleToken, t)
 
                     _tokens.push({
                         tokenId: t.toHexString(),
                         titleId,
+                        frozen,
                         owner: accountsByAddress[owner.toLowerCase()].name,
+                        ownerFrozen: await jscTitleToken.isFrozenOwner(owner),
+                        url,
                         offersToBuy,
                         offersToSell
                     })
@@ -84,14 +87,18 @@ const getTotalTokens = async (jscTitleToken: any) => {
 
 const getTokenData = async (jscTitleToken: any, token: any) => {
     const owner = await jscTitleToken.ownerOf(token)
+    const url = ""//await jscTitleToken.tokenURI(t)
     const titleId = await jscTitleToken.tokenToTitleId(token)
     const offersToBuy = await getOffersToBuy(jscTitleToken, token)
     const offersToSell = await getOffersToSell(jscTitleToken, token)
+    const frozen  = await jscTitleToken.isFrozenToken(token)
     return {
         owner: owner,
+        url: url,
         titleId: titleId,
         offersToBuy: offersToBuy,
-        offersToSell: offersToSell
+        offersToSell: offersToSell,
+        frozen: frozen
     }
 }
 

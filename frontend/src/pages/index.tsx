@@ -13,7 +13,7 @@ import useJSCTitleToken from '@/hooks/useJSCTitleToken'
 
 const Home: NextPage = () => {
   const { active } = useWeb3React();
-  const [tokens, loading, errorTitleToken] = useJSCTitleToken()
+  const [tokens, loading, errorTitleToken] = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const fakeRecentActivity = [
     { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
