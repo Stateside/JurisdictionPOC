@@ -28,7 +28,7 @@ export type SellFormModel = {
   formValid: boolean;
 };
 
-export type Offer = {
+export type OfferInfo = {
   tokenId: string;
   fromAddress: string;
   price: string | number | null;
@@ -63,7 +63,7 @@ export type PropertyDetailsContextDefoTypes = {
   sellFormModel: SellFormModel;
   actionButtonDisabled: boolean;
   selectedOfferIndex: number | null;
-  activeOffers: Offer[];
+  activeOffers: OfferInfo[];
   handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   setSellModelField: (params: ModelFieldSetter) => void;
@@ -71,7 +71,7 @@ export type PropertyDetailsContextDefoTypes = {
   propertyDetailsModalAction: () => void;
   showSellModal: () => void;
   showAcceptOfferModal: (index: number) => void;
-  buildActivity: (activity: Offer) => ReactNode | string;
+  buildActivity: (activity: OfferInfo) => ReactNode | string;
   onOpen: () => void;
   onClose: () => void;
 };

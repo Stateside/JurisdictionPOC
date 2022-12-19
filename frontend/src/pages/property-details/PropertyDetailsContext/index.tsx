@@ -1,7 +1,14 @@
-import { createContext, useState, ReactNode, ChangeEvent } from 'react';
+import {
+  createContext,
+  useState,
+  ReactNode,
+  ChangeEvent,
+  useEffect,
+} from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 import { deepCopy, getAccountShortName } from 'utils/util';
 import { ObjectHashInterface, ActivityInterface } from '@/interfaces/index';
+import { useRouter } from 'next/router';
 import {
   SellFormModel,
   PropertyDetailsContextDefoTypes,
@@ -12,8 +19,13 @@ import {
   PropertyInfo,
   PropertyImage,
   ActionNames,
-  Offer,
-} from '../../../utils/property-types';
+  OfferInfo,
+} from '@/utils/property-types';
+import {
+  buildTokenInfoByTitleId,
+  buildActiveOffersInfoByTitleId,
+} from '@/model/factories/TokenFactory';
+import useJSCTitleToken from '@/hooks/useJSCTitleToken';
 
 interface PropertyDetailsContextProps {
   text?: string;
@@ -81,6 +93,13 @@ const PropertyDetailsProvider = function ({
   children,
   text,
 }: PropertyDetailsContextProps) {
+  const { query } = useRouter();
+  const { slug = [] } = query;
+  const titleId = slug[0] || '';
+  const address = slug[1] || '';
+
+  const [tokens, loading, errorTitleToken] = useJSCTitleToken(address);
+
   // ----------------------------------------------------------------
   // Context states
   // ----------------------------------------------------------------
@@ -90,33 +109,8 @@ const PropertyDetailsProvider = function ({
     useState<boolean>(true);
   const [sellFormModel, setSellFormModel] =
     useState<SellFormModel>(newSellFormModel);
-  const [propertyId, setPropertyId] = useState<string>('001-456-876513-E');
-  const [propertyInfo, setPropertyInfo] = useState<PropertyInfo[]>([
-    {
-      infoLabel: 'Owner:',
-      infoValue: '0x4c4AC5781723ee8F73aB739420E0050263fFB34E',
-    },
-    {
-      infoLabel: 'Jurisdiction:',
-      infoValue: 'Costa Rica',
-    },
-    {
-      infoLabel: 'Token ID:',
-      infoValue: '0x12980',
-    },
-    {
-      infoLabel: 'Title ID:',
-      infoValue: '001-456-876513-E',
-    },
-    {
-      infoLabel: 'URI:',
-      infoValue: 'https://www.stateside.agency/tokenid3109i',
-    },
-    {
-      infoLabel: 'Location:',
-      infoValue: '10°17\'40.1"N 85°42\'43.2"W',
-    },
-  ]);
+  const [propertyId, setPropertyId] = useState<string>('');
+  const [propertyInfo, setPropertyInfo] = useState<PropertyInfo[]>([]);
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([
     {
       src: 'property-image-01.png',
@@ -131,29 +125,7 @@ const PropertyDetailsProvider = function ({
       alt: 'some image alt description',
     },
   ]);
-  const [activeOffers, setActiveOffers] = useState<Offer[]>([
-    {
-      tokenId: '001-456-876513-E',
-      fromAddress: '0xe26fcf2850fb519bc1f7ca7607b148f5437137d9',
-      price: 180,
-      expiresAfter: 7,
-      type: 'received',
-    },
-    {
-      tokenId: 'AAAAAA-111-AAAA-2',
-      fromAddress: '0xe26fcf2850fb519bc1f7ca7607b148f5437137d9',
-      price: 180,
-      expiresAfter: 7,
-      type: 'received',
-    },
-    {
-      tokenId: 'BBBBBB-222-BBBB-3',
-      fromAddress: '0xe26fcf2850fb519bc1f7ca7607b148f5437137d9',
-      price: 180,
-      expiresAfter: 7,
-      type: 'received',
-    },
-  ]);
+  const [activeOffers, setActiveOffers] = useState<OfferInfo[]>([]);
   const [selectedOfferIndex, setSelectedOfferIndex] = useState<number | null>(
     null
   );
@@ -334,7 +306,7 @@ const PropertyDetailsProvider = function ({
     onOpen();
   }
 
-  function buildActivity(offer: Offer) {
+  function buildActivity(offer: OfferInfo) {
     const copy: ObjectHashInterface = {
       received:
         offer.fromAddress &&
@@ -346,6 +318,24 @@ const PropertyDetailsProvider = function ({
     };
     return `${copy[offer.type]}`;
   }
+
+  // ----------------------------------------------------------------
+  // Effects
+  // ----------------------------------------------------------------
+  useEffect(() => {
+    if (!loading) {
+      const tokenInfo = buildTokenInfoByTitleId(tokens, titleId);
+      const buyOffersInfo = buildActiveOffersInfoByTitleId(
+        tokens,
+        titleId,
+        'buy'
+      );
+
+      setPropertyId(titleId);
+      setPropertyInfo(tokenInfo);
+      setActiveOffers(buyOffersInfo);
+    }
+  }, [loading]);
 
   return (
     <PropertyDetailsContext.Provider

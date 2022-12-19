@@ -30,7 +30,11 @@ const gridLayout = 'repeat(12, 1fr)';
 // Temporary fix to remove errors from build
 declare global {
   namespace JSX {
-      interface IntrinsicAttributes { w?: any, style?: any, _focus?: any }
+    interface IntrinsicAttributes {
+      w?: any;
+      style?: any;
+      _focus?: any;
+    }
   }
 }
 
@@ -81,7 +85,7 @@ export default function PropertyDetailsMain() {
         <GridItem colSpan={7}>
           <Grid templateColumns={gridLayout}>
             <GridItem colSpan={12}>
-              {propertyInfo.map(({ infoLabel, infoValue }:PropertyInfo) => (
+              {propertyInfo.map(({ infoLabel, infoValue }: PropertyInfo) => (
                 <Grid
                   templateColumns={gridLayout}
                   key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
@@ -107,6 +111,13 @@ export default function PropertyDetailsMain() {
           </Grid>
         </GridItem>
         <GridItem colSpan={5}>
+          {/* <div className="iframe-rwd">
+            <iframe
+              width="425"
+              height="350"
+              src="https://www.google.com/maps/embed/v1/view?key=YOUR_API_KEY&center=10.294472, -85.712000&zoom=18&maptype=satellite"
+            ></iframe>
+          </div> */}
           <Image
             src="/imgs/placeholder-gmap.png"
             alt="Google Maps"
