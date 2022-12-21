@@ -4,6 +4,7 @@ import { Tabs, TabList, TabPanels, Tab, TabPanel, Box } from '@chakra-ui/react';
 
 import Contracts from './Contracts';
 import Members from './Members';
+import Proposals from './Proposals';
 import Properties from './Properties';
 
 
@@ -29,7 +30,7 @@ const Jurisdiction: NextPage = () => {
             <Contracts />
           </TabPanel>
           <TabPanel>
-            <p>Proposals Tab</p>
+            <Proposals />
           </TabPanel>
           <TabPanel>
             <Properties />
