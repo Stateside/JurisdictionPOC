@@ -26,6 +26,8 @@ import {
   buildActiveOffersInfoByTitleId,
 } from '@/model/factories/TokenFactory';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken';
+import useJSCJurisdiction from '@/hooks/useJSCJurisdiction';
+import {jscJurisdictionInfo} from '@/utils/types';
 
 interface PropertyDetailsContextProps {
   text?: string;
@@ -98,7 +100,9 @@ const PropertyDetailsProvider = function ({
   const titleId = slug[0] || '';
   const address = slug[1] || '';
 
-  const [tokens, loading, errorTitleToken] = useJSCTitleToken(address);
+  const [tokens, tokenJurisdictionAddress, loading] = useJSCTitleToken(address);
+  const [getJurisdictionInfo] = useJSCJurisdiction();
+  
 
   // ----------------------------------------------------------------
   // Context states
@@ -129,6 +133,7 @@ const PropertyDetailsProvider = function ({
   const [selectedOfferIndex, setSelectedOfferIndex] = useState<number | null>(
     null
   );
+  const [jscJurisdictionInfo, setJscJurisdictionInfo] = useState<jscJurisdictionInfo | undefined>(undefined);
 
   // ----------------------------------------------------------------
   // Private methods
@@ -324,7 +329,21 @@ const PropertyDetailsProvider = function ({
   // ----------------------------------------------------------------
   useEffect(() => {
     if (!loading) {
-      const tokenInfo = buildTokenInfoByTitleId(tokens, titleId);
+      const loadData = async () => {
+        const jurisdictionInfo = await getJurisdictionInfo(tokenJurisdictionAddress);
+        
+        setJscJurisdictionInfo(jurisdictionInfo);
+      }
+
+      loadData().catch((err) => {
+        console.log(err);
+      });
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    if (!loading && jscJurisdictionInfo) {
+      const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, titleId);
       const buyOffersInfo = buildActiveOffersInfoByTitleId(
         tokens,
         titleId,
@@ -335,7 +354,7 @@ const PropertyDetailsProvider = function ({
       setPropertyInfo(tokenInfo);
       setActiveOffers(buyOffersInfo);
     }
-  }, [loading]);
+  }, [loading, jscJurisdictionInfo]);
 
   return (
     <PropertyDetailsContext.Provider

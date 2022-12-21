@@ -52,6 +52,7 @@ export interface Token {
   tokenId: string;
   titleId: string;
   owner: string;
+  ownerAddress: string;
   ownerFrozen: boolean;
   frozen: boolean;
   offersToBuy: Offer[];
