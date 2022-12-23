@@ -60,7 +60,7 @@ describe("JSCCabinet", async () => {
 
   it('fails on second init()', async function() {
     await expect(await cabinet.isFrozen()).to.equal(false);
-    await expect(cabinet.init(jurisdiction.address, [], [])).to.be.revertedWith('init() cannot be called twice');
+    await expect(cabinet.init(jurisdiction.address, [], [], zeroAddress)).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('checks membership correctly', async function() {

@@ -31,7 +31,8 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
         address registryAccount_,
         uint256 registryFee_,
         address maintainerAccount_,
-        uint256 maintainerFee_
+        uint256 maintainerFee_,
+        address newOwner
       ) external onlyOwner {
     require(
       bytes(_storage.name).length == 0,
@@ -55,6 +56,11 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
 
     _addTitleRevisions();
     _addTitleHandlers();
+
+    if (newOwner != address(0)) {
+      // Change ownership of this contract to the new owner (governor usually)
+      transferOwnership(newOwner);
+    }
   }
 
   /**

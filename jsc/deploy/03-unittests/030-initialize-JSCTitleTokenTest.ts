@@ -21,7 +21,8 @@ const deployJSCTitleTokenTestInit: DeployFunction = async function (hre: Hardhat
     zeroAddress,
     0,
     zeroAddress,
-    0
+    0,
+    zeroAddress
   ); 
 }
 

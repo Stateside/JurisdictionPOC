@@ -521,6 +521,11 @@ const _abi = [
         name: "descriptions",
         type: "string[]",
       },
+      {
+        internalType: "bool",
+        name: "changeOwner",
+        type: "bool",
+      },
     ],
     name: "init",
     outputs: [],

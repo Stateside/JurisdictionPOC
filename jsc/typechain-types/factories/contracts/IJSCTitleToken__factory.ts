@@ -842,6 +842,11 @@ const _abi = [
         name: "maintainerFee_",
         type: "uint256",
       },
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
     ],
     name: "init",
     outputs: [],

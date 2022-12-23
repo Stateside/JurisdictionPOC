@@ -8,6 +8,7 @@ const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRunt
   const { deployments } = hre
   const { log, get } = deployments
   const jscJurisdiction = await get("production_JSCJurisdiction")
+  const jscGovernor = await get("production_JSCGovernor")
   const jscTitleTokenContract = await get("production_JSCTitleToken")
   const jscTitleToken = await ethers.getContractAt("JSCTitleToken", jscTitleTokenContract.address)
   const zeroAddress = '0x0000000000000000000000000000000000000000';
@@ -22,7 +23,8 @@ const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRunt
     zeroAddress,
     0,
     zeroAddress,
-    0
+    0,
+    jscGovernor.address
   )
 }
 

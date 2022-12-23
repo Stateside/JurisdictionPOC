@@ -74,7 +74,6 @@ yarn hardhat --help
 # TO DO
 
 - Register offers to sell I have received
-- Add a parameters to JSCTitleToken to indicate how much ownership transfers cost (pay fee to registry + pay fee to a maintainer)
 - Add a parameter to the title token to disable NFT support
 - Add a boolean to the individual tokens to enable NFT support
 - Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
@@ -88,6 +87,8 @@ yarn hardhat --help
   - This can be done by the member signing a request to perform some operation and sending the request to 
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
+- add jurisdiction to titletoken and cabinet and make sure this is is validated properly inside contracts
+- add function to validate jurisdicitons (make sure they are properly initialized and secured)
 
 Payments
 1. Pay registry fees

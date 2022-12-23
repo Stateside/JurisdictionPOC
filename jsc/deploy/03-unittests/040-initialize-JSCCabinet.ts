@@ -7,6 +7,7 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
   const { log, get } = deployments
   const jscCabinetContract = await get("unittests_JSCCabinet")
   const jscJurisdictionContract = await get("unittests_JSCJurisdiction")
+  const zeroAddress = '0x0000000000000000000000000000000000000000';
 
   log("----------------------------------------------------")
   log(`Initializing unittests_JSCCabinet...`)
@@ -18,7 +19,8 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
   const jscCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscCabinet.init(jscJurisdictionContract.address,
     [bob.address,  jane.address, sara.address, bryan.address,  paul.address, alex.address],
-    [J,            L,            L,            E,              E,            E])
+    [J,            L,            L,            E,              E,            E],
+    zeroAddress)
   }
 
 export default deployJSCCabinetInit

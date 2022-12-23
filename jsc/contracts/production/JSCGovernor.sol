@@ -27,10 +27,18 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     /**
     * @dev See {IJSCGovernor-init}.
     */
-    function init(address jurisdiction) external onlyOwner {
+    function init(
+            address jurisdiction,
+            bool changeOwner) external onlyOwner {
         require(_jurisdiction == address(0), "init() cannot be called twice");
+        require(jurisdiction != address(0), "invalid jurisdiction address");
         JSCConfigurable._init();
         _jurisdiction = jurisdiction;
+
+        if (changeOwner) {
+            // This contract will own itself
+            transferOwnership(address(this));
+        }
     }
 
     /**

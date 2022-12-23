@@ -3,9 +3,10 @@ import { MenuItemInterface, SiteLayoutData, SiteLabel, HomeLabels } from '@/inte
 
 export const siteMainMenu:Array<MenuItemInterface> = [
     {label: 'Your Properties', url: '/tokens', command: '⌘T'},
-    {label: 'Create a Jurisdiction', url: '/create-jurisdiction', command: '⌘J'},
+    {label: 'Create a Jurisdiction', url: '/jurisdiction/create', command: '⌘J'},
+    {label: 'Show sample token details', url: '/property-details', command: '⌘S'},
     {label: 'Create a Propossal', url: '/create-propossal', command: '⌘P'},
-    {label: 'List Contracts', url: '/contracts', command: '⌘P'},
+    {label: 'List Contracts', url: '/contracts', command: '⌘L'},
 ]
 
 export const siteLayoutData:SiteLayoutData = {

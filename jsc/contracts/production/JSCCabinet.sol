@@ -34,9 +34,11 @@ contract JSCCabinet is
     function init(
         address jurisdiction,
         address[] memory accounts,
-        bytes32[] memory roles
+        bytes32[] memory roles,
+        address newOwner
     ) external onlyOwner {
         require(_jurisdiction == address(0), "init() cannot be called twice");
+        require(jurisdiction != address(0), "invalid jurisdiction address");
         require(accounts.length == roles.length, "invalid parameters");
         JSCConfigurable._init();
         _jurisdiction = jurisdiction;
@@ -47,6 +49,11 @@ contract JSCCabinet is
 
         _addParameterRevisions();
         _addCabinetRevisions();
+
+        if (newOwner != address(0)) {
+            // Change ownership of this contract to the new owner (governor usually)
+            transferOwnership(newOwner);
+        }
     }
 
     /**

@@ -13,7 +13,7 @@ const deployJSCGovernorInit: DeployFunction = async function (hre: HardhatRuntim
   log("----------------------------------------------------")
   log(`Initializing unittests_JSCGovernor...`)
   const jscGovernor = await ethers.getContractAt("JSCGovernor", jscGovernorContract.address)
-  await jscGovernor.init(jscJurisdictionContract.address)
+  await jscGovernor.init(jscJurisdictionContract.address, false)
 }
 
 export default deployJSCGovernorInit

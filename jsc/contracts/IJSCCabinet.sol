@@ -16,7 +16,8 @@ interface IJSCCabinet is IAccessControlEnumerable, IJSCConfigurable {
     function init(
         address jurisdiction,
         address[] memory accounts,
-        bytes32[] memory roles) external;
+        bytes32[] memory roles,
+        address newOwner) external;
 
     /**
      * @dev Returns the address of the jurisdicion of which this contract is a part

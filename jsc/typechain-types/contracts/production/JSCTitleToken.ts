@@ -124,7 +124,7 @@ export interface JSCTitleTokenInterface extends utils.Interface {
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
-    "init(string,string,string,address,address,uint256,address,uint256)": FunctionFragment;
+    "init(string,string,string,address,address,uint256,address,uint256,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isFrozen()": FunctionFragment;
     "isFrozenOwner(address)": FunctionFragment;
@@ -299,7 +299,8 @@ export interface JSCTitleTokenInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>
     ]
   ): string;
   encodeFunctionData(
@@ -1076,6 +1077,7 @@ export interface JSCTitleToken extends BaseContract {
       registryFee_: PromiseOrValue<BigNumberish>,
       maintainerAccount_: PromiseOrValue<string>,
       maintainerFee_: PromiseOrValue<BigNumberish>,
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1347,6 +1349,7 @@ export interface JSCTitleToken extends BaseContract {
     registryFee_: PromiseOrValue<BigNumberish>,
     maintainerAccount_: PromiseOrValue<string>,
     maintainerFee_: PromiseOrValue<BigNumberish>,
+    newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1614,6 +1617,7 @@ export interface JSCTitleToken extends BaseContract {
       registryFee_: PromiseOrValue<BigNumberish>,
       maintainerAccount_: PromiseOrValue<string>,
       maintainerFee_: PromiseOrValue<BigNumberish>,
+      newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2075,6 +2079,7 @@ export interface JSCTitleToken extends BaseContract {
       registryFee_: PromiseOrValue<BigNumberish>,
       maintainerAccount_: PromiseOrValue<string>,
       maintainerFee_: PromiseOrValue<BigNumberish>,
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2343,6 +2348,7 @@ export interface JSCTitleToken extends BaseContract {
       registryFee_: PromiseOrValue<BigNumberish>,
       maintainerAccount_: PromiseOrValue<string>,
       maintainerFee_: PromiseOrValue<BigNumberish>,
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -8,7 +8,6 @@ import * as iid from "../../utils/getInterfaceId"
 
 describe("JSCJurisdiction", async () => {
   let jurisdiction: tc.IJSCJurisdiction
-  let rlib: tc.JSCRevisionsLib
 
   const testParameterRevision = async (r:any, name:string, description:string, type:ParamType) => {
     await expect(r.name).to.be.equal(name);
@@ -46,6 +45,24 @@ describe("JSCJurisdiction", async () => {
     jurisdiction = await ethers.getContract("unittests_JSCJurisdiction")
   })
 
+  it('fails on second init()', async function() {
+    await expect(await jurisdiction.isFrozen()).to.equal(false);
+    const jscCabinetContract = await ethers.getContract("unittests_JSCCabinet")
+    const jscTitleTokenContract = await ethers.getContract("unittests_JSCTitleTokenTest")
+    const jscGovernorContract = await ethers.getContract("unittests_JSCGovernor")
+    await expect(jurisdiction.init(
+      "UnitTestJurisdiction",
+      ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
+      [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address],
+      [
+        "Manage the members of the jurisdiction and their roles",
+        "Track proposals and votes",
+        "Manage tokens, their owners, and the transfer of ownership"
+      ],
+      false
+      )).to.be.revertedWith('init() cannot be called twice');
+  });
+
   it('correctly checks interfaces IDs', async function() {
     expect(await jurisdiction.supportsInterface("0xffffffff")).to.equal(false);
     expect(await jurisdiction.supportsInterface(iid.IID_IERC165)).to.equal(true);
@@ -63,16 +80,22 @@ describe("JSCJurisdiction", async () => {
   });
 
   it("iterates parameters", async () => {
+    const jscCabinetContract = await ethers.getContract("unittests_JSCCabinet")
+    const jscTitleTokenContract = await ethers.getContract("unittests_JSCTitleTokenTest")
+    const jscGovernorContract = await ethers.getContract("unittests_JSCGovernor")
     await testIterateParameters(
-      ["jsc.contracts.mycontract"],
-      ["This is a test contract address"],
-      [jurisdiction.address]
+      ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
+      [
+        "Manage the members of the jurisdiction and their roles",
+        "Track proposals and votes",
+        "Manage tokens, their owners, and the transfer of ownership"
+      ],
+      [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address]
     )
   })
 
   it("iterates jurisdiction revisions", async () => {
-    // one parameter revision and AddContract and RemoveContract
-    await expect(await jurisdiction.revisionCount()).to.be.equal(4);
+    await expect(await jurisdiction.revisionCount()).to.be.equal(6);
     
     let i = await jurisdiction.iterateRevisions();
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
@@ -89,7 +112,15 @@ describe("JSCJurisdiction", async () => {
     i = await jurisdiction.nextRevision(i)
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     r = await jurisdiction.revisionIteratorGet(i);
-    await testParameterRevision(r, "ChangeConfig:jsc.contracts.mycontract", "This is a test contract address", ParamType.t_address);
+    await testParameterRevision(r, "ChangeConfig:jsc.contracts.cabinet", "Manage the members of the jurisdiction and their roles", ParamType.t_address);
+    i = await jurisdiction.nextRevision(i)
+    await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
+    r = await jurisdiction.revisionIteratorGet(i);
+    await testParameterRevision(r, "ChangeConfig:jsc.contracts.governor", "Track proposals and votes", ParamType.t_address);
+    i = await jurisdiction.nextRevision(i)
+    await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
+    r = await jurisdiction.revisionIteratorGet(i);
+    await testParameterRevision(r, "ChangeConfig:jsc.contracts.tokens", "Manage tokens, their owners, and the transfer of ownership", ParamType.t_address);
     
     i = await jurisdiction.nextRevision(i)
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
@@ -126,18 +157,27 @@ describe("JSCJurisdiction", async () => {
   })
 
   it("executes address parameter revision", async () => {
-    let revArgs:string = defaultAbiCoder.encode(["string", "address"],["jsc.contracts.mycontract", "0x111122223333444455556666777788889999AaaB"]);
-    let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contracts.mycontract", revArgs);
-    await expect(tresponse).to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contracts.mycontract", "0x111122223333444455556666777788889999AaaB");
-    await expect(tresponse).to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contracts.mycontract", revArgs);
+    const jscCabinetContract = await ethers.getContract("unittests_JSCCabinet")
+    const jscGovernorContract = await ethers.getContract("unittests_JSCGovernor")
+    let revArgs:string = defaultAbiCoder.encode(["string", "address"],["jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB"]);
+    let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contracts.tokens", revArgs);
+    await expect(tresponse).to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB");
+    await expect(tresponse).to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contracts.tokens", revArgs);
     await testIterateParameters(
-      ["jsc.contracts.mycontract"],
-      ["This is a test contract address"],
-      ["0x111122223333444455556666777788889999AaaB"]
+      ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
+      [
+        "Manage the members of the jurisdiction and their roles",
+        "Track proposals and votes",
+        "Manage tokens, their owners, and the transfer of ownership"
+      ],
+      [jscCabinetContract.address,  jscGovernorContract.address, "0x111122223333444455556666777788889999AaaB"]
     )
   })
 
   it("executes AddContract and RemoveContract revisions", async () => {
+    const jscCabinetContract = await ethers.getContract("unittests_JSCCabinet")
+    const jscTitleTokenContract = await ethers.getContract("unittests_JSCTitleTokenTest")
+    const jscGovernorContract = await ethers.getContract("unittests_JSCGovernor")
     let revArgs:string = defaultAbiCoder.encode(
       ["string", "string", "address"],
       ["jsc.contracts.my2ndcontract", "A second contract", "0x111122223333444455556666777788889999aAaa"]);
@@ -147,39 +187,55 @@ describe("JSCJurisdiction", async () => {
       .to.emit(jurisdiction, "ContractAdded").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
       .to.emit(jurisdiction, "RevisionExecuted").withArgs("AddContract", revArgs);
     await testIterateParameters(
-      ["jsc.contracts.mycontract",         "jsc.contracts.my2ndcontract"],
-      ["This is a test contract address", "A second contract"],
-      [jurisdiction.address,              "0x111122223333444455556666777788889999aAaa"]
+      ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens", "jsc.contracts.my2ndcontract"],
+      [
+        "Manage the members of the jurisdiction and their roles",
+        "Track proposals and votes",
+        "Manage tokens, their owners, and the transfer of ownership",
+        "A second contract"
+      ],
+      [jscCabinetContract.address,  jscGovernorContract.address, jscTitleTokenContract.address, "0x111122223333444455556666777788889999aAaa"]
     )
 
     revArgs = defaultAbiCoder.encode(
       ["string", "address"],
-      ["jsc.contracts.mycontract", jurisdiction.address]);
+      ["jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa"]);
     tresponse = jurisdiction.executeRevision("RemoveContract", revArgs);
     await expect(tresponse)
-    .to.emit(jurisdiction, "AddressParameterRemoved").withArgs("jsc.contracts.mycontract", jurisdiction.address)
-    .to.emit(jurisdiction, "ContractRemoved").withArgs("jsc.contracts.mycontract", jurisdiction.address)
+      .to.emit(jurisdiction, "AddressParameterRemoved").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
+      .to.emit(jurisdiction, "ContractRemoved").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
       .to.emit(jurisdiction, "RevisionExecuted").withArgs("RemoveContract", revArgs);
     await testIterateParameters(
-      ["jsc.contracts.my2ndcontract"],
-      ["A second contract"],
-      ["0x111122223333444455556666777788889999aAaa"]
-    );
+      ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
+      [
+        "Manage the members of the jurisdiction and their roles",
+        "Track proposals and votes",
+        "Manage tokens, their owners, and the transfer of ownership"
+      ],
+      [jscCabinetContract.address,  jscGovernorContract.address, jscTitleTokenContract.address]
+    )
   })
 
   it("replaces contract with parameter update", async () => {
+    const jscCabinetContract = await ethers.getContract("unittests_JSCCabinet")
+    const jscTitleTokenContract = await ethers.getContract("unittests_JSCTitleTokenTest")
+    const jscGovernorContract = await ethers.getContract("unittests_JSCGovernor")
     let revArgs = defaultAbiCoder.encode(
       ["string", "address"],
-      ["jsc.contracts.mycontract", "0x111122223333444455556666777788889999AaaB"]);
-    let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contracts.mycontract", revArgs);
+      ["jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB"]);
+    let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contracts.tokens", revArgs);
     await expect(tresponse)
-      .to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contracts.mycontract", "0x111122223333444455556666777788889999AaaB")
-      .to.emit(jurisdiction, "ContractReplaced").withArgs("jsc.contracts.mycontract", jurisdiction.address, "0x111122223333444455556666777788889999AaaB")
-      .to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contracts.mycontract", revArgs);
+      .to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB")
+      .to.emit(jurisdiction, "ContractReplaced").withArgs("jsc.contracts.tokens", jscTitleTokenContract.address, "0x111122223333444455556666777788889999AaaB")
+      .to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contracts.tokens", revArgs);
     await testIterateParameters(
-      ["jsc.contracts.mycontract"],
-      ["This is a test contract address"],
-      ["0x111122223333444455556666777788889999AaaB"]
-    );
+      ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
+      [
+        "Manage the members of the jurisdiction and their roles",
+        "Track proposals and votes",
+        "Manage tokens, their owners, and the transfer of ownership"
+      ],
+      [jscCabinetContract.address,  jscGovernorContract.address, "0x111122223333444455556666777788889999AaaB"]
+    )
   })
 })
