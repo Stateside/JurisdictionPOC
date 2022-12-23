@@ -658,6 +658,11 @@ const _abi = [
         name: "roles",
         type: "bytes32[]",
       },
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
     ],
     name: "init",
     outputs: [],

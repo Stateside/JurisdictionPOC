@@ -31,7 +31,8 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
       address registryAccount_,
       uint256 registryFee_,
       address maintainerAccount_,
-      uint256 maintainerFee_
+      uint256 maintainerFee_,
+      address newOwner
     ) external;
 
   /**

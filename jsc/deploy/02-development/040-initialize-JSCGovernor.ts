@@ -21,7 +21,7 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
   const jscTitleToken:tc.IJSCTitleToken = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
   const jscGovernor:tc.IJSCGovernor = await ethers.getContractAt("JSCGovernor", jscGovernorContract.address)
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
-  await jscGovernor.init(jscJurisdiction.address)
+  await jscGovernor.init(jscJurisdiction.address, true)
 
   const sampleProposals = await createSampleProposals(jscGovernor, jscCabinet, jscTitleToken)
   const proposalMap:{[hash:string]: PreparedProposal} = {}

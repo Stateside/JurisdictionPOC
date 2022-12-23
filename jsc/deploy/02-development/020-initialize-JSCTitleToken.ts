@@ -13,7 +13,8 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   // @ts-ignore
   const { deployments } = hre
   const { log, get } = deployments
-  const jscJurisdiction = await get("development_JSCJurisdiction")
+  const jscJurisdictionContract = await get("development_JSCJurisdiction")
+  const jscGovernorContract = await get("development_JSCGovernor")
   const jscTitleTokenContract = await get("development_JSCTitleTokenTest")
   const zeroAddress = '0x0000000000000000000000000000000000000000';
 
@@ -23,11 +24,12 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     "Development Tokens",
     "DEV",
     "http://localhost:3000/tokens/",
-    jscJurisdiction.address,
+    jscJurisdictionContract.address,
     zeroAddress,
     0,
     zeroAddress,
-    0
+    0,
+    zeroAddress
   )
 
   const { Bob, Sara, Jane, Bryan, Rich, Alex, Peter } = accountsByName
@@ -201,6 +203,8 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     }
   }
   log("\\--------------------------------------------------------------/")
+
+  jscTitleToken.transferOwnership(jscGovernorContract.address)
 }
 
 export default initializeJSCTitleToken

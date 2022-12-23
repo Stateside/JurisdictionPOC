@@ -8,6 +8,7 @@ import { ethers } from "hardhat"
  */
 
 export type Role = {
+    friendlyName: string
     name: string
     id: string
 }
@@ -18,7 +19,10 @@ export const rolesById:{[id: string]: Role} = {}
 
 for (let rn = 0; rn < roleNames.length; rn++) {
   const roleName:string = roleNames[rn]
+  const friendlyName:string = roleName[0].toLowerCase() + roleName.slice(1)
+
   const role:Role = {
+    friendlyName, 
     name: roleName,
     id: ethers.utils.keccak256(ethers.utils.toUtf8Bytes(roleName))
   }

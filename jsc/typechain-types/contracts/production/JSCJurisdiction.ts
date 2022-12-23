@@ -99,7 +99,7 @@ export interface JSCJurisdictionInterface extends utils.Interface {
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
-    "init(string,string[],address[],string[])": FunctionFragment;
+    "init(string,string[],address[],string[],bool)": FunctionFragment;
     "isFrozen()": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
@@ -178,7 +178,8 @@ export interface JSCJurisdictionInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>[],
       PromiseOrValue<string>[],
-      PromiseOrValue<string>[]
+      PromiseOrValue<string>[],
+      PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
@@ -626,6 +627,7 @@ export interface JSCJurisdiction extends BaseContract {
       contractKeys: PromiseOrValue<string>[],
       contracts: PromiseOrValue<string>[],
       descriptions: PromiseOrValue<string>[],
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -731,6 +733,7 @@ export interface JSCJurisdiction extends BaseContract {
     contractKeys: PromiseOrValue<string>[],
     contracts: PromiseOrValue<string>[],
     descriptions: PromiseOrValue<string>[],
+    changeOwner: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -832,6 +835,7 @@ export interface JSCJurisdiction extends BaseContract {
       contractKeys: PromiseOrValue<string>[],
       contracts: PromiseOrValue<string>[],
       descriptions: PromiseOrValue<string>[],
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1071,6 +1075,7 @@ export interface JSCJurisdiction extends BaseContract {
       contractKeys: PromiseOrValue<string>[],
       contracts: PromiseOrValue<string>[],
       descriptions: PromiseOrValue<string>[],
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1173,6 +1178,7 @@ export interface JSCJurisdiction extends BaseContract {
       contractKeys: PromiseOrValue<string>[],
       contracts: PromiseOrValue<string>[],
       descriptions: PromiseOrValue<string>[],
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

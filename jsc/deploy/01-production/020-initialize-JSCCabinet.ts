@@ -7,6 +7,7 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
   // @ts-ignore
   const { deployments, ethers } = hre
   const { log, get } = deployments
+  const jscGovernorContract = await get("production_JSCGovernor")
   const jscCabinetContract = await get("production_JSCCabinet")
   const jscJurisdictionContract = await get("production_JSCJurisdiction")
 
@@ -20,7 +21,8 @@ const deployJSCCabinetInit: DeployFunction = async function (hre: HardhatRuntime
   const jscCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscCabinet.init(jscJurisdictionContract.address,
     [bob.address,  jane.address, sara.address, bryan.address,  paul.address, alex.address],
-    [J,            L,            L,            E,              E,            E])
+    [J,            L,            L,            E,              E,            E], 
+    jscGovernorContract.address)
   }
 
 export default deployJSCCabinetInit

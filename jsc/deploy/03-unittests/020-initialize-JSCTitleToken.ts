@@ -1,7 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import verify from "../../helper-functions"
-import { networkConfig, developmentChains } from "../../helper-hardhat-config"
 // @ts-ignore
 import { ethers } from "hardhat" 
 
@@ -24,7 +22,8 @@ const deployJSCTitleTokenInit: DeployFunction = async function (hre: HardhatRunt
     zeroAddress,
     0,
     zeroAddress,
-    0
+    0,
+    zeroAddress
   ); 
 }
 
