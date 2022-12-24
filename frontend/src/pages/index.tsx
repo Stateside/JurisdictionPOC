@@ -21,7 +21,7 @@ const GreenSpinner = () => (
 
 const Home: NextPage = () => {
   const { active } = useWeb3React();
-  const [tokens, loading, errorTitleToken] = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
+  const {tokens} = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const [jurisdictions, setJurisdictions] = useState<any[]|undefined>()
 
@@ -45,7 +45,7 @@ const Home: NextPage = () => {
         width='100%'
         margin={0}
         flexDirection='column'
-      >
+      ><>
         <Heading
           variant={'80'}
           whiteSpace='pre-line'
@@ -104,7 +104,7 @@ const Home: NextPage = () => {
             </Flex>
           </VStack>
         }
-      </Flex>
+      </></Flex>
     </Box>
   )
 }

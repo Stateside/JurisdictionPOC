@@ -5,7 +5,12 @@ import { ethers } from 'ethers'
 import { Token, Offer } from '@/interfaces/index'
 import * as tc from "../../typechain-types"
 
-const useJSCTitleToken = (jscTitleTokenConnect: string) => {
+type ReturnType = {
+    tokens: Token[],
+    loading: boolean,
+    error: string
+}
+const useJSCTitleToken = (jscTitleTokenConnect: string):ReturnType => {
     const [error, setError] = useState<string>("")
     const [loading, setLoading] = useState(true)
     const { active, account, library } = useWeb3React()
@@ -52,7 +57,7 @@ const useJSCTitleToken = (jscTitleTokenConnect: string) => {
         }
     }, [jscTitleToken])
 
-    return [tokens, loading, error];
+    return {tokens, loading, error};
 };
 
 const getOffersToBuy = async (jscTitleToken: any, token: any) => {
