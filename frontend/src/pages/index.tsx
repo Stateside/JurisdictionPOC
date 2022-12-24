@@ -1,26 +1,42 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { Text } from '@chakra-ui/react'
+import { Spinner, Text } from '@chakra-ui/react'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken'
 
+const GreenSpinner = () => (
+  <Spinner
+    thickness='2px'
+    speed='0.65s'
+    emptyColor='gray.200'
+    color='green.500'
+    size='md'
+  />)
 
 const Home: NextPage = () => {
   const { active } = useWeb3React();
   const [tokens, loading, errorTitleToken] = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
+  const [jurisdictions, setJurisdictions] = useState<any[]|undefined>()
+
+  useEffect(() => {
+    fetch('api/contracts/get')
+    .then(res => res.json())
+    .then(res => setJurisdictions(res))
+  }, [])
+
+  //To-do: Connect this to real Smart COntracts and BC
   const fakeRecentActivity = [
     { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
     { tokenId: '001-456-87654-E', price: '130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
     { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
   ]
-
 
   return (
     <Box width='100%'>
@@ -57,15 +73,17 @@ const Home: NextPage = () => {
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
-                <Tag>
-                  <Text variant={'15/20'}>Costa Rica</Text>
-                </Tag>
-                <Tag>
-                  <Text variant={'15/20'}>{`Paul’s Jurisdiction`}</Text>
-                </Tag>
-                <Tag>
-                  <Text variant={'15/20'}>{`Bryan’s Jurisdiction`}</Text>
-                </Tag>
+                {
+                  jurisdictions ? 
+                    jurisdictions.map((jurisdiction: any) => {
+                      return (
+                        <Tag key={jurisdiction.address}>
+                          <Text variant={'15/20'}>{`${jurisdiction.name} v${jurisdiction.version}`}</Text>
+                        </Tag>
+                      )
+                    }) :
+                    <Tag><GreenSpinner/></Tag>
+                }
               </Box>
               <Box
                 width={'100%'}

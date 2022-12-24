@@ -1,5 +1,5 @@
 /*
-    Provides a list of available contracts and their ABIs. Eventually we will pull this data from a database, but for now we will hardcode it.
+    Provides a list of available contracts and their ABIs. Eventually we will pull this data from a database, but for now we will pull it from our deployed artifacts.
  */
 export type HardhatArtifact = {
     abi: any
@@ -15,6 +15,7 @@ export type ContractDefinition = {
     loadArtifact: () => Promise<HardhatArtifact>
     type: "contract"|"library"
     solidityType: string 
+    solidityInterface: string 
     link?: string
     key?: string
     dependencies?: string[]
@@ -29,6 +30,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/libraries/JSCRevisionsLib.sol/JSCRevisionsLib.json") as unknown as HardhatArtifact,
         type: "library",
         solidityType: "JSCRevisionsLib", 
+        solidityInterface: "JSCRevisionsLib", 
         link: "libraries/JSCRevisionsLib.sol:JSCRevisionsLib"
     },
     {
@@ -39,6 +41,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/libraries/JSCConfigurableLib.sol/JSCConfigurableLib.json") as unknown as HardhatArtifact,
         type: "library",
         solidityType: "JSCConfigurableLib", 
+        solidityInterface: "JSCConfigurableLib", 
         link: "libraries/JSCConfigurableLib.sol:JSCConfigurableLib",
         dependencies: ["JSCRevisionsLib v0.5"]
     },
@@ -50,6 +53,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/libraries/JSCTitleTokenLib.sol/JSCTitleTokenLib.json") as unknown as HardhatArtifact,
         type: "library",
         solidityType: "JSCTitleTokenLib", 
+        solidityInterface: "JSCTitleTokenLib", 
         link: "libraries/JSCTitleTokenLib.sol:JSCTitleTokenLib"
     },
     {
@@ -60,6 +64,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/contracts/production/JSCGovernor.sol/JSCGovernor.json") as unknown as HardhatArtifact,
         type: "contract",
         solidityType: "JSCGovernor", 
+        solidityInterface: "IJSCGovernor", 
         key: "jsc.contracts.governor",
         dependencies: ["JSCRevisionsLib v0.5", "JSCConfigurableLib v0.5"]
     },
@@ -71,6 +76,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/contracts/production/JSCCabinet.sol/JSCCabinet.json") as unknown as HardhatArtifact,
         type: "contract",
         solidityType: "JSCCabinet", 
+        solidityInterface: "IJSCCabinet", 
         key: "jsc.contracts.cabinet",
         dependencies: ["JSCRevisionsLib v0.5", "JSCConfigurableLib v0.5"]
     },
@@ -82,6 +88,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/contracts/production/JSCTitleToken.sol/JSCTitleToken.json") as unknown as HardhatArtifact,
         type: "contract",
         solidityType: "JSCTitleToken", 
+        solidityInterface: "IJSCTitleToken", 
         key: "jsc.contracts.tokens",
         dependencies: ["JSCRevisionsLib v0.5", "JSCConfigurableLib v0.5", "JSCTitleTokenLib v0.5"]
     },
@@ -93,6 +100,7 @@ export const supportedContracts:ContractDefinition[] = [
         loadArtifact: async () => await import("../../artifacts/contracts/production/JSCJurisdiction.sol/JSCJurisdiction.json") as unknown as HardhatArtifact,
         type: "contract",
         solidityType: "JSCJurisdiction", 
+        solidityInterface: "IJSCJurisdiction", 
         dependencies: ["JSCRevisionsLib v0.5", "JSCConfigurableLib v0.5"]
     }
 ]
@@ -100,8 +108,10 @@ export const supportedContracts:ContractDefinition[] = [
 export const contractDefinitionsById:{[name:string]: ContractDefinition} = {}
 export const contractDefinitionsByName:{[name:string]: ContractDefinition} = {}
 export const contractDefinitionsBySolidityType:{[name:string]: ContractDefinition} = {}
+export const contractDefinitionsBySolidityInterface:{[name:string]: ContractDefinition} = {}
 supportedContracts.forEach((cd) => {
     contractDefinitionsById[cd.id] = cd
     contractDefinitionsByName[cd.name] = cd
     contractDefinitionsBySolidityType[cd.solidityType] = cd
+    contractDefinitionsBySolidityInterface[cd.solidityInterface] = cd
 })

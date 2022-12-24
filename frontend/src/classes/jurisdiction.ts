@@ -68,6 +68,10 @@ export class Jurisdiction implements IJurisdiction {
     this.contracts = contracts
   }
 
+  static copy(other:IJurisdiction) {
+    return new Jurisdiction(other.name, other.contractId, other.members, other.contracts)
+  }
+
   setName(name:string) {
     this.name = name
   }
@@ -238,7 +242,7 @@ export class Jurisdiction implements IJurisdiction {
   }
 
   /** Builds a list of contracts in the correct deployment order */
-  searchDependencies(c:ContractDefinition, deploymentOrder:ContractDefinition[]) {
+  searchDependencies(c:ContractDefinition, deploymentOrder:ContractDefinition[], ) {
     if (c.dependencies && c.dependencies.length > 0)
       c.dependencies.forEach((d:string) => this.searchDependencies(contractDefinitionsById[d], deploymentOrder))
     if (!deploymentOrder.includes(c))
@@ -259,8 +263,10 @@ export class Jurisdiction implements IJurisdiction {
       // Add the contracts required for this jurisdiction plus their dependencies
       this.contracts.forEach((c:ContractDefinition) => this.searchDependencies(c, deploySteps))
 
-      // Add the jurisdiction itself
-      this.searchDependencies(contractDefinitionsById[this.contractId], deploySteps)
+      // Add the jurisdiction itself. This will be the last contract deployed. 
+      // Note: We are assuming here that the jurisdiction was not already included in the list of contracts.
+      // If it was then it will be deployed twice because we are using a copy of the Jurisdiction ContractDefinition
+      this.searchDependencies({...contractDefinitionsById[this.contractId], name: this.name}, deploySteps)
 
       // Build a list of methods for initializing the contracts
       const initSteps:InitializationMethod[] = [
@@ -280,6 +286,7 @@ export class Jurisdiction implements IJurisdiction {
         console.log("Deploying", step.solidityType)
         const result = await this.deployContract(signer, step, deploymentAddressesByLink)
         l.onDeployed(this, stepCounter/totalSteps, result.definition.solidityType, result.definition.key||"", result.contract.address)
+        await this.save(result.definition.name, result.definition.version, result.definition.solidityInterface, result.contract.address, result.definition.description, await signer.getChainId())
         deploymentsByType[result.definition.solidityType] = result
         if (result.definition.link)
           deploymentAddressesByLink[result.definition.link] = result.contract.address
@@ -309,5 +316,33 @@ export class Jurisdiction implements IJurisdiction {
 
   cancelDeployment() {
     this.continueDeployment = false
+  }
+
+  async save(name:string, version:string, type:string, address:string, description:string, chainId:number) {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        version,
+        interface:type,
+        address,
+        description,
+        chainId
+      })
+    }
+    console.log("Saving", request)
+    await fetch("/api/contracts/save", request)
+      .then((r) => {
+        if (r.status === 200)
+          console.log("Saved")
+        else
+          console.log("Error saving")
+      },
+      (e) => {
+        console.log("Error saving", e)
+      })
   }
 }
