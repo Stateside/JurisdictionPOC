@@ -3,7 +3,7 @@ import { useWeb3React } from '@web3-react/core';
 import { ProposalState } from '@/utils/types';
 import { PreparedProposal } from '@/utils/proposals';
 import { createSampleProposals } from '@/utils/sample-proposals';
-import * as tc from '../../../typechain-types';
+import * as tc from '../../../../typechain-types';
 import { Box, Button, HStack, Select, Text, VStack } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 
