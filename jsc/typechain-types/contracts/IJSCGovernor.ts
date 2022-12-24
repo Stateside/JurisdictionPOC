@@ -132,7 +132,7 @@ export interface IJSCGovernorInterface extends utils.Interface {
     "getStringParameter(string)": FunctionFragment;
     "hasVoted(uint256,address)": FunctionFragment;
     "hashProposal((address,string,bytes)[],bytes32,uint256)": FunctionFragment;
-    "init(address)": FunctionFragment;
+    "init(address,bool)": FunctionFragment;
     "isFrozen()": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
     "isValidRevisionIterator(uint256)": FunctionFragment;
@@ -243,7 +243,7 @@ export interface IJSCGovernorInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "init",
-    values: [PromiseOrValue<string>]
+    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
   encodeFunctionData(
@@ -748,6 +748,7 @@ export interface IJSCGovernor extends BaseContract {
 
     init(
       jurisdiction: PromiseOrValue<string>,
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -902,6 +903,7 @@ export interface IJSCGovernor extends BaseContract {
 
   init(
     jurisdiction: PromiseOrValue<string>,
+    changeOwner: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1052,6 +1054,7 @@ export interface IJSCGovernor extends BaseContract {
 
     init(
       jurisdiction: PromiseOrValue<string>,
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1337,6 +1340,7 @@ export interface IJSCGovernor extends BaseContract {
 
     init(
       jurisdiction: PromiseOrValue<string>,
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1482,6 +1486,7 @@ export interface IJSCGovernor extends BaseContract {
 
     init(
       jurisdiction: PromiseOrValue<string>,
+      changeOwner: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

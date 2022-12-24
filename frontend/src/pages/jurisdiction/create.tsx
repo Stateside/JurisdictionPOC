@@ -1,0 +1,348 @@
+import type { NextPage } from 'next'
+import Head from 'next/head'
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, CircularProgress, CircularProgressLabel, Divider, HStack, Input, Select, Text, useDisclosure, VStack } from '@chakra-ui/react';
+import { ChangeEventHandler, useCallback, useMemo, useRef, useState } from 'react';
+import * as roles from "../../utils/roles"
+import { accountsByAddress } from '@/utils/accounts'
+import DeleteIcon from '@/components/icons/deleteIcon';
+import { Deployments, IMember, Jurisdiction, JurisdictionId } from 'classes/jurisdiction';
+import create from 'zustand'
+import shallow from 'zustand/shallow'
+import useBlockchain from 'hooks/useBlockchain';
+import { ContractDefinition } from '@/utils/standard-contracts';
+
+// Use Zustand for managing state changes to Jurisdiction
+
+interface IJurisdictionState {
+  jurisdiction:Jurisdiction,
+  setName: (name:string) => void,
+  addMember: (member:IMember) => void,
+  removeMember: (index:number) => void,
+  replaceMember: (index:number, member:IMember) => void,
+  addContract: (contract:ContractDefinition) => void,
+  removeContract: (index:number) => void,
+  replaceContract: (index:number, contract:ContractDefinition) => void
+}
+
+/** Create Zustand state with instance of Jurisdiction class and methods to update it */
+const useJurisdiction = create<IJurisdictionState>((set) => ({
+  jurisdiction: Jurisdiction.createDefaultJurisdiciton(),
+  setName: (name:string) => set(state => ({jurisdiction: new Jurisdiction(name, state.jurisdiction.contractId, state.jurisdiction.members, state.jurisdiction.contracts)})),
+  addMember: (member:IMember) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, [...state.jurisdiction.members, member], state.jurisdiction.contracts)})),
+  removeMember: (index:number) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members.filter((_:IMember, i:number) => i !== index), state.jurisdiction.contracts)})),
+  replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members.map((m, i) => i === index ? member : m), state.jurisdiction.contracts)})),
+  addContract: (contract:ContractDefinition) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members, [...state.jurisdiction.contracts, contract])})),
+  removeContract: (index:number) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members, state.jurisdiction.contracts.filter((_, i) => i !== index))})),
+  replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members, state.jurisdiction.contracts.map((c, i) => i === index ? contract : c))}))
+}))
+
+/** Get name for address from accountsByAddress */
+const getNameForAddress = (address:string) => {
+  const address_lc = address.toLowerCase()
+  const acc = accountsByAddress[address_lc]
+  return acc ? acc.name : ""
+}
+
+const greenButtonProps = {_hover: { background: "brand.javaHover" }, variant: 'Header'}
+const invalidMemberAddressProps = { borderColor:"red", color:"red" }
+
+/** Props for RoleSelector component */
+type RoleSelectorProps = {
+  required:boolean
+  value:string
+  isValid:boolean
+  width:string
+  onChange:ChangeEventHandler<HTMLSelectElement>
+}
+
+/** Select component for selecting a role */
+const RoleSelector = (props:RoleSelectorProps) => 
+  <Select
+    placeholder="Role?"
+    bg="white"
+    {...(props.isValid ? {} : invalidMemberAddressProps)}
+    borderWidth={1}
+    required={props.required}
+    value={props.value}
+    width={props.width}
+    onChange={props.onChange}
+  >
+    {roles.rolesArray.map((r:roles.Role) => (<option key={r.id} value={r.friendlyName}>{r.friendlyName}</option>))}
+  </Select>
+
+/** Component for creating a new jurisdiction */
+const CreateJurisdiction: NextPage = () => {
+  const { web3Provider } = useBlockchain();
+  const jurisdiction = useJurisdiction(state => state.jurisdiction, shallow)
+  const setName = useJurisdiction(state => state.setName)
+  const addMember = useJurisdiction(state => state.addMember)
+  const removeMember = useJurisdiction(state => state.removeMember)
+  const replaceMember = useJurisdiction(state => state.replaceMember)
+  const addContract = useJurisdiction(state => state.addContract)
+  const removeContract = useJurisdiction(state => state.removeContract)
+  const replaceContract = useJurisdiction(state => state.replaceContract)
+
+  const { isOpen: isErrorAlertOpen, onOpen: onErrorAlertOpen, onClose: onCloseErrorAlert } = useDisclosure()
+  const cancelErrorRef = useRef<HTMLButtonElement | null>(null)
+  const [deployError, setDeployError] = useState<string>()
+  
+  const { isOpen: isProgressAlertOpen, onOpen: onProgressAlertOpen, onClose: onCloseProgressAlert } = useDisclosure()
+  const cancelProgressRef = useRef<HTMLButtonElement | null>(null)
+  const [progressValue, setProgressValue] = useState<number>(0)
+
+  const [newMemberName, setNewMemberName] = useState("")
+  const [newMemberAddress, setNewMemberAddress] = useState("")
+  const [newMemberRole, setNewMemberRole] = useState<roles.Role>()
+  
+  const updateMemberAddress = useCallback((index: number, m:IMember, value: string): void => {
+    let expectedName:string = getNameForAddress(m.address)
+    let newName:string = getNameForAddress(value)
+    if (m.name !== "" && m.name !== expectedName)
+      newName = m.name
+    replaceMember(index, {...m, address: value, name:newName})
+  }, [replaceMember])
+
+  const updateNewMemberAddress = useCallback((value: string): void => {
+    let expectedName:string = getNameForAddress(newMemberAddress)
+    let newName:string = getNameForAddress(value)
+    if (newMemberName !== "" && newMemberName !== expectedName)
+      newName = newMemberName
+    setNewMemberName(newName)
+    setNewMemberAddress(value)
+  }, [newMemberAddress, newMemberName])
+
+  const isEmptyNewMember = useCallback(():boolean => {
+    return newMemberName === "" && newMemberAddress === "" && newMemberRole === undefined
+  }, [newMemberName, newMemberAddress, newMemberRole])
+
+  const isValidNewMember = useCallback(():boolean => {
+    return newMemberAddress !== "" && 
+      newMemberRole !== undefined &&
+      jurisdiction.isValidAddress(newMemberAddress) && 
+      !jurisdiction.existsMemberAddress(newMemberAddress)
+  }, [newMemberAddress, newMemberRole, jurisdiction.members])
+
+  const addNewMember = useCallback(():void => {
+    if (isValidNewMember() && newMemberRole !== undefined) {
+      addMember({name: newMemberName, address: newMemberAddress, role: newMemberRole})
+      setNewMemberName("")
+      setNewMemberAddress("")
+      setNewMemberRole(undefined)
+    }
+  }, [addMember, newMemberName, newMemberAddress, newMemberRole, isValidNewMember])
+
+  const isValidForm = useCallback(():boolean => {
+    return jurisdiction.isValid() && (isValidNewMember() || isEmptyNewMember()) && web3Provider
+  }, [jurisdiction, isValidNewMember, isEmptyNewMember, web3Provider])
+
+  const deploy = useCallback(async () => {
+    setProgressValue(0)
+    jurisdiction.deploy(web3Provider.getSigner() as any, { onDeployed, onInitialized, onError, onCancelled }).then(
+      (deployments) => console.log("deployments:", deployments)
+    )
+    onProgressAlertOpen()
+  }, [jurisdiction, web3Provider])
+
+  const onClickCancelDeployment = useCallback(() => {
+    if (progressValue < 1)
+      jurisdiction.cancelDeployment()
+    onCloseProgressAlert()
+  }, [onCloseProgressAlert])
+
+  const onDeployed = useCallback(async (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => {
+    setProgressValue(progress)
+    console.log(`deployed: ${key} ${type} at ${address} - progress = ${progress}`)
+  }, [])
+
+  const onInitialized = useCallback(async (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => {
+    setProgressValue(progress)
+    console.log(`initialized: ${key} ${type} at ${address} - progress = ${progress}`)
+  }, [])
+
+  const onError = useCallback(async (jurisdiction:Jurisdiction, msg:string) => {
+    onCloseProgressAlert()
+    setDeployError(msg)
+    onErrorAlertOpen()
+  }, [onCloseProgressAlert, onErrorAlertOpen])
+
+  const onCancelled = useCallback(async (jurisdiction:Jurisdiction, deployments:Deployments) => {
+  }, [onCloseProgressAlert])
+
+  // Memoized components
+  
+  const progressDialog = useMemo(() => (
+    <AlertDialog
+      motionPreset='slideInBottom'
+      isOpen={isProgressAlertOpen}
+      leastDestructiveRef={cancelProgressRef}
+      onClose={onCloseProgressAlert}
+      isCentered
+    >
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+            Deployment in progress
+          </AlertDialogHeader>
+
+          <AlertDialogBody>
+            <HStack>
+              <CircularProgress value={progressValue*100 || 5} color='green.400'>
+                <CircularProgressLabel>{Math.round(progressValue*100) || 5}%</CircularProgressLabel>
+              </CircularProgress>
+              <Text>{progressValue < 1 ? "Deploying your new Jurisdiction. Please check MetaMask for new transactions." : "Deployment complete!"}</Text>
+            </HStack>
+          </AlertDialogBody>
+
+          <AlertDialogFooter>
+            <Button ref={cancelProgressRef} onClick={onClickCancelDeployment}>
+              {progressValue == 1 ? "Close": "Cancel"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  ), [isProgressAlertOpen, onClickCancelDeployment, progressValue])
+
+  const errorDialog = useMemo(() => (
+    <AlertDialog
+      motionPreset='slideInBottom'
+      isOpen={isErrorAlertOpen}
+      leastDestructiveRef={cancelErrorRef}
+      onClose={onCloseErrorAlert}
+      isCentered
+    >
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+            Deployment Error
+          </AlertDialogHeader>
+
+          <AlertDialogBody>
+            {deployError||"Deployment failed"}
+          </AlertDialogBody>
+
+          <AlertDialogFooter>
+            <Button ref={cancelErrorRef} onClick={onCloseErrorAlert}>
+              Close
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  ), [isErrorAlertOpen, onCloseErrorAlert, deployError])
+
+  const nameRow = useMemo(() => (
+    <HStack width="100%">
+      <Text width="20%" fontSize='md'>Jurisdiction Name:</Text>
+      <Input width="80%" value={jurisdiction.name} onChange={(e) => setName(e.target.value)} />
+    </HStack>
+  ), [jurisdiction.name])
+
+  const jurisdictionContractRow = useMemo(() => (
+    <HStack width="100%">
+      <Text width="20%" fontSize='md'>Jurisdiction Contract:</Text>
+      <Select
+        bg="white"
+        borderWidth={1}
+        value={JurisdictionId}
+        width="40%"
+        onChange={() => {}}
+      >
+        <option key={JurisdictionId} value={JurisdictionId}>{JurisdictionId}</option>
+      </Select>
+    </HStack>
+  ), [JurisdictionId])
+
+  const newMemberRow = useMemo(() => (
+    <HStack width="100%">
+      <Input width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)}/>
+      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember()||isEmptyNewMember())?{}:invalidMemberAddressProps} />
+      <RoleSelector isValid={newMemberRole!==undefined||isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName||""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <Button width="15%" {...isValidNewMember()?greenButtonProps:""} onClick={() => addNewMember()}>Add</Button>
+    </HStack>
+    ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
+
+  const membersRow= useMemo(() => (
+    <HStack width="100%" alignItems="start">
+      <Text width="20%" fontSize='md'>Members:</Text>
+      <VStack width="80%" spacing={4}>
+        {jurisdiction.members.map((m:IMember, i:number) => (
+          <HStack width="100%" key={m.address}>
+            <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
+            <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidMemberAddressProps} />
+            <RoleSelector isValid={m.role!==undefined} width="15%" required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
+            <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
+          </HStack>
+        ))}
+        {newMemberRow}
+      </VStack>
+    </HStack>
+  ), [jurisdiction.members, newMemberRow])
+  
+  const contractsRow = useMemo(() => (
+    <HStack width="100%" alignItems="start">
+    <Text width="20%" fontSize='md'>Contracts:</Text>
+    <VStack width="80%" spacing={4}>
+        {jurisdiction.contracts.map((c:ContractDefinition) => (
+          <HStack width="100%" key={c.key}>
+            <Text width="20%" fontSize='md'>{c.key}</Text>
+            <Select
+              bg="white"
+              borderWidth={1}
+              value={c.id}
+              width="40%"
+              onChange={() => {}}
+            >
+              <option key={c.id} value={c.id}>{c.id}</option>
+            </Select>
+
+          </HStack>
+        ))}
+        <HStack width="100%" justifyContent="flex-start">
+          <Button>Add new contract</Button>
+        </HStack>
+      </VStack>
+    </HStack>
+  ), [jurisdiction.contracts, deploy])
+
+  const createButton = useMemo(() => (
+    <HStack width="100%" justifyContent="flex-end">
+      <Button {...(isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()}>Create Jurisdiction</Button>
+    </HStack>
+  ), [isValidForm, deploy])
+
+  const page = useMemo(() => (
+    <Box width="100%">
+      <Head>
+        <title>Create a Jurisdiction</title>
+      </Head>
+      <VStack alignItems="flex-start" spacing={4}>
+        
+        <Divider width="100%" />
+
+        {nameRow}
+        {jurisdictionContractRow}
+
+        <Divider width="100%" />
+
+        {membersRow}
+
+        <Divider width="100%" />
+
+        {contractsRow}
+
+        <Divider width="100%" />
+
+        {createButton}
+
+      </VStack>
+
+      {errorDialog}
+      {progressDialog}
+    </Box>
+  ), [jurisdiction, nameRow, membersRow, contractsRow, createButton, errorDialog, progressDialog])
+
+  return page
+}
+
+export default CreateJurisdiction;

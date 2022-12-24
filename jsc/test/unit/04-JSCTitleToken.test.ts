@@ -64,7 +64,7 @@ describe("JSCTitleToken", async () => {
 
   it('fails on second init()', async function() {
     await expect(await titleToken.isFrozen()).to.equal(false);
-    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address, zeroAddress, 0, zeroAddress, 0)).to.be.revertedWith('init() cannot be called twice');
+    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address, zeroAddress, 0, zeroAddress, 0, zeroAddress)).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('correctly checks interfaces IDs', async function() {

@@ -110,7 +110,7 @@ export interface JSCCabinetInterface extends utils.Interface {
     "getStringParameter(string)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "init(address,address[],bytes32[])": FunctionFragment;
+    "init(address,address[],bytes32[],address)": FunctionFragment;
     "isFrozen()": FunctionFragment;
     "isMember(address)": FunctionFragment;
     "isValidParameterIterator(uint256)": FunctionFragment;
@@ -249,7 +249,8 @@ export interface JSCCabinetInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>[],
-      PromiseOrValue<BytesLike>[]
+      PromiseOrValue<BytesLike>[],
+      PromiseOrValue<string>
     ]
   ): string;
   encodeFunctionData(functionFragment: "isFrozen", values?: undefined): string;
@@ -791,6 +792,7 @@ export interface JSCCabinet extends BaseContract {
       jurisdiction: PromiseOrValue<string>,
       accounts: PromiseOrValue<string>[],
       roles: PromiseOrValue<BytesLike>[],
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -952,6 +954,7 @@ export interface JSCCabinet extends BaseContract {
     jurisdiction: PromiseOrValue<string>,
     accounts: PromiseOrValue<string>[],
     roles: PromiseOrValue<BytesLike>[],
+    newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1109,6 +1112,7 @@ export interface JSCCabinet extends BaseContract {
       jurisdiction: PromiseOrValue<string>,
       accounts: PromiseOrValue<string>[],
       roles: PromiseOrValue<BytesLike>[],
+      newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1408,6 +1412,7 @@ export interface JSCCabinet extends BaseContract {
       jurisdiction: PromiseOrValue<string>,
       accounts: PromiseOrValue<string>[],
       roles: PromiseOrValue<BytesLike>[],
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1568,6 +1573,7 @@ export interface JSCCabinet extends BaseContract {
       jurisdiction: PromiseOrValue<string>,
       accounts: PromiseOrValue<string>[],
       roles: PromiseOrValue<BytesLike>[],
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

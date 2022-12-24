@@ -17,20 +17,37 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
    * @dev See {IJSCJurisdiction-init}.
    */
   function init(
-    string calldata name,
-    string[] calldata contractKeys, 
-    address[] calldata contracts, 
-    string[] calldata descriptions) external onlyOwner {
-    require(contractKeys.length == contracts.length, "Inconsistent argument lengths");
+      string calldata name,
+      string[] calldata contractKeys, 
+      address[] calldata contracts, 
+      string[] calldata descriptions,
+      bool changeOwner) external onlyOwner {
+    require(contractKeys.length == contracts.length, "Inconsistent arguments");
+    require(contractKeys.length == descriptions.length, "Inconsistent arguments");
+    require(contractKeys.length >= 3, "Insufficient contracts specified");
     require(bytes(jurisdictionName).length == 0, "init() cannot be called twice");
 
     jurisdictionName = name;
     JSCConfigurable._init();
     
-    for (uint i = 0; i < contracts.length; i++)
+    for (uint i = 0; i < contracts.length; i++) {
+      require(contracts[i] != address(0), "zero contract");
       _addAddressParameter(clib.AddressParameter(contractKeys[i], descriptions[i], contracts[i]));
+    }
     _addParameterRevisions();
     _addJurisdictionRevisions();
+
+    if (changeOwner) {
+      // Change ownership of this contract to the governor
+      address governor = getAddressParameter("jsc.contracts.governor");
+      require(governor != address(0), "Governor contract not found");
+      transferOwnership(governor);
+    }
+
+    // These calls will revert the transaction if any contract is missing
+    getAddressParameter("jsc.contracts.governor");
+    getAddressParameter("jsc.contracts.tokens");
+    getAddressParameter("jsc.contracts.cabinet");
   }
 
   /**

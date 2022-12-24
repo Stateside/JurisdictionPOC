@@ -23,7 +23,8 @@ const deployJSCJurisdictionInit: DeployFunction = async function (hre: HardhatRu
       "Manage the members of the jurisdiction and their roles",
       "Track proposals and votes",
       "Manage tokens, their owners, and the transfer of ownership"
-    ]
+    ],
+    true
   )
 }
 

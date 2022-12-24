@@ -8,16 +8,24 @@ const deployJSCJurisdictionInit: DeployFunction = async function (hre: HardhatRu
   const { deployments } = hre
   const { log, get } = deployments
   const jscJurisdictionContract = await get("unittests_JSCJurisdiction")
+  const jscCabinetContract = await get("unittests_JSCCabinet")
+  const jscTitleTokenContract = await get("unittests_JSCTitleTokenTest")
+  const jscGovernorContract = await get("unittests_JSCGovernor")
   
   log("----------------------------------------------------")
   log(`Initializing unittests_JSCJurisdiction...`)
   const jscJurisdiction = await ethers.getContractAt("JSCJurisdiction", jscJurisdictionContract.address)
   await jscJurisdiction.init(
-    "TestJurisdiction",
-    ["jsc.contracts.mycontract"],
-    [jscJurisdiction.address],
-    ["This is a test contract address"]
-  )
+    "UnitTestJurisdiction",
+    ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
+    [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address],
+    [
+      "Manage the members of the jurisdiction and their roles",
+      "Track proposals and votes",
+      "Manage tokens, their owners, and the transfer of ownership"
+    ],
+    false
+ )
 }
 
 export default deployJSCJurisdictionInit

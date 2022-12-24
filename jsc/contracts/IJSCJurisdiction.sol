@@ -22,7 +22,8 @@ interface IJSCJurisdiction is IJSCConfigurable {
         string calldata name,
         string[] calldata contractKeys,
         address[] calldata contracts,
-        string[] calldata descriptions
+        string[] calldata descriptions,
+        bool changeOwner
     ) external;
 
     /** Returns the address of the contract with the given name */

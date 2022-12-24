@@ -67,7 +67,7 @@ describe("JSCGovernor", async () => {
 
   it('fails on second init()', async function() {
     await expect(await governor.isFrozen()).to.equal(false);
-    await expect(governor.init(jurisdiction.address)).to.be.revertedWith('init() cannot be called twice');
+    await expect(governor.init(jurisdiction.address, false)).to.be.revertedWith('init() cannot be called twice');
   });
 
   const checkVotingParams = (actual:tc.IJSCGovernor.VotingParamsStructOutput|undefined, expected:tc.IJSCGovernor.VotingParamsStruct) => {

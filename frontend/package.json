@@ -7,7 +7,11 @@
     "dev80": "next dev -p 80",
     "build": "next build",
     "start": "next start",
-    "typechain": "cp -r ../jsc/typechain-types .",
+    "clean-typechain-types": "rm -rf typechain-types",
+    "update-typechain-types": "cp -r ../jsc/typechain-types .",
+    "clean-artifacts": "rm -rf artifacts",
+    "update-artifacts": "cp -r ../jsc/artifacts .",
+    "update-all": "npm-run-all clean-typechain-types update-typechain-types clean-artifacts update-artifacts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -39,6 +43,7 @@
     "@types/react-dom": "18.0.1",
     "eslint": "^8.28.0",
     "eslint-config-next": "12.1.5",
+    "npm-run-all": "^4.1.5",
     "typescript": "4.6.3"
   }
 }

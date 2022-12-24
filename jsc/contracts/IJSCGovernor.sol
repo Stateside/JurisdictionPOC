@@ -108,7 +108,7 @@ interface IJSCGovernor is IJSCConfigurable {
     /**
      * @dev Initializes the contract by connecting it to a jurisdiction
      */
-    function init(address jurisdiction) external;
+    function init(address jurisdiction, bool changeOwner) external;
 
     /**
      * @dev Returns the address of the jurisdicion of which this contract is a part

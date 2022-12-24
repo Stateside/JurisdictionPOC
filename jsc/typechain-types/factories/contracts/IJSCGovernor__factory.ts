@@ -691,6 +691,11 @@ const _abi = [
         name: "jurisdiction",
         type: "address",
       },
+      {
+        internalType: "bool",
+        name: "changeOwner",
+        type: "bool",
+      },
     ],
     name: "init",
     outputs: [],
