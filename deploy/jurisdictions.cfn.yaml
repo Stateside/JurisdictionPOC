@@ -33,8 +33,83 @@ Parameters:
     ConstraintDescription: Invalid SSL Certificate ARN. It must be in this arn:aws:acm:<region>:<account-id>:certificate/<resourceid> format.
     Description: Provide ARN of the SSL certificate imported in AWS Certificate Manager. It must be in this arn:aws:acm:<region>:<account-id>:certificate/<resourceid> format.
     Default: arn:aws:acm:us-east-1:397500405596:certificate/cf52d399-0f8b-4417-a8ae-d916f1363775
+  RDSName:
+    Default: MyDatabase
+    Description: The database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  RDSUser:
+    Description: The database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  RDSPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Type: String
+    MinLength: '1'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]+'
+    ConstraintDescription: must contain only alphanumeric characters.
+  RDSDialect:
+    Description: Database type for RDS
+    Type: String
+    Default: mysql
+  RDSAllocatedStorage:
+    Default: '20'
+    Description: The size of the database (Gb)
+    Type: Number
+    MinValue: '20'
+    MaxValue: '64'
+    ConstraintDescription: must be between 2 and 32Gb.
+  RDSInstanceClass:
+    Description: The database instance type
+    Type: String
+    Default: db.t2.micro
+  AvailabilityZone:
+    Description: The availability zone where the database and EC2 instance will be located
+    Type: String
+    Default: us-east-1d
 
 Resources:
+
+# Database
+  RDSSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable MySQL access via port 3306
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBName: !Ref RDSName
+      MasterUsername: !Ref RDSUser
+      MasterUserPassword: !Ref RDSPassword
+      Engine: MySQL
+      DBInstanceClass: !Ref RDSInstanceClass
+      StorageType: gp2
+      PubliclyAccessible: True
+      AllocatedStorage: !Ref RDSAllocatedStorage
+      DBInstanceIdentifier: !Sub ${AWS::StackName}-JurisdictionDB
+      AvailabilityZone: !Ref AvailabilityZone
+      DBSecurityGroups:
+      - !Ref RDSSecurityGroup
+      Tags:
+      - Key: Name
+        Value: Master Database for Jurisdictions App
 
 # Server
   WebServerInstanceRole:
@@ -149,13 +224,14 @@ Resources:
                 chmod +x ./install
                 ./install auto
                 rm install
-      IamInstanceProfile: !Ref WebServerInstanceRoleInstanceProfile
+      IamInstanceProfile: !Sub ${WebServerInstanceRoleInstanceProfile.Arn}
     Properties:
+      AvailabilityZone: !Ref AvailabilityZone
       ImageId: !Ref AMI
       InstanceType: !Ref InstanceType
       SecurityGroups:
         - !Ref WebServerSecurityGroup
-      IamInstanceProfile: !Ref WebServerInstanceRoleInstanceProfile
+      IamInstanceProfile: !Sub ${WebServerInstanceRoleInstanceProfile}
       KeyName: !Ref KeyName
       Tags:
         - Key: "Type"
@@ -413,7 +489,10 @@ Resources:
           - HEAD
           - GET
           - OPTIONS
+          - PUT
           - POST
+          - PATCH
+          - DELETE
           Compress: true
           TargetOriginId: WebOrigin
           ForwardedValues:
@@ -463,7 +542,49 @@ Resources:
           MinimumProtocolVersion: TLSv1.2_2019
           SslSupportMethod: sni-only
 
+# Parameter Store
+  RdsDialectParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: DB_DIALECT
+      Type: String
+      Value: !Ref RDSDialect
+  RdsDomainNameParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: DB_HOST
+      Type: String
+      Value: !Sub ${RDSInstance.Endpoint.Address}
+  RdsNameParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: DB_NAME
+      Type: String
+      Value: !Sub ${RDSName}
+  RdsUsernameParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: DB_USER
+      Type: String
+      Value: !Sub ${RDSUser}
+  RdsPasswordParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: DB_PASS
+      Type: String
+      Value: !Sub ${RDSPassword}
+  RdsPortParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: DB_PORT
+      Type: String
+      Value: !Sub ${RDSInstance.Endpoint.Port}
+
 Outputs:
   WebURL:
     Description: The URL of the Jurisdiction website
     Value: !Sub http://${WebServerInstance.PublicDnsName}:3000
+  RDSInstance:
+    Description: The host of the Jurisdiction database
+    Value: !Sub http://${RDSInstance.Endpoint.Address}:${RDSInstance.Endpoint.Port}
+
