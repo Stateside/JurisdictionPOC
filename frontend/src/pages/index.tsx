@@ -4,7 +4,7 @@ import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { Spinner, Text } from '@chakra-ui/react'
+import { Link, Spinner, Text } from '@chakra-ui/react'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
@@ -78,7 +78,7 @@ const Home: NextPage = () => {
                     jurisdictions.map((jurisdiction: any) => {
                       return (
                         <Tag key={jurisdiction.address}>
-                          <Text variant={'15/20'}>{`${jurisdiction.name} v${jurisdiction.version}`}</Text>
+                          <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`}>{`${jurisdiction.name} v${jurisdiction.version}`}</Link>
                         </Tag>
                       )
                     }) :
@@ -98,7 +98,7 @@ const Home: NextPage = () => {
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
                 <Tag>
-                  <Text variant={'15/20'}>{`001-456-87654-E`}</Text>
+                  <Link variant={'13/16'} href='/property-details'>{`001-456-87654-E`}</Link>
                 </Tag>
               </Box>
             </Flex>
