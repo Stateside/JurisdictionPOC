@@ -4,8 +4,9 @@ import { Button, HStack, Input, VStack } from '@chakra-ui/react';
 import { accountsByAddress } from '@/utils/accounts';
 import DeleteIcon from '@/components/icons/deleteIcon';
 
-import * as tc from '../../../typechain-types';
-import * as roles from '../../utils/roles';
+import * as tc from '../../../../typechain-types';
+import * as roles from '../../../utils/roles';
+import { useRouter } from 'next/router';
 
 type Role = {
   name: string;
@@ -23,20 +24,40 @@ const Members = () => {
   const { library } = useWeb3React();
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet | undefined>(undefined);
+  const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction | undefined>(undefined);
+  const router = useRouter();
 
   useEffect(() => {
-    if (library)
+    if (library && router.query.id)
       try {
-        setJSCCabinet(
-          tc.IJSCCabinet__factory.connect(
-            '0x0165878A594ca255338adfa4d48449f69242Eb8F',
+        setJSCJurisdiction(
+          tc.IJSCJurisdiction__factory.connect(
+            router.query.id as string,
             library
           )
         );
       } catch (err) {
         setLocalError(err as string);
       }
-  }, [library]);
+  }, [library, router.query.id]);
+
+  useEffect(() => {
+    if (library && jscJurisdiction) {
+      const connect = async () => {
+        try {
+          setJSCCabinet(
+            tc.IJSCCabinet__factory.connect(
+              await jscJurisdiction.getAddressParameter('jsc.contracts.cabinet'),
+              library
+            )
+          );
+        } catch (err) {
+          setLocalError(err as string);
+        }
+      }
+      connect()
+    }
+  }, [library, jscJurisdiction]);
 
   useEffect(() => {
     if (jscCabinet) {
@@ -71,10 +92,10 @@ const Members = () => {
     <VStack alignItems="flex-start">
       {members.map((member: MemberInfo) => {
         return (
-          <HStack width="100%">
-            <Input width="20%" value={member.name} />
-            <Input width="40%" value={member.account} />
-            <Input width="20%" value={member.role.name} />
+          <HStack width="100%" key={member.account}>
+            <Input width="20%" value={member.name} onChange={() => {}}/>
+            <Input width="40%" value={member.account} onChange={() => {}}/>
+            <Input width="20%" value={member.role.name} onChange={() => {}}/>
             <Button width="20%" rightIcon={<DeleteIcon height={7} width={7} />}>
               Remove
             </Button>
