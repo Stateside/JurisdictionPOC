@@ -1,4 +1,7 @@
- import { Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
+
+if (!process.env.DB_HOST)
+    throw new Error('DB_HOST is not defined')
 
 const dialect = process.env.DB_DIALECT || 'mysql';
 const host = process.env.DB_HOST || 'localhost';
@@ -7,7 +10,8 @@ const username = process.env.DB_USERNAME
 const password = process.env.DB_PASSWORD
 const database = process.env.DB_DATABASE
 const url = `${dialect}://${username}:${password}@${host}:${port}/${database}`
-console.log(url)
+console.log(`Connecting to ${url}`)
+
 const sequelize = new Sequelize(url)
 
 sequelize.authenticate()

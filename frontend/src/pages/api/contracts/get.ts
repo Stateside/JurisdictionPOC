@@ -15,7 +15,6 @@ export type ContractInfo = {
 
 const FOLDER = "../jsc/deployments/localhost/"
 const mergeArtifacts = async (jurisdictions:ContractInfo[]) => {
-  console.log(process.cwd())
   const merged:ContractInfo[] = [...jurisdictions]
   const chainId = fs.readFileSync(FOLDER + ".chainId", "utf8")
 

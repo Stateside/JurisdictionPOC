@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Button, HStack, Select, VStack } from '@chakra-ui/react';
+import { Button, HStack, Text, VStack } from '@chakra-ui/react';
 import { ParamType } from '@/utils/types';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';
 import ReloadIcon from '@/components/icons/reloadIcon';
-import * as tc from '../../../typechain-types';
+import * as tc from '../../../../typechain-types';
 
 type JurisdictionContracts = {
   name: string;
@@ -16,27 +16,23 @@ type JurisdictionContracts = {
 const Contracts = () => {
   const [localError, setLocalError] = useState<string>('');
   const { active, library, error, connector } = useWeb3React();
-  const router = useRouter();
-  
   const [contracts, setContracts] = useState<JurisdictionContracts[]>([]);
-
-  const [jscJurisdiction, setJSCJurisdiction] = useState<
-    tc.IJSCJurisdiction | undefined
-  >(undefined);
+  const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction | undefined>(undefined);
+  const router = useRouter();
 
   useEffect(() => {
-    if (library)
+    if (library && router.query.id)
       try {
         setJSCJurisdiction(
           tc.IJSCJurisdiction__factory.connect(
-            '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+            router.query.id as string,
             library
           )
         );
-      } catch (err: any) {
-        setLocalError(err ? err.toString() : 'unknown error');
+      } catch (err) {
+        setLocalError(err as string);
       }
-  }, [library]);
+  }, [library, router.query.id]);
 
   useEffect(() => {
     if (jscJurisdiction) {
@@ -69,9 +65,7 @@ const Contracts = () => {
         return (
           <HStack width="100%" key={contract.address}>
             <p style={{ width: '20%' }}>{contract.name}</p>
-            <Select width="30%" placeholder="Select">
-              <option value="option1">Option 1</option>
-            </Select>
+            <Text>{contract.address}</Text>
             <Button width="20%" rightIcon={<ReloadIcon height={7} width={7} />}>
               Replace
             </Button>
