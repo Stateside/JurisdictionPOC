@@ -10,6 +10,7 @@ import create from 'zustand'
 import shallow from 'zustand/shallow'
 import useBlockchain from 'hooks/useBlockchain';
 import { ContractDefinition } from '@/utils/standard-contracts';
+import { ethers } from 'ethers';
 
 // Use Zustand for managing state changes to Jurisdiction
 
@@ -27,13 +28,13 @@ interface IJurisdictionState {
 /** Create Zustand state with instance of Jurisdiction class and methods to update it */
 const useJurisdiction = create<IJurisdictionState>((set) => ({
   jurisdiction: Jurisdiction.createDefaultJurisdiciton(),
-  setName: (name:string) => set(state => ({jurisdiction: new Jurisdiction(name, state.jurisdiction.contractId, state.jurisdiction.members, state.jurisdiction.contracts)})),
-  addMember: (member:IMember) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, [...state.jurisdiction.members, member], state.jurisdiction.contracts)})),
-  removeMember: (index:number) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members.filter((_:IMember, i:number) => i !== index), state.jurisdiction.contracts)})),
-  replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members.map((m, i) => i === index ? member : m), state.jurisdiction.contracts)})),
-  addContract: (contract:ContractDefinition) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members, [...state.jurisdiction.contracts, contract])})),
-  removeContract: (index:number) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members, state.jurisdiction.contracts.filter((_, i) => i !== index))})),
-  replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: new Jurisdiction(state.jurisdiction.name, state.jurisdiction.contractId, state.jurisdiction.members, state.jurisdiction.contracts.map((c, i) => i === index ? contract : c))}))
+  setName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, name})})),
+  addMember: (member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: [...state.jurisdiction.members, member]})})),
+  removeMember: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.filter((_:IMember, i:number) => i !== index)})})),
+  replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m)})})),
+  addContract: (contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: [...state.jurisdiction.contracts, contract]})})),
+  removeContract: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index)})})),
+  replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c)})}))
 }))
 
 /** Get name for address from accountsByAddress */
@@ -72,7 +73,7 @@ const RoleSelector = (props:RoleSelectorProps) =>
 
 /** Component for creating a new jurisdiction */
 const CreateJurisdiction: NextPage = () => {
-  const { web3Provider } = useBlockchain();
+  const { chainId, web3Provider } = useBlockchain();
   const jurisdiction = useJurisdiction(state => state.jurisdiction, shallow)
   const setName = useJurisdiction(state => state.setName)
   const addMember = useJurisdiction(state => state.addMember)
@@ -93,7 +94,7 @@ const CreateJurisdiction: NextPage = () => {
   const [newMemberName, setNewMemberName] = useState("")
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<roles.Role>()
-  
+
   const updateMemberAddress = useCallback((index: number, m:IMember, value: string): void => {
     let expectedName:string = getNameForAddress(m.address)
     let newName:string = getNameForAddress(value)

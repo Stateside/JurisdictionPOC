@@ -16,8 +16,7 @@ const showJSCTitleToken: NextPage = () => {
   const { active, account, library, error } = useWeb3React();
   const lastError = useMemo(() => localError || error?.cause as unknown as string, [localError, error])
   const router = useRouter()
-  const [tokens, loading, errorTitleToken] = useJSCTitleToken(router.query.address)
-
+  const {tokens, loading} = useJSCTitleToken(router.query.address as string)
 
   return (
     <Box width='100%' >
