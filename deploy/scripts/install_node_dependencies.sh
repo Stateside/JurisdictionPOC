@@ -26,5 +26,5 @@ echo "Building frontend"
 cd /opt/jurisdictions/frontend
 rm -rf node_modules
 yarn
-yarn typechain
+yarn update-all
 yarn build
