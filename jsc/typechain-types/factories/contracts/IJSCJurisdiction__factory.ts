@@ -384,6 +384,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getJurisdictionName",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "string",

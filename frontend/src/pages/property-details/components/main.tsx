@@ -40,11 +40,14 @@ export default function PropertyDetailsMain() {
     propertyId,
     propertyInfo,
     propertyImages,
+    propertyMapInfo,
     activeOffers,
     showSellModal,
     showAcceptOfferModal,
     buildActivity,
   } = useContext(PropertyDetailsContext);
+  const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo}&z=12&amp;output=embed`;
+
   return (
     <>
       <Grid
@@ -107,11 +110,9 @@ export default function PropertyDetailsMain() {
           </Grid>
         </GridItem>
         <GridItem colSpan={5}>
-          <Image
-            src="/imgs/placeholder-gmap.png"
-            alt="Google Maps"
-            borderRadius="3px"
-          />
+          {propertyMapInfo.length > 0 &&
+            <div className="iframe-rwd" dangerouslySetInnerHTML={{ __html: `<iframe width="425" height="350" src="${mapUrl}" />`}} />
+          }
         </GridItem>
         <GridItem colSpan={12}>
           <Grid templateColumns={gridLayout}>
@@ -119,7 +120,7 @@ export default function PropertyDetailsMain() {
               return (
                 <GridItem colSpan={12 / propertyImages.length} key={i}>
                   <Image
-                    src={`/imgs/mock-property-images/${src}`}
+                    src={src}
                     alt={alt}
                     borderRadius="3px"
                   />

@@ -94,6 +94,10 @@ describe("JSCJurisdiction", async () => {
     )
   })
 
+  it("checks the jurisdiction name", async () => {
+    await expect(await jurisdiction.getJurisdictionName()).to.be.equal("UnitTestJurisdiction");
+  });
+
   it("iterates jurisdiction revisions", async () => {
     await expect(await jurisdiction.revisionCount()).to.be.equal(6);
     

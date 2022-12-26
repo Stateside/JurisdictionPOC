@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "titleId": "title-1",
+      "ownerInfo": {
+        "id": "0123456789-01",
+        "fname": "Bob",
+        "lname": ""
+      },
+      "url": "/title-1/",
+      "locationData": {
+        "address": "unnamed road, Guanacaste Province, Veintisiete de Abril, 50303 Costa Rica",
+        "gpsCoordinates": {
+          "n": {
+            "d": 10,
+            "m": 17,
+            "s": 40.099
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 85,
+            "m": 42,
+            "s": 43.2
+          }
+        },
+        "lat": 10.294472,
+        "lon": -85.712
+      },
+      "images": [
+        {
+          "src": "/imgs/mock-property-images/property-image-01.png",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "/imgs/mock-property-images/property-image-02.png",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "/imgs/mock-property-images/property-image-03.png",
+          "alt": "some image alt description"
+        }
+      ]
+    }
+  ]
+}

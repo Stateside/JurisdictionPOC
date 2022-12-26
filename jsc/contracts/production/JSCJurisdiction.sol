@@ -147,4 +147,8 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
   function _onUpdateAddressParameter(string memory name, address oldValue, address newValue) internal override {
     emit ContractReplaced(name, oldValue, newValue);
   }
+
+  function getJurisdictionName() external view returns (string memory) {
+    return jurisdictionName;
+  }
 }
