@@ -44,13 +44,15 @@ export interface ObjectHashInterface {
 
 export interface Offer {
   buyer: string
-  amount: number
+  amount: number,
+  buyerAddress: string,
 }
 
 export interface Token {
   tokenId: string
   titleId: string
   owner: string
+  ownerAddress: string
   ownerFrozen: boolean
   frozen: boolean
   offersToBuy: Offer[]

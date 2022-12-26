@@ -2,11 +2,7 @@ import { useContext } from 'react';
 import {
   Grid,
   GridItem,
-  Input,
-  Select,
   FormLabel,
-  FormErrorMessage,
-  FormControl,
 } from '@chakra-ui/react';
 import { PropertyDetailsContext } from '../PropertyDetailsContext';
 
@@ -54,7 +50,7 @@ export default function AcceptOfferModal({ gridLayout }: AcceptOfferModal) {
           borderColor={'brand.grey.grey02'}
         >
           <GridItem colSpan={3}>Amount:</GridItem>
-          <GridItem colSpan={6}>{offerSelected.price}</GridItem>
+          <GridItem colSpan={6}>{offerSelected.price} ETH</GridItem>
         </Grid>
         <Grid templateColumns={gridLayout} pt={30} pb={30}>
           <GridItem colSpan={3}>Expires after:</GridItem>

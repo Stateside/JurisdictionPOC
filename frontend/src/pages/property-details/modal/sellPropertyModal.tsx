@@ -81,6 +81,7 @@ export default function SellPropertyModal({ gridLayout }: SellPropertyModal) {
                 placeholder="ETH Price"
                 min="1"
                 max="9999"
+                autoComplete='off'
                 required
                 value={sellFormModel.fields.price.value}
                 onChange={handleInputChange}
@@ -112,6 +113,7 @@ export default function SellPropertyModal({ gridLayout }: SellPropertyModal) {
               <Input
                 name="recipientAddress"
                 placeholder="Recipient wallet address"
+                autoComplete='off'
                 required
                 value={sellFormModel.fields.recipientAddress.value}
                 onChange={handleInputChange}

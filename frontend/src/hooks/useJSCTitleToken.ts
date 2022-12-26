@@ -5,16 +5,18 @@ import { ethers } from 'ethers'
 import { Token, Offer } from '@/interfaces/index'
 import * as tc from "../../typechain-types"
 
-type ReturnType = {
-    tokens: Token[],
+type useJSCTitleTokenHook = {
+    tokens:Token[],
+    tokenJurisdictionAddress: string,
     loading: boolean,
-    error: string
-}
-const useJSCTitleToken = (jscTitleTokenConnect: string):ReturnType => {
+    error: string};
+
+const useJSCTitleToken = (jscTitleTokenConnect: string):useJSCTitleTokenHook => {
     const [error, setError] = useState<string>("")
     const [loading, setLoading] = useState(true)
     const { active, account, library } = useWeb3React()
-    const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken | undefined>(undefined)
+    const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken | undefined>(undefined);
+    const [tokenJurisdictionAddress, setTokenJurisdictionAddress] = useState<string>('');
     const [tokens, setTokens] = useState<Token[]>([])
 
     useEffect(() => {
@@ -30,16 +32,19 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):ReturnType => {
         if (jscTitleToken) {
             const loadData = async () => {
                 let _tokens: Token[] = []
-                const tokensCounter = await getTotalTokens(jscTitleToken)
+                const tokensCounter = await getTotalTokens(jscTitleToken);
+                const tkJurisdictionAddress = await jscTitleToken.getJurisdiction();
                 for (let ti = 0; ti < tokensCounter; ti++) {
                     const t = await jscTitleToken.tokenAtIndex(ti)
-                    const { owner, titleId, offersToBuy, offersToSell, frozen, url } = await getTokenData(jscTitleToken, t)
+                    const { owner, titleId, offersToBuy, offersToSell, frozen, url } = await getTokenData(jscTitleToken, t);
+                    const accountInfo = accountsByAddress[owner.toLowerCase()];
 
                     _tokens.push({
                         tokenId: t.toHexString(),
                         titleId,
                         frozen,
-                        owner: accountsByAddress[owner.toLowerCase()].name,
+                        owner: accountInfo.name,
+                        ownerAddress: accountInfo.address,
                         ownerFrozen: await jscTitleToken.isFrozenOwner(owner),
                         url,
                         offersToBuy,
@@ -47,6 +52,7 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):ReturnType => {
                     })
                 }
                 setTokens(_tokens)
+                setTokenJurisdictionAddress(tkJurisdictionAddress);
                 setLoading(false)
             }
             loadData().catch(err => {
@@ -57,7 +63,7 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):ReturnType => {
         }
     }, [jscTitleToken])
 
-    return {tokens, loading, error};
+    return {tokens, tokenJurisdictionAddress, loading, error};
 };
 
 const getOffersToBuy = async (jscTitleToken: any, token: any) => {
@@ -65,9 +71,11 @@ const getOffersToBuy = async (jscTitleToken: any, token: any) => {
     const offersToBuyCount = (await jscTitleToken.countOffersToBuy(token)).toNumber()
     for (let obi = 0; obi < offersToBuyCount; obi++) {
         const ob = await jscTitleToken.offerToBuyAtIndex(token, obi);
+        const accountInfo = accountsByAddress[ob.buyer.toLowerCase()];
         offersToBuy.push({
             amount: parseFloat(ethers.utils.formatEther(ob.amount)),
-            buyer: accountsByAddress[ob.buyer.toLowerCase()].name,
+            buyer: accountInfo.name,
+            buyerAddress: accountInfo.address
         })
     }
     return offersToBuy;
@@ -78,9 +86,11 @@ const getOffersToSell = async (jscTitleToken: any, token: any) => {
     const osCount = (await jscTitleToken.countOffersToSell(token)).toNumber()
     for (let osi = 0; osi < osCount; osi++) {
         const os = await jscTitleToken.offerToSellAtIndex(token, osi);
+        const accountInfo = accountsByAddress[os.buyer.toLowerCase()];
         offersToSell.push({
             amount: parseFloat(ethers.utils.formatEther(os.amount)),
-            buyer: accountsByAddress[os.buyer.toLowerCase()].name,
+            buyer: accountInfo.name,
+            buyerAddress: accountInfo.address
         })
     }
     return offersToSell;
