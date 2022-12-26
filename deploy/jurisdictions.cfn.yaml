@@ -218,6 +218,10 @@ Resources:
         - !Ref WebServerSecurityGroup
       IamInstanceProfile: !Sub ${WebServerInstanceRoleInstanceProfile}
       KeyName: !Ref KeyName
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: '64'
       Tags:
         - Key: "Type"
           Value: "WebServer"
