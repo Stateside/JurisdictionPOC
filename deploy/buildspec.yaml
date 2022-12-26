@@ -1,0 +1,57 @@
+version: 0.2
+
+env:
+  variables:
+    NODE_ENV: production
+  parameter-store:
+    DB_HOST: DB_HOST
+    DB_PORT: DB_PORT
+    DB_USERNAME: DB_USER
+    DB_PASSWORD: DB_PASS
+    DB_DATABASE: DB_NAME
+
+cache:
+  paths:
+    - node_modules/**/*
+
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - npm install -g yarn
+      - yarn -v
+  pre_build:
+    on-failure: ABORT
+    commands:
+      - cd jsc
+      - yarn install --pure-lockfile --production --silent
+      - cd ..
+      - cd frontend
+      - yarn install --pure-lockfile --production --silent
+      - cd ..
+  build:
+    on-failure: ABORT
+    commands:
+      - cd jsc
+      - yarn hardhat compile
+      - cd ..
+      - cd frontend
+      - yarn update-all
+      - yarn build
+      - cd ..
+  post_build:
+    commands:
+      - |+
+        cat << END > .env
+        DB_HOST = ${DB_HOST}
+        DB_PORT = ${DB_PORT}
+        DB_USERNAME = ${DB_USERNAME}
+        DB_PASSWORD = ${DB_PASSWORD}
+        DB_DATABASE = ${DB_DATABASE}
+        END
+      - rm -rf node_modules/
+artifacts:
+  files:
+    - "**/*"

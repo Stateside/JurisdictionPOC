@@ -51,5 +51,9 @@ For more commands see the [migrations documentation](https://typeorm.io/migratio
 
 # To do
 
-1. Add name, symbol, maintainer, registry to titletoken
-2. Add new jurisdicitons, contracts, and users to the database
+. Connect to db using IAM roles in production
+. Check if Jurisdiction still exists
+. Keep HH running or persist new transactions or replace with a different implementation
+. Add name, symbol, maintainer, registry to titletoken
+. Add new jurisdicitons, contracts, and users to the database
+. Use loader component
