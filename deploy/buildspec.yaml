@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    NODE_ENV: production
+    NODE_ENV: development
   parameter-store:
     DB_HOST: DB_HOST
     DB_PORT: DB_PORT
@@ -26,10 +26,10 @@ phases:
     on-failure: ABORT
     commands:
       - cd jsc
-      - yarn install --pure-lockfile --production --silent
+      - yarn install --pure-lockfile --silent
       - cd ..
       - cd frontend
-      - yarn install --pure-lockfile --production --silent
+      - yarn install --pure-lockfile --silent
       - cd ..
   build:
     on-failure: ABORT
