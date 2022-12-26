@@ -1,6 +1,14 @@
-import { Token, jscJurisdictionInfo, thisPropertyInfo, locationData } from '@/utils/types';
+import { Token, jscJurisdictionInfo, thisPropertyInfo, locationData, gpsCoordinates, degreeCoordinates, imageInfo } from '@/utils/types';
 import { PropertyInfo, OfferInfo } from '@/utils/property-types';
 
+function padCoordinates(num:number):string {
+  const len = num > 0 ? 9 : 10;
+
+  return String(num).padEnd(len, '0'); 
+}
+// ------------------------------------------------------
+// Public Methods
+// ------------------------------------------------------
 export const getTokenByTitleId = (
   tokens: Token[],
   titleId: string
@@ -8,8 +16,30 @@ export const getTokenByTitleId = (
   return tokens.find(({ titleId: tokenTitleId }) => tokenTitleId === titleId);
 };
 
-export const buildLocationString = (locationData: locationData, format: 'degree' | 'cartesian') => {
+export const buildDegreeString = (gpsCoordinates: gpsCoordinates):string => {
+  let result = '';
 
+  for (const cardinalDir in gpsCoordinates) {
+    if (Object.prototype.hasOwnProperty.call(gpsCoordinates, cardinalDir)) {
+      const coordData:degreeCoordinates = gpsCoordinates[cardinalDir];
+      const coordDataLen = Object.keys(coordData).length;
+
+      if (coordDataLen > 0) {
+        result += ` ${coordData.d}°${coordData.m}'${coordData.s}"`;
+      }
+    }
+  }
+
+  return result.trimStart();
+}
+
+export const buildCartesianString = (lat: number, lon: number):string => {
+  
+  return `${padCoordinates(lat)},${padCoordinates(lon)}`;
+}
+
+export const buildLocationString = (locationData: locationData, format: 'degree' | 'cartesian'): string => {
+  return format === 'degree' ? buildDegreeString(locationData.gpsCoordinates) : buildCartesianString(locationData.lat, locationData.lon);
 }
 
 export const buildTokenInfoByTitleId = (
@@ -19,7 +49,7 @@ export const buildTokenInfoByTitleId = (
   titleId: string
 ): PropertyInfo[] => {
   const theToken = getTokenByTitleId(tokens, titleId);
-  const propertyLocation = buildLocationString(thisPropertyInfo.locationData, 'degree');
+  const propertyLocationInDegrees = buildLocationString(thisPropertyInfo.locationData, 'degree');
   let propertyInfo: PropertyInfo[] = [];
 
   if (theToken) {
@@ -47,8 +77,8 @@ export const buildTokenInfoByTitleId = (
       },
       {
         infoLabel: 'Location:',
-        infoValue: '10°17\'40.1"N 85°42\'43.2"W', // TODO: here we need to fetch from somewhere else for this?
-      },
+        infoValue: propertyLocationInDegrees,
+      }
     ];
   }
 
@@ -88,6 +118,9 @@ const TokenFactory = {
   getTokenByTitleId,
   buildTokenInfoByTitleId,
   buildActiveOffersInfoByTitleId,
+  buildLocationString,
+  buildDegreeString,
+  buildCartesianString,
 };
 
 export default TokenFactory;

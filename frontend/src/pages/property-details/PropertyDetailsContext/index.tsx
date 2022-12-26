@@ -24,6 +24,7 @@ import {
 import {
   buildTokenInfoByTitleId,
   buildActiveOffersInfoByTitleId,
+  buildLocationString,
 } from '@/model/factories/TokenFactory';
 import {getTokenInformationByTitleId} from '@/model/services/DataService';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken';
@@ -71,6 +72,7 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   propertyId: '',
   propertyInfo: [],
   propertyImages: [],
+  propertyMapInfo: '',
   sellFormModel: newSellFormModel,
   actionButtonDisabled: true,
   selectedOfferIndex: null,
@@ -116,21 +118,9 @@ const PropertyDetailsProvider = function ({
     useState<SellFormModel>(newSellFormModel);
   const [propertyId, setPropertyId] = useState<string>('');
   const [propertyInfo, setPropertyInfo] = useState<PropertyInfo[]>([]);
-  const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([
-    {
-      src: 'property-image-01.png',
-      alt: 'some image alt description',
-    },
-    {
-      src: 'property-image-02.png',
-      alt: 'some image alt description',
-    },
-    {
-      src: 'property-image-03.png',
-      alt: 'some image alt description',
-    },
-  ]);
+  const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [activeOffers, setActiveOffers] = useState<OfferInfo[]>([]);
+  const [propertyMapInfo, setPropertyMapInfo] = useState<string>('');
   const [selectedOfferIndex, setSelectedOfferIndex] = useState<number | null>(
     null
   );
@@ -345,9 +335,7 @@ const PropertyDetailsProvider = function ({
   useEffect(() => {
     if (!loading && jscJurisdictionInfo) {
       const thisPropertyInfo = getTokenInformationByTitleId(titleId);
-
-      console.log(thisPropertyInfo);
-      
+      const cartesianMapInfo = buildLocationString(thisPropertyInfo.locationData, 'cartesian');
       const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, thisPropertyInfo, titleId);
       const buyOffersInfo = buildActiveOffersInfoByTitleId(
         tokens,
@@ -358,6 +346,8 @@ const PropertyDetailsProvider = function ({
       setPropertyId(titleId);
       setPropertyInfo(tokenInfo);
       setActiveOffers(buyOffersInfo);
+      setPropertyImages(thisPropertyInfo.images);
+      setPropertyMapInfo(cartesianMapInfo);
     }
   }, [loading, jscJurisdictionInfo]);
 
@@ -368,6 +358,7 @@ const PropertyDetailsProvider = function ({
         propertyId,
         propertyInfo,
         propertyImages,
+        propertyMapInfo,
         isOpen,
         sellFormModel,
         actionButtonDisabled,

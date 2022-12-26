@@ -60,6 +60,7 @@ export type PropertyDetailsContextDefoTypes = {
   propertyId: string;
   propertyInfo: PropertyInfo[];
   propertyImages: PropertyImage[];
+  propertyMapInfo: string;
   sellFormModel: SellFormModel;
   actionButtonDisabled: boolean;
   selectedOfferIndex: number | null;

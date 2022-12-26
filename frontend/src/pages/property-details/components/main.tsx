@@ -44,11 +44,14 @@ export default function PropertyDetailsMain() {
     propertyId,
     propertyInfo,
     propertyImages,
+    propertyMapInfo,
     activeOffers,
     showSellModal,
     showAcceptOfferModal,
     buildActivity,
   } = useContext(PropertyDetailsContext);
+  const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo}&z=12&amp;output=embed`;
+
   return (
     <>
       <Grid
@@ -111,13 +114,9 @@ export default function PropertyDetailsMain() {
           </Grid>
         </GridItem>
         <GridItem colSpan={5}>
-          <div className="iframe-rwd">
-            <iframe
-              width="425"
-              height="350"
-              src="https://maps.google.com/maps?q=10.294472,-85.712000&z=12&amp;output=embed"
-            ></iframe>
-          </div>
+          {propertyMapInfo.length > 0 &&
+            <div className="iframe-rwd" dangerouslySetInnerHTML={{ __html: `<iframe width="425" height="350" src="${mapUrl}" />`}} />
+          }
         </GridItem>
         <GridItem colSpan={12}>
           <Grid templateColumns={gridLayout}>

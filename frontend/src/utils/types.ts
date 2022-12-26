@@ -59,9 +59,9 @@ export type ownerInfo = {
 }
 
 export type degreeCoordinates = {
-  d?: Number,
-  m?: Number,
-  s?: Number
+  d?: number,
+  m?: number,
+  s?: number
 }
 
 export type gpsCoordinates = {
@@ -71,12 +71,13 @@ export type gpsCoordinates = {
 export type locationData = {
   address: string,
   gpsCoordinates: gpsCoordinates,
-  lat: Number,
-  lon: Number
+  lat: number,
+  lon: number
 }
 
 export type imageInfo = {
-  [key: string]: string
+  src: string,
+  alt: string
 }
 
 export type thisPropertyInfo = {
