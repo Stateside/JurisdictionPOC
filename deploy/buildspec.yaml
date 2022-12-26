@@ -45,13 +45,18 @@ phases:
     commands:
       - |+
         cat << END > .env
+        NEXT_PUBLIC_CHAIN_ID=40506
+        NEXT_PUBLIC_CHAIN_NAME=Staging
+        NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-hh.stateside.agency
+        NEXT_PUBLIC_CHAIN_BLOCK_EXPLORER_URL=
+        NEXT_PUBLIC_CHAIN_SYMBOL=ETH
+        NEXT_PUBLIC_CHAIN_DECIMALS=18        
         DB_HOST = ${DB_HOST}
         DB_PORT = ${DB_PORT}
         DB_USERNAME = ${DB_USERNAME}
         DB_PASSWORD = ${DB_PASSWORD}
         DB_DATABASE = ${DB_DATABASE}
         END
-      - rm -rf node_modules/
 artifacts:
   files:
     - "**/*"
