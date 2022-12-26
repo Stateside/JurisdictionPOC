@@ -31,4 +31,10 @@ interface IJSCJurisdiction is IJSCConfigurable {
         external
         view
         returns (address);
+
+    /** Returns the name of this jurisdiction */
+    function getJurisdictionName()
+        external
+        view
+        returns (string memory);
 }

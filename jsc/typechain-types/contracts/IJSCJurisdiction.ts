@@ -96,6 +96,7 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
     "getAddressParameter(string)": FunctionFragment;
     "getBoolParameter(string)": FunctionFragment;
     "getContractAddress(string)": FunctionFragment;
+    "getJurisdictionName()": FunctionFragment;
     "getNumberParameter(string)": FunctionFragment;
     "getRevisionByName(string)": FunctionFragment;
     "getStringParameter(string)": FunctionFragment;
@@ -120,6 +121,7 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
       | "getAddressParameter"
       | "getBoolParameter"
       | "getContractAddress"
+      | "getJurisdictionName"
       | "getNumberParameter"
       | "getRevisionByName"
       | "getStringParameter"
@@ -153,6 +155,10 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getContractAddress",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getJurisdictionName",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getNumberParameter",
@@ -236,6 +242,10 @@ export interface IJSCJurisdictionInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getContractAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getJurisdictionName",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -565,6 +575,8 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getJurisdictionName(overrides?: CallOverrides): Promise<[string]>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -664,6 +676,8 @@ export interface IJSCJurisdiction extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getJurisdictionName(overrides?: CallOverrides): Promise<string>;
+
   getNumberParameter(
     name: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -754,6 +768,8 @@ export interface IJSCJurisdiction extends BaseContract {
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    getJurisdictionName(overrides?: CallOverrides): Promise<string>;
 
     getNumberParameter(
       name: PromiseOrValue<string>,
@@ -977,6 +993,8 @@ export interface IJSCJurisdiction extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getJurisdictionName(overrides?: CallOverrides): Promise<BigNumber>;
+
     getNumberParameter(
       name: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1066,6 +1084,10 @@ export interface IJSCJurisdiction extends BaseContract {
 
     getContractAddress(
       name: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getJurisdictionName(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

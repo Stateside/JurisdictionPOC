@@ -25,6 +25,7 @@ import {
   buildTokenInfoByTitleId,
   buildActiveOffersInfoByTitleId,
 } from '@/model/factories/TokenFactory';
+import {getTokenInformationByTitleId} from '@/model/services/DataService';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken';
 import useJSCJurisdiction from '@/hooks/useJSCJurisdiction';
 import {jscJurisdictionInfo} from '@/utils/types';
@@ -343,7 +344,11 @@ const PropertyDetailsProvider = function ({
 
   useEffect(() => {
     if (!loading && jscJurisdictionInfo) {
-      const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, titleId);
+      const thisPropertyInfo = getTokenInformationByTitleId(titleId);
+
+      console.log(thisPropertyInfo);
+      
+      const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, thisPropertyInfo, titleId);
       const buyOffersInfo = buildActiveOffersInfoByTitleId(
         tokens,
         titleId,

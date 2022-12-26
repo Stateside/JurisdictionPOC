@@ -51,3 +51,38 @@ export type jscJurisdictionInfo = {
 }
 
 export type fetchJurisdictionInfo = (tokenJurisdictionAddress:string) => Promise<jscJurisdictionInfo>;
+
+export type ownerInfo = {
+  id: string,
+  fname: string,
+  lname: string
+}
+
+export type degreeCoordinates = {
+  d?: Number,
+  m?: Number,
+  s?: Number
+}
+
+export type gpsCoordinates = {
+  [key: string]: degreeCoordinates,
+}
+
+export type locationData = {
+  address: string,
+  gpsCoordinates: gpsCoordinates,
+  lat: Number,
+  lon: Number
+}
+
+export type imageInfo = {
+  [key: string]: string
+}
+
+export type thisPropertyInfo = {
+  titleId: string,
+  ownerInfo: ownerInfo,
+  url: string,
+  locationData: locationData,
+  images: imageInfo[]
+}

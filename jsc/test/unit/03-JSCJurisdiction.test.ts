@@ -92,7 +92,11 @@ describe("JSCJurisdiction", async () => {
       ],
       [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address]
     )
-  })
+  });
+
+  it("checks the jurisdiction name", async () => {
+    await expect(await jurisdiction.getJurisdictionName()).to.be.equal("TestJurisdiction");
+  });
 
   it("iterates jurisdiction revisions", async () => {
     await expect(await jurisdiction.revisionCount()).to.be.equal(6);

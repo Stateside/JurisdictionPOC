@@ -1,4 +1,4 @@
-import { Token, jscJurisdictionInfo } from '@/utils/types';
+import { Token, jscJurisdictionInfo, thisPropertyInfo, locationData } from '@/utils/types';
 import { PropertyInfo, OfferInfo } from '@/utils/property-types';
 
 export const getTokenByTitleId = (
@@ -8,18 +8,21 @@ export const getTokenByTitleId = (
   return tokens.find(({ titleId: tokenTitleId }) => tokenTitleId === titleId);
 };
 
+export const buildLocationString = (locationData: locationData, format: 'degree' | 'cartesian') => {
+
+}
+
 export const buildTokenInfoByTitleId = (
   tokens: Token[],
   jscJurisdictionInfo: jscJurisdictionInfo,
+  thisPropertyInfo: thisPropertyInfo,
   titleId: string
 ): PropertyInfo[] => {
   const theToken = getTokenByTitleId(tokens, titleId);
+  const propertyLocation = buildLocationString(thisPropertyInfo.locationData, 'degree');
   let propertyInfo: PropertyInfo[] = [];
 
   if (theToken) {
-    // const accountInfo = accountsByAddress[theToken.ownerAddress.toLowerCase()];
-
-    // console.log(accountInfo, theToken); // use JSCJurisdiction here and find the name of the jurisdiction
     propertyInfo = [
       {
         infoLabel: 'Owner:',
@@ -27,7 +30,7 @@ export const buildTokenInfoByTitleId = (
       },
       {
         infoLabel: 'Jurisdiction:',
-        infoValue: jscJurisdictionInfo.name, // TODO: here we need to fetch from somewhere else for this?
+        infoValue: jscJurisdictionInfo.name,
       },
       {
         infoLabel: 'Token ID:',
@@ -40,7 +43,7 @@ export const buildTokenInfoByTitleId = (
       {
         infoLabel: 'URI:',
         infoValue:
-          theToken.url || `https://www.stateside.agency/tokenid="${titleId}"`, // TODO: here we need to fetch from somewhere else for this?
+        thisPropertyInfo.url,
       },
       {
         infoLabel: 'Location:',
