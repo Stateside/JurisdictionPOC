@@ -44,7 +44,7 @@ phases:
   post_build:
     commands:
       - |+
-        cat << END > .env
+        cat << END > frontend/.env
         NEXT_PUBLIC_CHAIN_ID=40506
         NEXT_PUBLIC_CHAIN_NAME=Staging
         NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-hh.stateside.agency
