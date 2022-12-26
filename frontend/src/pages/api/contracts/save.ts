@@ -1,4 +1,4 @@
-import db from '../../../db/db'
+import { db } from '../../../db/db'
 import { DeployedContract } from "../../../db/entities/DeployedContract";
 import { NextApiRequest, NextApiResponse } from "next";
 

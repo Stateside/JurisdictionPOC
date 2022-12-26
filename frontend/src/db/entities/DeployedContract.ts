@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
-@Entity("deployed_contracts")
+@Entity()
 export class DeployedContract {
   constructor(init?:Partial<DeployedContract>) {
     Object.assign(this, init)
