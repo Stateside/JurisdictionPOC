@@ -5,6 +5,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "strictPropertyInitialization" : false,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -15,6 +16,8 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": "./src", 
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "paths": {
       "@/components/*": ["components/*"],
       "@/styles/*": ["styles/*"],

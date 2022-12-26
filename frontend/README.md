@@ -19,4 +19,3 @@ In a separate terminal window:
 
 1. Add name, symbol, maintainer, registry to titletoken
 2. Add new jurisdicitons, contracts, and users to the database
-3. List database jurisdictions in dashboard
