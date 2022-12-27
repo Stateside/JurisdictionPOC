@@ -133,7 +133,7 @@ export class Jurisdiction implements IJurisdiction {
 
   static createDefaultJurisdiciton():Jurisdiction {
     return new Jurisdiction(
-      "My Jurisdiction",
+      "Our Jurisdiction",
       JurisdictionId,
       [],
       supportedContracts.filter((c:ContractDefinition) => c.key !== undefined),

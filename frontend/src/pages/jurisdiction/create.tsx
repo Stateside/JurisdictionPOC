@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, CircularProgress, CircularProgressLabel, Divider, HStack, Input, Select, Text, useDisclosure, VStack } from '@chakra-ui/react';
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, CircularProgress, CircularProgressLabel, Divider, HStack, Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure, VStack } from '@chakra-ui/react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as roles from "../../utils/roles"
 import DeleteIcon from '@/components/icons/deleteIcon';
@@ -69,13 +69,17 @@ const CreateJurisdiction: NextPage = () => {
   const router = useRouter()
   const { chainId, web3Provider } = useBlockchain();
   const jurisdiction = useJurisdiction(state => state.jurisdiction, shallow)
-  const setName = useJurisdiction(state => state.setName)
+  const setJurisdictionName = useJurisdiction(state => state.setName)
   const addMember = useJurisdiction(state => state.addMember)
   const removeMember = useJurisdiction(state => state.removeMember)
   const replaceMember = useJurisdiction(state => state.replaceMember)
   const addContract = useJurisdiction(state => state.addContract)
   const removeContract = useJurisdiction(state => state.removeContract)
   const replaceContract = useJurisdiction(state => state.replaceContract)
+
+  const [titleTokenName, setTitleTokenName] = useState("Our Properties")
+  const [titleTokenSymbol, setTitleTokenSymbol] = useState("OUR")
+  const [titleTokenURI, setTitleTokenURI] = useState(location.protocol + "//" + location.host + "/api/tokens/")
 
   const { isOpen: isErrorAlertOpen, onOpen: onErrorAlertOpen, onClose: onCloseErrorAlert } = useDisclosure()
   const cancelErrorRef = useRef<HTMLButtonElement | null>(null)
@@ -269,10 +273,10 @@ const CreateJurisdiction: NextPage = () => {
     </AlertDialog>
   ), [isErrorAlertOpen, onCloseErrorAlert, deployError])
 
-  const nameRow = useMemo(() => (
+  const jurisdictionNameRow = useMemo(() => (
     <HStack width="100%">
       <Text width="20%" fontSize='md'>Jurisdiction Name:</Text>
-      <Input width="80%" value={jurisdiction.name} onChange={(e) => setName(e.target.value)} />
+      <Input width="80%" value={jurisdiction.name} onChange={(e) => setJurisdictionName(e.target.value)} />
     </HStack>
   ), [jurisdiction.name])
 
@@ -291,6 +295,27 @@ const CreateJurisdiction: NextPage = () => {
     </HStack>
   ), [JurisdictionId])
 
+  const titleTokenNameRow = useMemo(() => (
+    <HStack width="100%">
+      <Text width="20%" fontSize='md'>Title Token Name:</Text>
+      <Input width="80%" value={titleTokenName} onChange={(e) => setTitleTokenName(e.target.value)} />
+    </HStack>
+  ), [titleTokenName])
+
+  const titleTokenSymbolRow = useMemo(() => (
+    <HStack width="100%">
+      <Text width="20%" fontSize='md'>Title Token Symbol:</Text>
+      <Input width="80%" value={titleTokenSymbol} onChange={(e) => setTitleTokenSymbol(e.target.value)} />
+    </HStack>
+  ), [titleTokenSymbol])
+
+  const titleTokenURIRow = useMemo(() => (
+    <HStack width="100%">
+      <Text width="20%" fontSize='md'>Title Token URI:</Text>
+      <Input width="80%" value={titleTokenURI} onChange={(e) => setTitleTokenURI(e.target.value)} />
+    </HStack>
+  ), [titleTokenURI])
+
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
       <Input width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)}/>
@@ -301,46 +326,40 @@ const CreateJurisdiction: NextPage = () => {
     ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
 
   const membersRow= useMemo(() => (
-    <HStack width="100%" alignItems="start">
-      <Text width="20%" fontSize='md'>Members:</Text>
-      <VStack width="80%" spacing={4}>
-        {jurisdiction.members.map((m:IMember, i:number) => (
-          <HStack width="100%" key={m.address}>
-            <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
-            <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidMemberAddressProps} />
-            <RoleSelector isValid={m.role!==undefined} width="15%" required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
-            <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
-          </HStack>
-        ))}
-        {newMemberRow}
-      </VStack>
-    </HStack>
+    <VStack spacing={4}>
+      {jurisdiction.members.map((m:IMember, i:number) => (
+        <HStack width="100%" key={m.address}>
+          <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
+          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidMemberAddressProps} />
+          <RoleSelector width="15%" isValid={m.role!==undefined} required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
+          <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
+        </HStack>
+      ))}
+      {newMemberRow}
+    </VStack>
   ), [jurisdiction.members, newMemberRow])
   
   const contractsRow = useMemo(() => (
-    <HStack width="100%" alignItems="start">
-    <Text width="20%" fontSize='md'>Contracts:</Text>
-    <VStack width="80%" spacing={4}>
-        {jurisdiction.contracts.map((c:ContractDefinition) => (
-          <HStack width="100%" key={c.key}>
-            <Text width="20%" fontSize='md'>{c.key}</Text>
-            <Select
-              bg="white"
-              borderWidth={1}
-              value={c.id}
-              width="40%"
-              onChange={() => {}}
-            >
-              <option key={c.id} value={c.id}>{c.id}</option>
-            </Select>
+    <VStack spacing={4}>
+      {jurisdiction.contracts.map((c:ContractDefinition) => (
+        <HStack width="100%" key={c.key}>
+          <Text width="20%" fontSize='md'>{c.key}</Text>
+          <Select
+            bg="white"
+            borderWidth={1}
+            value={c.id}
+            width="80%"
+            onChange={() => {}}
+          >
+            <option key={c.id} value={c.id}>{c.id}</option>
+          </Select>
 
-          </HStack>
-        ))}
-        <HStack width="100%" justifyContent="flex-start">
-          <Button onClick={async () => Jurisdiction.saveMemberInfo(jurisdiction.members)}>Add new contract</Button>
         </HStack>
-      </VStack>
-    </HStack>
+      ))}
+      <HStack width="100%" justifyContent="flex-start">
+        <Button onClick={async () => Jurisdiction.saveMemberInfo(jurisdiction.members)}>Add new contract</Button>
+      </HStack>
+    </VStack>
   ), [jurisdiction.contracts, deploy])
 
   const createButton = useMemo(() => (
@@ -354,31 +373,37 @@ const CreateJurisdiction: NextPage = () => {
       <Head>
         <title>Create a Jurisdiction</title>
       </Head>
-      <VStack alignItems="flex-start" spacing={4}>
-        
-        <Divider width="100%" />
+      <Tabs variant="enclosed">
+        <TabList>
+          <Tab>Configuration</Tab>
+          <Tab>Members</Tab>
+          <Tab>Contracts</Tab>
+        </TabList>
 
-        {nameRow}
-        {jurisdictionContractRow}
-
-        <Divider width="100%" />
-
-        {membersRow}
-
-        <Divider width="100%" />
-
-        {contractsRow}
-
-        <Divider width="100%" />
-
-        {createButton}
-
-      </VStack>
-
+        <TabPanels>
+          <TabPanel>
+            <VStack alignItems="flex-start" spacing={4}>        
+              {jurisdictionNameRow}
+              {jurisdictionContractRow}
+              {titleTokenNameRow}
+              {titleTokenSymbolRow}
+              {titleTokenURIRow}
+            </VStack>
+          </TabPanel>
+          <TabPanel>
+            {membersRow}
+          </TabPanel>
+          <TabPanel>
+            {contractsRow}
+        </TabPanel>
+        </TabPanels>
+      </Tabs>
+      <Divider width="100%" marginBottom="1em"/>
+      {createButton}
       {errorDialog}
       {progressDialog}
     </Box>
-  ), [jurisdiction, nameRow, membersRow, contractsRow, createButton, errorDialog, progressDialog])
+  ), [jurisdiction, jurisdictionNameRow, titleTokenNameRow, titleTokenSymbolRow, titleTokenURIRow, membersRow, contractsRow, createButton, errorDialog, progressDialog])
 
   return page
 }
