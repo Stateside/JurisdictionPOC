@@ -1,0 +1,62 @@
+version: 0.2
+
+env:
+  variables:
+    NODE_ENV: development
+  parameter-store:
+    DB_HOST: DB_HOST
+    DB_PORT: DB_PORT
+    DB_USERNAME: DB_USER
+    DB_PASSWORD: DB_PASS
+    DB_DATABASE: DB_NAME
+
+cache:
+  paths:
+    - node_modules/**/*
+
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - npm install -g yarn
+      - yarn -v
+  pre_build:
+    on-failure: ABORT
+    commands:
+      - cd jsc
+      - yarn install --pure-lockfile --silent
+      - cd ..
+      - cd frontend
+      - yarn install --pure-lockfile --silent
+      - cd ..
+  build:
+    on-failure: ABORT
+    commands:
+      - cd jsc
+      - yarn hardhat compile
+      - cd ..
+      - cd frontend
+      - yarn update-all
+      - yarn build
+      - cd ..
+  post_build:
+    commands:
+      - |+
+        cat << END > frontend/.env
+        NEXT_PUBLIC_CHAIN_ID=40506
+        NEXT_PUBLIC_CHAIN_NAME=Staging
+        NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-hh.stateside.agency
+        NEXT_PUBLIC_CHAIN_BLOCK_EXPLORER_URL=
+        NEXT_PUBLIC_CHAIN_SYMBOL=ETH
+        NEXT_PUBLIC_CHAIN_DECIMALS=18        
+        DB_HOST = ${DB_HOST}
+        DB_PORT = ${DB_PORT}
+        DB_USERNAME = ${DB_USERNAME}
+        DB_PASSWORD = ${DB_PASSWORD}
+        DB_DATABASE = ${DB_DATABASE}
+        END
+artifacts:
+  files:
+    - "**/*"

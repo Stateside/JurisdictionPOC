@@ -77,15 +77,6 @@ Parameters:
 Resources:
 
 # Database
-  RDSSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Enable MySQL access via port 3306
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: 0.0.0.0/0
   RDSInstance:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Snapshot
@@ -101,8 +92,6 @@ Resources:
       AllocatedStorage: !Ref RDSAllocatedStorage
       DBInstanceIdentifier: !Sub ${AWS::StackName}-JurisdictionDB
       AvailabilityZone: !Ref AvailabilityZone
-      DBSecurityGroups:
-      - !Ref RDSSecurityGroup
       Tags:
       - Key: Name
         Value: Master Database for Jurisdictions App
@@ -229,6 +218,10 @@ Resources:
         - !Ref WebServerSecurityGroup
       IamInstanceProfile: !Sub ${WebServerInstanceRoleInstanceProfile}
       KeyName: !Ref KeyName
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 64
       Tags:
         - Key: "Type"
           Value: "WebServer"
@@ -273,6 +266,52 @@ Resources:
                 - codestar-connections:*
               Resource:
                 - "*"
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub CodeBuildRole-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codebuild.amazonaws.com"
+          Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-web-build-service-role-logs-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Resource: "*"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactBucket}*"
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:GetBucketAcl"
+                  - "s3:GetBucketLocation"
+              -
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${AWS::StackName}-web-build-project-*"
+                Action:
+                  - "codebuild:CreateReportGroup"
+                  - "codebuild:CreateReport"
+                  - "codebuild:UpdateReport"
+                  - "codebuild:BatchPutTestCases"
+                  - "codebuild:BatchPutCodeCoverages"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
   CodeDeployServiceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -371,6 +410,22 @@ Resources:
                   - !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${JurisdictionCloudFront}"
                 Action:
                   - cloudfront:CreateInvalidation
+  WebBuild:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: !Sub ${AWS::StackName}-web-build-project
+      Description: CodeBuild project to build website
+      ServiceRole: !Ref CodeBuildRole
+      TimeoutInMinutes: 5
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: deploy/buildspec.yaml
+      Environment:
+        Type: "LINUX_CONTAINER"
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+      Artifacts:
+        Type: CODEPIPELINE
   InvalidationBuildProject:
     Type: "AWS::CodeBuild::Project"
     Properties:
@@ -429,7 +484,24 @@ Resources:
               OutputArtifacts:
                 - Name: SourceArtifact
 
-        # Stage 2:  Deploy to server
+        # Stage 2:  Run build with buildspec.yaml
+        - Name: WebBuild
+          Actions:
+            - Name: Web-Build
+              RunOrder: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName:  !Ref WebBuild
+              OutputArtifacts:
+                - Name: BuildArtifact
+
+        # Stage 3:  Deploy to server
         - Name: Deploy
           Actions:
             - Name: Deploy
@@ -443,11 +515,11 @@ Resources:
                 ApplicationName: !Sub jurisdictions-${AWS::StackName}
                 DeploymentGroupName: !Sub jurisdictions-${AWS::StackName}
               InputArtifacts:
-                - Name: SourceArtifact
+                - Name: BuildArtifact
               Region: !Sub ${AWS::Region}
               Namespace: DeployVariables
 
-        # Stage 3:  Invalidate CloudFront cache
+        # Stage 4:  Invalidate CloudFront cache
         - Name: InvalidateCache
           Actions:
             - Name: InvalidateCache
@@ -496,6 +568,23 @@ Resources:
             Cookies:
               Forward: none
           ViewerProtocolPolicy: redirect-to-https
+#        CacheBehaviors:
+#        - AllowedMethods:
+#          - DELETE
+#          - GET
+#          - HEAD
+#          - OPTIONS
+#          - PATCH
+#          - POST
+#          - PUT
+#          TargetOriginId: WebOrigin
+#          ForwardedValues:
+#            QueryString: true
+#            Cookies:
+#              Forward: none
+#          ViewerProtocolPolicy: redirect-to-https
+#          MinTTL: '50'
+#          PathPattern: images1/*.jpg
         PriceClass: PriceClass_100
         ViewerCertificate:
           AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
