@@ -15,13 +15,14 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
   })
 
   const contractsRepo = (await db()).getRepository(DeployedContract)
+  let savedContract:DeployedContract|undefined = undefined
   try {
-    await contractsRepo.save(newItem)
+    savedContract = await contractsRepo.save(newItem)
   } catch (err) {
     console.error("Error saving jurisdiction", err)
   }
   
-  res.send(newItem);
+  res.send(savedContract);
 }
 
 export default save
