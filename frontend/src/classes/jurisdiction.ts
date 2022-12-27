@@ -39,7 +39,10 @@ export interface IMember {
 }
 
 export interface IJurisdiction {
-  name: string
+  jurisdictionName: string
+  titleTokenName: string
+  titleTokenSymbol: string
+  titleTokenURI: string
   contractId: string
   members: IMember[]
   contracts: ContractDefinition[]
@@ -55,25 +58,31 @@ export const JurisdictionId = "JSCJurisdiction v0.5"
  * This class describes the content of a Jurisdiction being created in the frontend plus the code needed to deploy it
  */
 export class Jurisdiction implements IJurisdiction {
-  name: string
+  jurisdictionName: string
   contractId: string
   members: IMember[]
   contracts: ContractDefinition[]
+  titleTokenName: string
+  titleTokenSymbol: string
+  titleTokenURI: string
   continueDeployment: boolean = false
 
-  constructor(name:string, contractId:string, members:IMember[], contracts:ContractDefinition[]) {
-    this.name = name
+  constructor(name:string, contractId:string, members:IMember[], contracts:ContractDefinition[], titleTokenName:string, titleTokenSymbol:string, titleTokenURI:string) {
+    this.jurisdictionName = name
     this.contractId = contractId
     this.members = members
     this.contracts = contracts
+    this.titleTokenName = titleTokenName
+    this.titleTokenSymbol = titleTokenSymbol
+    this.titleTokenURI = titleTokenURI
   }
 
   static copy(other:IJurisdiction) {
-    return new Jurisdiction(other.name, other.contractId, other.members, other.contracts)
+    return new Jurisdiction(other.jurisdictionName, other.contractId, other.members, other.contracts, other.titleTokenName, other.titleTokenSymbol, other.titleTokenURI)
   }
 
   setName(name:string) {
-    this.name = name
+    this.jurisdictionName = name
   }
   
   addMember(m:IMember) {
@@ -128,15 +137,18 @@ export class Jurisdiction implements IJurisdiction {
   }
 
   isValid():boolean {
-    return this.name.length > 0 && this.contractId !== "" && this.contracts.length >= 3
+    return this.jurisdictionName.length > 0 && this.contractId !== "" && this.contracts.length >= 3
   }
 
-  static createDefaultJurisdiciton():Jurisdiction {
+  static createDefaultJurisdiction():Jurisdiction {
     return new Jurisdiction(
       "Our Jurisdiction",
       JurisdictionId,
       [],
       supportedContracts.filter((c:ContractDefinition) => c.key !== undefined),
+      "Our Title Token",
+      "OTT",
+      "https://jurisdictions.stateside.agency/api/tokens/"
     )
   }
     
@@ -225,7 +237,7 @@ export class Jurisdiction implements IJurisdiction {
     const childContracts = this.contracts.filter((c:ContractDefinition) => c.key !== undefined)
 
     await instance.init(
-      this.name,
+      this.jurisdictionName,
       childContracts.map((c:ContractDefinition) => c.key||""),
       childContracts.map((c:ContractDefinition) => Object.values(deployments).find((d:DeploymentResult) => d.definition.key === c.key)?.contract.address || ""),
       childContracts.map((c:ContractDefinition) => c.description),
@@ -263,7 +275,7 @@ export class Jurisdiction implements IJurisdiction {
       // Add the jurisdiction itself. This will be the last contract deployed. 
       // Note: We are assuming here that the jurisdiction was not already included in the list of contracts.
       // If it was then it will be deployed twice because we are using a copy of the Jurisdiction ContractDefinition
-      this.searchDependencies({...contractDefinitionsById[this.contractId], name: this.name}, deploySteps)
+      this.searchDependencies({...contractDefinitionsById[this.contractId], name: this.jurisdictionName}, deploySteps)
 
       // Build a list of methods for initializing the contracts
       const initSteps:{name:string, func:InitializationMethod}[] = [

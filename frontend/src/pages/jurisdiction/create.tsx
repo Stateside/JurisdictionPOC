@@ -16,7 +16,12 @@ import { useRouter } from 'next/router';
 
 interface IJurisdictionState {
   jurisdiction:Jurisdiction,
-  setName: (name:string) => void,
+  modified: boolean,
+  reset: () => void,
+  setJurisdictionName: (name:string) => void,
+  setTitleTokenName: (name:string) => void,
+  setTitleTokenSymbol: (symbol:string) => void,
+  setTitleTokenURI: (uri:string) => void,
   addMember: (member:IMember) => void,
   removeMember: (index:number) => void,
   replaceMember: (index:number, member:IMember) => void,
@@ -25,16 +30,21 @@ interface IJurisdictionState {
   replaceContract: (index:number, contract:ContractDefinition) => void
 }
 
-/** Create Zustand state with instance of Jurisdiction class and methods to update it */
+/** Create Zustand state with instance of Jurisdiction class and methods to update it. This lets us optimize the rendering */
 const useJurisdiction = create<IJurisdictionState>((set) => ({
-  jurisdiction: Jurisdiction.createDefaultJurisdiciton(),
-  setName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, name})})),
-  addMember: (member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: [...state.jurisdiction.members, member]})})),
-  removeMember: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.filter((_:IMember, i:number) => i !== index)})})),
-  replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m)})})),
-  addContract: (contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: [...state.jurisdiction.contracts, contract]})})),
-  removeContract: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index)})})),
-  replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c)})}))
+  jurisdiction: Jurisdiction.createDefaultJurisdiction(),
+  modified: false,
+  reset: () => set(state => ({jurisdiction: Jurisdiction.createDefaultJurisdiction(), modified: false})),
+  setJurisdictionName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, jurisdictionName: name}), modified: true})),
+  setTitleTokenName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenName: name}), modified: true})),
+  setTitleTokenSymbol: (symbol:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenSymbol: symbol}), modified: true})),
+  setTitleTokenURI: (uri:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenURI: uri}), modified: true})),
+  addMember: (member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: [...state.jurisdiction.members, member]}), modified: true})),
+  removeMember: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.filter((_:IMember, i:number) => i !== index)}), modified: true})),
+  replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m)}), modified: true})),
+  addContract: (contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: [...state.jurisdiction.contracts, contract]}), modified: true})),
+  removeContract: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index)}), modified: true})),
+  replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c)}), modified: true}))
 }))
 
 const greenButtonProps = {_hover: { background: "brand.javaHover" }, variant: 'Header'}
@@ -69,17 +79,15 @@ const CreateJurisdiction: NextPage = () => {
   const router = useRouter()
   const { chainId, web3Provider } = useBlockchain();
   const jurisdiction = useJurisdiction(state => state.jurisdiction, shallow)
-  const setJurisdictionName = useJurisdiction(state => state.setName)
+  const isJurisdictionModified = useJurisdiction(state => state.modified)
+  const resetJurisdiction = useJurisdiction(state => state.reset)
+  const setJurisdictionName = useJurisdiction(state => state.setJurisdictionName)
+  const setTitleTokenName = useJurisdiction(state => state.setTitleTokenName)
+  const setTitleTokenSymbol = useJurisdiction(state => state.setTitleTokenSymbol)
+  const setTitleTokenURI = useJurisdiction(state => state.setTitleTokenURI)
   const addMember = useJurisdiction(state => state.addMember)
   const removeMember = useJurisdiction(state => state.removeMember)
   const replaceMember = useJurisdiction(state => state.replaceMember)
-  const addContract = useJurisdiction(state => state.addContract)
-  const removeContract = useJurisdiction(state => state.removeContract)
-  const replaceContract = useJurisdiction(state => state.replaceContract)
-
-  const [titleTokenName, setTitleTokenName] = useState("Our Properties")
-  const [titleTokenSymbol, setTitleTokenSymbol] = useState("OUR")
-  const [titleTokenURI, setTitleTokenURI] = useState(location.protocol + "//" + location.host + "/api/tokens/")
 
   const { isOpen: isErrorAlertOpen, onOpen: onErrorAlertOpen, onClose: onCloseErrorAlert } = useDisclosure()
   const cancelErrorRef = useRef<HTMLButtonElement | null>(null)
@@ -100,12 +108,13 @@ const CreateJurisdiction: NextPage = () => {
   useEffect(() => {
     reloadAliases().then((data) => {
         setAliasData(data)
-        // Add some sample members to the jurisdiction
-        data.aliases.slice(0,5).forEach(a => {
-          addMember({name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE})
-        })
+        // Add some sample members to the new jurisdictions
+        if (jurisdiction.members.length === 0 && !isJurisdictionModified)
+          data.aliases.slice(0,5).forEach(a => {
+            addMember({name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE})
+          })
     })
-  }, [addMember])
+  }, [addMember, jurisdiction.members])
 
   // Memoized callbacks
 
@@ -207,6 +216,13 @@ const CreateJurisdiction: NextPage = () => {
     jurisdiction.deploy(await web3Provider.getSigner(), { startingStep, onDeployed, onInitialized, onError, onCancelled, onCompleted })
   }, [jurisdiction, web3Provider, onProgressAlertOpen, onDeployed, onInitialized, onError, onCancelled, onCompleted])
 
+  const reset = useCallback(async () => {
+    resetJurisdiction()
+    setNewMemberName("")
+    setNewMemberAddress("")
+    setNewMemberRole(undefined)
+}, [resetJurisdiction])
+
   // Memoized components
   
   const progressDialog = useMemo(() => (
@@ -276,9 +292,9 @@ const CreateJurisdiction: NextPage = () => {
   const jurisdictionNameRow = useMemo(() => (
     <HStack width="100%">
       <Text width="20%" fontSize='md'>Jurisdiction Name:</Text>
-      <Input width="80%" value={jurisdiction.name} onChange={(e) => setJurisdictionName(e.target.value)} />
+      <Input width="80%" value={jurisdiction.jurisdictionName} onChange={(e) => setJurisdictionName(e.target.value)} />
     </HStack>
-  ), [jurisdiction.name])
+  ), [jurisdiction.jurisdictionName])
 
   const jurisdictionContractRow = useMemo(() => (
     <HStack width="100%">
@@ -298,23 +314,23 @@ const CreateJurisdiction: NextPage = () => {
   const titleTokenNameRow = useMemo(() => (
     <HStack width="100%">
       <Text width="20%" fontSize='md'>Title Token Name:</Text>
-      <Input width="80%" value={titleTokenName} onChange={(e) => setTitleTokenName(e.target.value)} />
+      <Input width="80%" value={jurisdiction.titleTokenName} onChange={(e) => setTitleTokenName(e.target.value)} />
     </HStack>
-  ), [titleTokenName])
+  ), [jurisdiction.titleTokenName])
 
   const titleTokenSymbolRow = useMemo(() => (
     <HStack width="100%">
       <Text width="20%" fontSize='md'>Title Token Symbol:</Text>
-      <Input width="80%" value={titleTokenSymbol} onChange={(e) => setTitleTokenSymbol(e.target.value)} />
+      <Input width="80%" value={jurisdiction.titleTokenSymbol} onChange={(e) => setTitleTokenSymbol(e.target.value)} />
     </HStack>
-  ), [titleTokenSymbol])
+  ), [jurisdiction.titleTokenSymbol])
 
   const titleTokenURIRow = useMemo(() => (
     <HStack width="100%">
       <Text width="20%" fontSize='md'>Title Token URI:</Text>
-      <Input width="80%" value={titleTokenURI} onChange={(e) => setTitleTokenURI(e.target.value)} />
+      <Input width="80%" value={jurisdiction.titleTokenURI} onChange={(e) => setTitleTokenURI(e.target.value)} />
     </HStack>
-  ), [titleTokenURI])
+  ), [jurisdiction.titleTokenURI])
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
@@ -328,7 +344,7 @@ const CreateJurisdiction: NextPage = () => {
   const membersRow= useMemo(() => (
     <VStack spacing={4}>
       {jurisdiction.members.map((m:IMember, i:number) => (
-        <HStack width="100%" key={m.address}>
+        <HStack width="100%" key={i}>
           <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
           <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidMemberAddressProps} />
           <RoleSelector width="15%" isValid={m.role!==undefined} required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
@@ -362,8 +378,9 @@ const CreateJurisdiction: NextPage = () => {
     </VStack>
   ), [jurisdiction.contracts, deploy])
 
-  const createButton = useMemo(() => (
+  const submitButtons = useMemo(() => (
     <HStack width="100%" justifyContent="flex-end">
+      <Button onClick={() => reset()}>Reset</Button>
       <Button {...(isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()}>Create Jurisdiction</Button>
     </HStack>
   ), [isValidForm, deploy])
@@ -399,11 +416,11 @@ const CreateJurisdiction: NextPage = () => {
         </TabPanels>
       </Tabs>
       <Divider width="100%" marginBottom="1em"/>
-      {createButton}
+      {submitButtons}
       {errorDialog}
       {progressDialog}
     </Box>
-  ), [jurisdiction, jurisdictionNameRow, titleTokenNameRow, titleTokenSymbolRow, titleTokenURIRow, membersRow, contractsRow, createButton, errorDialog, progressDialog])
+  ), [jurisdiction, jurisdictionNameRow, titleTokenNameRow, titleTokenSymbolRow, titleTokenURIRow, membersRow, contractsRow, submitButtons, errorDialog, progressDialog])
 
   return page
 }
