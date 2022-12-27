@@ -19,17 +19,24 @@ const GreenSpinner = () => (
     size='md'
   />)
 
+type JurisdictionInfo = {
+  address: string
+  name: string
+  version: string
+  description: string
+}
+
 const Home: NextPage = () => {
-  const { active } = useWeb3React();
+  const { active, chainId } = useWeb3React();
   const {tokens} = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
-  const [jurisdictions, setJurisdictions] = useState<any[]|undefined>()
+  const [jurisdictions, setJurisdictions] = useState<JurisdictionInfo[]|undefined>()
 
   useEffect(() => {
-    fetch('api/contracts/get')
+    fetch('api/contracts/get?interface=IJSCJurisdiction&chainId='+chainId)
     .then(res => res.json())
     .then(res => setJurisdictions(res))
-  }, [])
+  }, [chainId])
 
   //To-do: Connect this to real Smart COntracts and BC
   const fakeRecentActivity = [
@@ -75,7 +82,7 @@ const Home: NextPage = () => {
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
                 {
                   jurisdictions ? 
-                    jurisdictions.map((jurisdiction: any) => {
+                    jurisdictions.map(jurisdiction => {
                       return (
                         <Tag key={jurisdiction.address}>
                           <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`}>{`${jurisdiction.name} v${jurisdiction.version}`}</Link>
