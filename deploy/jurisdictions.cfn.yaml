@@ -568,23 +568,19 @@ Resources:
             Cookies:
               Forward: none
           ViewerProtocolPolicy: redirect-to-https
-#        CacheBehaviors:
-#        - AllowedMethods:
-#          - DELETE
-#          - GET
-#          - HEAD
-#          - OPTIONS
-#          - PATCH
-#          - POST
-#          - PUT
-#          TargetOriginId: WebOrigin
-#          ForwardedValues:
-#            QueryString: true
-#            Cookies:
-#              Forward: none
-#          ViewerProtocolPolicy: redirect-to-https
-#          MinTTL: '50'
-#          PathPattern: images1/*.jpg
+        CacheBehaviors:
+        - AllowedMethods:
+          - DELETE
+          - GET
+          - HEAD
+          - OPTIONS
+          - PATCH
+          - POST
+          - PUT
+          TargetOriginId: WebOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          ViewerProtocolPolicy: redirect-to-https
+          PathPattern: api/*
         PriceClass: PriceClass_100
         ViewerCertificate:
           AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
@@ -614,12 +610,8 @@ Resources:
           - POST
           - PATCH
           - DELETE
-          Compress: true
           TargetOriginId: WebOrigin
-          ForwardedValues:
-            QueryString: true
-            Cookies:
-              Forward: none
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
           ViewerProtocolPolicy: redirect-to-https
         PriceClass: PriceClass_100
         ViewerCertificate:
