@@ -221,7 +221,7 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
-            VolumeSize: '64'
+            VolumeSize: 64
       Tags:
         - Key: "Type"
           Value: "WebServer"
