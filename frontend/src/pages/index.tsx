@@ -9,6 +9,7 @@ import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken'
+import { useRouter } from 'next/router';
 
 const GreenSpinner = () => (
   <Spinner
@@ -31,6 +32,7 @@ const Home: NextPage = () => {
   const {tokens} = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const [jurisdictions, setJurisdictions] = useState<JurisdictionInfo[]|undefined>()
+  const router = useRouter()
 
   useEffect(() => {
     fetch('api/contracts/get?interface=IJSCJurisdiction&chainId='+chainId)
@@ -82,11 +84,13 @@ const Home: NextPage = () => {
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
                 {
                   jurisdictions ? 
-                    jurisdictions.map(jurisdiction => {
+                    jurisdictions.slice(0, 5).map(jurisdiction => {
                       return (
-                        <Tag key={jurisdiction.address}>
-                          <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`}>{`${jurisdiction.name} v${jurisdiction.version}`}</Link>
-                        </Tag>
+                        <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`}>
+                          <Tag key={jurisdiction.address}>
+                            <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
+                          </Tag>
+                        </Link>
                       )
                     }) :
                     <Tag><GreenSpinner/></Tag>
@@ -104,9 +108,11 @@ const Home: NextPage = () => {
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
-                <Tag>
-                  <Link variant={'13/16'} href='/property-details'>{`001-456-87654-E`}</Link>
-                </Tag>
+                <Link variant={'13/16'} href='/property-details/title-1/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'>
+                  <Tag>
+                    <Text>001-456-87654-E</Text>
+                  </Tag>
+                </Link>
               </Box>
             </Flex>
           </VStack>

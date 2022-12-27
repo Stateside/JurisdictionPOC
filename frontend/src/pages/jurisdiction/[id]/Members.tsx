@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Button, HStack, Input, VStack } from '@chakra-ui/react';
-import { accountsByAddress } from '@/utils/accounts';
 import DeleteIcon from '@/components/icons/deleteIcon';
 
 import * as tc from '../../../../typechain-types';
 import * as roles from '../../../utils/roles';
 import { useRouter } from 'next/router';
+import { AliasData, reloadAliases } from '@/utils/aliases';
 
 type Role = {
   name: string;
@@ -25,8 +25,17 @@ const Members = () => {
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet | undefined>(undefined);
   const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction | undefined>(undefined);
+  const [ aliasData, setAliasData ] = useState<AliasData|undefined>()
   const router = useRouter();
 
+  // Load aliases data
+  useEffect(() => {
+    reloadAliases().then((data) => {
+        setAliasData(data)
+    })
+  }, [])
+
+  // Connect to the JSC Jurisdiction contract
   useEffect(() => {
     if (library && router.query.id)
       try {
@@ -41,6 +50,7 @@ const Members = () => {
       }
   }, [library, router.query.id]);
 
+  // Connect to the JSC Cabinet contract
   useEffect(() => {
     if (library && jscJurisdiction) {
       const connect = async () => {
@@ -59,6 +69,7 @@ const Members = () => {
     }
   }, [library, jscJurisdiction]);
 
+  // Load the members from the cabinet contract
   useEffect(() => {
     if (jscCabinet) {
       const loadData = async () => {
@@ -73,7 +84,7 @@ const Members = () => {
           for (let rm = 0; rm < roleMemberCount; rm++) {
             const acc = await jscCabinet.getRoleMember(roleId, rm);
             _members.push({
-              name: accountsByAddress[acc.toLowerCase()].name,
+              name: "",
               account: acc,
               role: {
                 name: roleName,
@@ -87,6 +98,24 @@ const Members = () => {
       loadData().catch(err => setLocalError(err));
     }
   }, [jscCabinet]);
+
+  // Display aliases for known addresses in cabinet
+  useEffect(() => {
+    if (members.length>0 && aliasData) {
+        const _members = [...members]
+        let changed = false
+        for (let i = 0; i < _members.length; i++) {
+          const member = _members[i]
+          const alias = aliasData.aliasesByAddress.get(member.account.toLowerCase())
+          if (alias && member.name != alias) {
+            member.name = alias
+            changed = true
+          }
+        }
+        if (changed)
+          setMembers(_members)
+      }
+  }, [members, aliasData])
 
   return (
     <VStack alignItems="flex-start">

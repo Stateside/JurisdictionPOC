@@ -1,16 +1,16 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, CircularProgress, CircularProgressLabel, Divider, HStack, Input, Select, Text, useDisclosure, VStack } from '@chakra-ui/react';
-import { ChangeEventHandler, useCallback, useMemo, useRef, useState } from 'react';
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as roles from "../../utils/roles"
-import { accountsByAddress } from '@/utils/accounts'
 import DeleteIcon from '@/components/icons/deleteIcon';
 import { Deployments, IMember, Jurisdiction, JurisdictionId } from 'classes/jurisdiction';
 import create from 'zustand'
 import shallow from 'zustand/shallow'
 import useBlockchain from 'hooks/useBlockchain';
 import { ContractDefinition } from '@/utils/standard-contracts';
-import { ethers } from 'ethers';
+import { AliasData, reloadAliases } from '@/utils/aliases';
+import { useRouter } from 'next/router';
 
 // Use Zustand for managing state changes to Jurisdiction
 
@@ -36,13 +36,6 @@ const useJurisdiction = create<IJurisdictionState>((set) => ({
   removeContract: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index)})})),
   replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c)})}))
 }))
-
-/** Get name for address from accountsByAddress */
-const getNameForAddress = (address:string) => {
-  const address_lc = address.toLowerCase()
-  const acc = accountsByAddress[address_lc]
-  return acc ? acc.name : ""
-}
 
 const greenButtonProps = {_hover: { background: "brand.javaHover" }, variant: 'Header'}
 const invalidMemberAddressProps = { borderColor:"red", color:"red" }
@@ -73,6 +66,7 @@ const RoleSelector = (props:RoleSelectorProps) =>
 
 /** Component for creating a new jurisdiction */
 const CreateJurisdiction: NextPage = () => {
+  const router = useRouter()
   const { chainId, web3Provider } = useBlockchain();
   const jurisdiction = useJurisdiction(state => state.jurisdiction, shallow)
   const setName = useJurisdiction(state => state.setName)
@@ -90,18 +84,40 @@ const CreateJurisdiction: NextPage = () => {
   const { isOpen: isProgressAlertOpen, onOpen: onProgressAlertOpen, onClose: onCloseProgressAlert } = useDisclosure()
   const cancelProgressRef = useRef<HTMLButtonElement | null>(null)
   const [progressValue, setProgressValue] = useState<number>(0)
+  const [progressLabel, setProgressLabel] = useState<string>("")
 
   const [newMemberName, setNewMemberName] = useState("")
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<roles.Role>()
 
+  const [ aliasData, setAliasData ] = useState<AliasData|undefined>()
+  const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()
+
+  useEffect(() => {
+    reloadAliases().then((data) => {
+        setAliasData(data)
+        // Add some sample members to the jurisdiction
+        data.aliases.slice(0,5).forEach(a => {
+          addMember({name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE})
+        })
+    })
+  }, [addMember])
+
+  // Memoized callbacks
+
+  const getNameForAddress = useCallback((address:string) => {
+    const address_lc = address.toLowerCase()
+    const acc = aliasData?.aliasesByAddress.get(address_lc)
+    return acc ? acc : ""
+  }, [aliasData])
+  
   const updateMemberAddress = useCallback((index: number, m:IMember, value: string): void => {
     let expectedName:string = getNameForAddress(m.address)
     let newName:string = getNameForAddress(value)
     if (m.name !== "" && m.name !== expectedName)
       newName = m.name
     replaceMember(index, {...m, address: value, name:newName})
-  }, [replaceMember])
+  }, [replaceMember, getNameForAddress])
 
   const updateNewMemberAddress = useCallback((value: string): void => {
     let expectedName:string = getNameForAddress(newMemberAddress)
@@ -110,7 +126,7 @@ const CreateJurisdiction: NextPage = () => {
       newName = newMemberName
     setNewMemberName(newName)
     setNewMemberAddress(value)
-  }, [newMemberAddress, newMemberName])
+  }, [newMemberAddress, newMemberName, getNameForAddress])
 
   const isEmptyNewMember = useCallback(():boolean => {
     return newMemberName === "" && newMemberAddress === "" && newMemberRole === undefined
@@ -121,7 +137,7 @@ const CreateJurisdiction: NextPage = () => {
       newMemberRole !== undefined &&
       jurisdiction.isValidAddress(newMemberAddress) && 
       !jurisdiction.existsMemberAddress(newMemberAddress)
-  }, [newMemberAddress, newMemberRole, jurisdiction.members])
+  }, [newMemberAddress, newMemberRole, jurisdiction.members, jurisdiction.isValidAddress, jurisdiction.existsMemberAddress])
 
   const addNewMember = useCallback(():void => {
     if (isValidNewMember() && newMemberRole !== undefined) {
@@ -136,19 +152,20 @@ const CreateJurisdiction: NextPage = () => {
     return jurisdiction.isValid() && (isValidNewMember() || isEmptyNewMember()) && web3Provider
   }, [jurisdiction, isValidNewMember, isEmptyNewMember, web3Provider])
 
-  const deploy = useCallback(async () => {
-    setProgressValue(0)
-    jurisdiction.deploy(web3Provider.getSigner() as any, { onDeployed, onInitialized, onError, onCancelled }).then(
-      (deployments) => console.log("deployments:", deployments)
-    )
-    onProgressAlertOpen()
-  }, [jurisdiction, web3Provider])
-
   const onClickCancelDeployment = useCallback(() => {
-    if (progressValue < 1)
-      jurisdiction.cancelDeployment()
     onCloseProgressAlert()
   }, [onCloseProgressAlert])
+
+  const onClickCloseDeployment = useCallback(() => {
+    onCloseProgressAlert()
+    const jurisdictionAddress = successfulDeployments && successfulDeployments["IJSCJurisdiction"] && successfulDeployments["IJSCJurisdiction"].contract.address
+    if (jurisdictionAddress)
+      router.push(`/jurisdiction/${jurisdictionAddress}`)
+  }, [onCloseProgressAlert, successfulDeployments, router])
+
+  const startingStep = useCallback(async (jurisdiction:Jurisdiction, progress:number, name:string) => {
+    setProgressLabel(name)
+  }, [])
 
   const onDeployed = useCallback(async (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => {
     setProgressValue(progress)
@@ -160,14 +177,31 @@ const CreateJurisdiction: NextPage = () => {
     console.log(`initialized: ${key} ${type} at ${address} - progress = ${progress}`)
   }, [])
 
-  const onError = useCallback(async (jurisdiction:Jurisdiction, msg:string) => {
+  const onError = useCallback(async (jurisdiction:Jurisdiction, msg:string, successfulDeployments:Deployments) => {
     onCloseProgressAlert()
     setDeployError(msg)
     onErrorAlertOpen()
+    setSuccessfulDeployments(successfulDeployments)
+    console.log("Successful deployments:", successfulDeployments)
   }, [onCloseProgressAlert, onErrorAlertOpen])
 
-  const onCancelled = useCallback(async (jurisdiction:Jurisdiction, deployments:Deployments) => {
+  const onCancelled = useCallback(async (jurisdiction:Jurisdiction, successfulDeployments:Deployments) => {
+    setSuccessfulDeployments(successfulDeployments)
+    console.log("Successful deployments:", successfulDeployments)
   }, [onCloseProgressAlert])
+
+  const onCompleted = useCallback(async (jurisdiction:Jurisdiction, successfulDeployments:Deployments) => {
+    setProgressValue(1)
+    setSuccessfulDeployments(successfulDeployments)
+    console.log("Successful deployments:", successfulDeployments)
+  }, [])
+
+  const deploy = useCallback(async () => {
+    setProgressValue(0)
+    setSuccessfulDeployments(undefined)
+    onProgressAlertOpen()
+    jurisdiction.deploy(await web3Provider.getSigner(), { startingStep, onDeployed, onInitialized, onError, onCancelled, onCompleted })
+  }, [jurisdiction, web3Provider, onProgressAlertOpen, onDeployed, onInitialized, onError, onCancelled, onCompleted])
 
   // Memoized components
   
@@ -182,27 +216,30 @@ const CreateJurisdiction: NextPage = () => {
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-            Deployment in progress
+          {progressValue < 1 ? "Deployment in progress" : "Deployment complete!"}
           </AlertDialogHeader>
 
           <AlertDialogBody>
-            <HStack>
-              <CircularProgress value={progressValue*100 || 5} color='green.400'>
-                <CircularProgressLabel>{Math.round(progressValue*100) || 5}%</CircularProgressLabel>
-              </CircularProgress>
-              <Text>{progressValue < 1 ? "Deploying your new Jurisdiction. Please check MetaMask for new transactions." : "Deployment complete!"}</Text>
-            </HStack>
+            <VStack>
+              <HStack>
+                <CircularProgress value={progressValue*100 || 5} color='green.400'>
+                  <CircularProgressLabel>{Math.round(progressValue*100) || 5}%</CircularProgressLabel>
+                </CircularProgress>
+                <Text>{ progressValue < 1 ? progressLabel + "..." : "Deployment complete!" }</Text>
+              </HStack>
+              <Text>Please check MetaMask for new transactions.</Text>
+            </VStack>
           </AlertDialogBody>
 
           <AlertDialogFooter>
-            <Button ref={cancelProgressRef} onClick={onClickCancelDeployment}>
+            <Button ref={cancelProgressRef} onClick={progressValue === 1 ? onClickCloseDeployment : onClickCancelDeployment}>
               {progressValue == 1 ? "Close": "Cancel"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialogOverlay>
     </AlertDialog>
-  ), [isProgressAlertOpen, onClickCancelDeployment, progressValue])
+  ), [isProgressAlertOpen, onClickCloseDeployment, onClickCancelDeployment, progressValue, progressLabel, onCloseProgressAlert])
 
   const errorDialog = useMemo(() => (
     <AlertDialog
@@ -300,7 +337,7 @@ const CreateJurisdiction: NextPage = () => {
           </HStack>
         ))}
         <HStack width="100%" justifyContent="flex-start">
-          <Button>Add new contract</Button>
+          <Button onClick={async () => Jurisdiction.saveMemberInfo(jurisdiction.members)}>Add new contract</Button>
         </HStack>
       </VStack>
     </HStack>
