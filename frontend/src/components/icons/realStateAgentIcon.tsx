@@ -1,7 +1,10 @@
 import React from 'react'
 import { Icon } from '@chakra-ui/react'
 
-type Props = {}
+type Props = {
+  height?: number;
+  width?: number;
+};
 
 const RealStateAgentIcon = (props: Props) => {
     return (
