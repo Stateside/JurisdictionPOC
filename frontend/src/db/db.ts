@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import { DataSource } from "typeorm"
 import { DeployedContract } from './entities/DeployedContract';
 import * as dotenv from 'dotenv'
+import { Alias } from './entities/Alias';
 
 // Load environment variables using dotenv if we are running outside nextjs (i.e. for the typeorm CLI or for migrations)
 if (process.env.NODE_ENV === undefined) {	
@@ -21,7 +22,7 @@ export const datasource:DataSource = new DataSource({
   username: username,
   password: password,
   database: database,
-  entities: [DeployedContract],
+  entities: [Alias, DeployedContract],
   migrations: [__dirname + '/Migrations/**/*.ts'],
   synchronize: true,
   logging: false

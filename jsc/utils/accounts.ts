@@ -2,7 +2,7 @@
 import { ethers } from "hardhat" 
 
 /*
-    This module contains the details of 20 sample accounts wiht their addreses and private keys.
+    This module contains the details of 20 sample accounts with their addresses and private keys.
 
     They exist by default in the Hardhat development blockchain with 10,000 ETH each. The account names do not come from Hardhat. 
     They are arbitrary and were assigned by the author.

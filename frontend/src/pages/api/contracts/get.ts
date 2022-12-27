@@ -32,14 +32,19 @@ const mergeArtifacts = async (jurisdictions:DeployedContract[]) => {
   return merged;
 }
 
-/** Saves a new jurisdiction to the database */
+/** Gets all known contract addresses from the database */
 const get = async (req: NextApiRequest, res: NextApiResponse) => {
   const contractsRepo = (await db()).getRepository(DeployedContract)
   let jurisdictions:DeployedContract[] = []
+
+  let filter:any = {}
+  if (req.query.interface)
+    filter.interface = req.query.interface as string
+  if (req.query.chainId)
+    filter.chainId = req.query.chainId as string
+  
   try {
-    jurisdictions = (await contractsRepo.findBy({
-      interface: "IJSCJurisdiction"
-    }))
+    jurisdictions = (await contractsRepo.findBy(filter))
   } catch (err) {
     console.error("Error getting jurisdictions", err)
   }

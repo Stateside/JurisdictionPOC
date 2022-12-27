@@ -1,7 +1,5 @@
 import { ethers } from 'ethers'
-import accounts, { Account } from '@/utils/accounts'
 import * as roles from "@/utils/roles"
-import { accountsByAddress } from '@/utils/accounts'
 import * as tc from "../../typechain-types"
 import { ContractDefinition, contractDefinitionsById, supportedContracts } from '@/utils/standard-contracts'
 
@@ -21,8 +19,10 @@ export type DeploymentAddresses = {
 export type DeploymentListener = {
   onDeployed: (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => Promise<void>
   onInitialized: (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => Promise<void>
-  onError: (jurisdiction:Jurisdiction, msg:string) => Promise<void>
+  onError: (jurisdiction:Jurisdiction, msg:string, deployments:Deployments) => Promise<void>
   onCancelled: (jurisdiction:Jurisdiction, deployments:Deployments) => Promise<void>
+  onCompleted: (jurisdiction:Jurisdiction, deployments:Deployments) => Promise<void>
+  startingStep: (jurisdiction:Jurisdiction, progress:number, step:string) => Promise<void>
 }
 
 export type InitializationResult = {
@@ -135,11 +135,7 @@ export class Jurisdiction implements IJurisdiction {
     return new Jurisdiction(
       "My Jurisdiction",
       JurisdictionId,
-      accounts.slice(0,5).map((a:Account, i:number) => ({
-        name: accountsByAddress[a.address].name,
-        address: a.address,
-        role: roles.JUDICIAL_ROLE
-      })),
+      [],
       supportedContracts.filter((c:ContractDefinition) => c.key !== undefined),
     )
   }
@@ -170,13 +166,13 @@ export class Jurisdiction implements IJurisdiction {
 
   async initCabinet(signer:ethers.Signer, deployments:Deployments):Promise<InitializationResult> {
     console.log("Initializing Cabinet")
-    const { contract, definition } = deployments["JSCCabinet"]
+    const { contract, definition } = deployments["IJSCCabinet"]
     const instance = await tc.JSCCabinet__factory.connect(contract.address, signer)
     await instance.init(
-      deployments["JSCJurisdiction"].contract.address,
+      deployments["IJSCJurisdiction"].contract.address,
       this.members.map((m:IMember) => m.address),
       this.members.map((m:IMember) => ethers.utils.arrayify(m.role.id)),
-      deployments["JSCJurisdiction"].contract.address,
+      deployments["IJSCGovernor"].contract.address,
       {gasLimit: 5000000})
 
     return {
@@ -187,19 +183,19 @@ export class Jurisdiction implements IJurisdiction {
 
   async initTitleToken(signer:ethers.Signer, deployments:Deployments):Promise<InitializationResult> {
     console.log("Initializing Title Token")
-    const { contract, definition } = deployments["JSCTitleToken"]
+    const { contract, definition } = deployments["IJSCTitleToken"]
     const instance = await tc.IJSCTitleToken__factory.connect(contract.address, signer)
 
     await instance.init(
       "JSCTitleToken",
       "JSCT",
       "https://jurisdictions.stateside.agency/title-token",
-      deployments["JSCJurisdiction"].contract.address,
+      deployments["IJSCJurisdiction"].contract.address,
       ethers.constants.AddressZero,
       0,
       ethers.constants.AddressZero,
       0,
-      deployments["JSCGovernor"].contract.address)
+      deployments["IJSCGovernor"].contract.address)
   
     return {
       contract, 
@@ -209,11 +205,11 @@ export class Jurisdiction implements IJurisdiction {
 
   async initGovernor(signer:ethers.Signer, deployments:Deployments):Promise<InitializationResult> {
     console.log("Initializing Governor")
-    const { contract, definition } = deployments["JSCGovernor"]
+    const { contract, definition } = deployments["IJSCGovernor"]
     const instance = await tc.IJSCGovernor__factory.connect(contract.address, signer)
 
     await instance.init(
-      deployments["JSCJurisdiction"].contract.address,
+      deployments["IJSCJurisdiction"].contract.address,
       true)
   
     return {
@@ -224,7 +220,7 @@ export class Jurisdiction implements IJurisdiction {
 
   async initJurisdiction(signer:ethers.Signer, deployments:Deployments):Promise<InitializationResult> {
     console.log("Initializing Jurisdiction")
-    const { contract, definition } = deployments["JSCJurisdiction"]
+    const { contract, definition } = deployments["IJSCJurisdiction"]
     const instance = await tc.IJSCJurisdiction__factory.connect(contract.address, signer)
     const childContracts = this.contracts.filter((c:ContractDefinition) => c.key !== undefined)
 
@@ -252,11 +248,12 @@ export class Jurisdiction implements IJurisdiction {
   /** Deploys and initializes all contracts for this jurisdiction */
   async deploy(signer:ethers.Signer, l:DeploymentListener):Promise<Deployments> {
     // Deployment results will be stored here     
-    let deploymentsByType:Deployments = {}
+    let deploymentsByInterface:Deployments = {}
     let deploymentAddressesByLink: DeploymentAddresses = {}
     this.continueDeployment = true
       
     try {
+      l.startingStep(this, 0, "Preparing deployment")
       // Build a list of contracts in the correct deployment order
       const deploySteps:ContractDefinition[] = []
 
@@ -269,11 +266,11 @@ export class Jurisdiction implements IJurisdiction {
       this.searchDependencies({...contractDefinitionsById[this.contractId], name: this.name}, deploySteps)
 
       // Build a list of methods for initializing the contracts
-      const initSteps:InitializationMethod[] = [
-        this.initCabinet,
-        this.initTitleToken,
-        this.initGovernor,
-        this.initJurisdiction
+      const initSteps:{name:string, func:InitializationMethod}[] = [
+        { name: "IJSCCabinet", func:this.initCabinet },
+        { name: "IJSCTitleToken", func:this.initTitleToken },
+        { name: "IJSCGovernor", func:this.initGovernor },
+        { name: "IJSCJurisdiction", func:this.initJurisdiction }
       ]
 
       const totalSteps = deploySteps.length + initSteps.length
@@ -283,11 +280,11 @@ export class Jurisdiction implements IJurisdiction {
       for (let s = 0; s < deploySteps.length && this.continueDeployment; s++) {
         stepCounter++;
         const step = deploySteps[s];
-        console.log("Deploying", step.solidityType)
+        l.startingStep(this, 0, `Deploying ${step.solidityType}`)
         const result = await this.deployContract(signer, step, deploymentAddressesByLink)
         l.onDeployed(this, stepCounter/totalSteps, result.definition.solidityType, result.definition.key||"", result.contract.address)
-        await this.save(result.definition.name, result.definition.version, result.definition.solidityInterface, result.contract.address, result.definition.description, await signer.getChainId())
-        deploymentsByType[result.definition.solidityType] = result
+        await Jurisdiction.saveContractInfo(result.definition.name, result.definition.version, result.definition.solidityInterface, result.contract.address, result.definition.description, await signer.getChainId())
+        deploymentsByInterface[result.definition.solidityInterface] = result
         if (result.definition.link)
           deploymentAddressesByLink[result.definition.link] = result.contract.address
       }
@@ -296,29 +293,34 @@ export class Jurisdiction implements IJurisdiction {
       for (let s = 0; s < initSteps.length && this.continueDeployment; s++) {
         stepCounter++;
         const step = initSteps[s];
-        const result = await step.bind(this)(signer, deploymentsByType)
+        l.startingStep(this, 0, `Initializing ${step.name}`)
+        const result = await step.func.bind(this)(signer, deploymentsByInterface)
         l.onInitialized(this, stepCounter/totalSteps, result.definition.solidityType, result.definition.key||"", result.contract.address)
       }
+      
+      l.startingStep(this, 0, `Finalizing deployment`)
+      await Jurisdiction.saveMemberInfo(this.members)
+      l.onCompleted(this, deploymentsByInterface)
     } catch (e) {
       if (this.continueDeployment) {
         console.log("Error deploying contracts", e)
         let msg = (e as any).message ?? (e as any).toString()
         if (msg.includes("rejected"))
           msg = "Transaction rejected by user"
-        l.onError(this, msg)
+        l.onError(this, msg, deploymentsByInterface)
       }
       else
-        l.onCancelled(this, deploymentsByType)
+        l.onCancelled(this, deploymentsByInterface)
     }
 
-    return deploymentsByType
+    return deploymentsByInterface
   }
 
   cancelDeployment() {
     this.continueDeployment = false
   }
 
-  async save(name:string, version:string, type:string, address:string, description:string, chainId:number) {
+  static async saveContractInfo(name:string, version:string, type:string, address:string, description:string, chainId:number) {
     const request = {
       method: "POST",
       headers: {
@@ -333,7 +335,7 @@ export class Jurisdiction implements IJurisdiction {
         chainId
       })
     }
-    console.log("Saving", request)
+    console.log("Saving jurisdiction and contract addresses", request)
     await fetch("/api/contracts/save", request)
       .then((r) => {
         if (r.status === 200)
@@ -345,4 +347,28 @@ export class Jurisdiction implements IJurisdiction {
         console.log("Error saving", e)
       })
   }
+
+  static async saveMemberInfo(members:IMember[]) {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        aliases: members.map((m:IMember) => ({alias:m.name, address:m.address}))
+      })
+    }
+    console.log("Saving member aliases")
+    const savedAliases = await fetch("/api/aliases/save", request)
+      .then((r) => {
+        if (r.status === 200)
+          console.log("Saved")
+        else
+          console.log("Error saving")
+        return r.json()
+      },
+      (e) => {
+        console.log("Error saving", e)
+      })
+    }
 }
