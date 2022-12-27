@@ -40,9 +40,10 @@ const get = async (req: NextApiRequest, res: NextApiResponse) => {
   let filter:any = {}
   if (req.query.interface)
     filter.interface = req.query.interface as string
+  if (req.query.chainId)
     filter.chainId = req.query.chainId as string
   
-    try {
+  try {
     jurisdictions = (await contractsRepo.findBy(filter))
   } catch (err) {
     console.error("Error getting jurisdictions", err)
