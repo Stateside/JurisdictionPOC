@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node_modules/next/dist/bin/next dev",
-    "dev80": "node_modules/next/dist/bin/next dev -p 80",
-    "build": "node_modules/next/dist/bin/next build",
-    "start": "node_modules/next/dist/bin/next start",
+    "dev": "node node_modules/next/dist/bin/next dev",
+    "dev80": "node node_modules/next/dist/bin/next dev -p 80",
+    "build": "node node_modules/next/dist/bin/next build",
+    "start": "node node_modules/next/dist/bin/next start",
     "clean-typechain-types": "rm -rf typechain-types",
     "update-typechain-types": "cp -r ../jsc/typechain-types .",
     "clean-artifacts": "rm -rf artifacts",
     "update-artifacts": "cp -r ../jsc/artifacts .",
-    "update-all": "npm-run-all clean-typechain-types update-typechain-types clean-artifacts update-artifacts",
-    "lint": "node_modules/next/dist/bin/next lint",
+    "update-all": "node npm-run-all clean-typechain-types update-typechain-types clean-artifacts update-artifacts",
+    "lint": "node node_modules/next/dist/bin/next lint",
     "typeorm": "typeorm-ts-node-commonjs"
   },
   "dependencies": {
