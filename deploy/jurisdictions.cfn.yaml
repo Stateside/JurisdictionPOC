@@ -58,10 +58,6 @@ Parameters:
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9]+'
     ConstraintDescription: must contain only alphanumeric characters.
-  RDSDialect:
-    Description: Database type for RDS
-    Type: String
-    Default: mysql
   RDSAllocatedStorage:
     Default: '20'
     Description: The size of the database (Gb)
@@ -543,12 +539,6 @@ Resources:
           SslSupportMethod: sni-only
 
 # Parameter Store
-  RdsDialectParam:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: DB_DIALECT
-      Type: String
-      Value: !Ref RDSDialect
   RdsDomainNameParam:
     Type: AWS::SSM::Parameter
     Properties:
