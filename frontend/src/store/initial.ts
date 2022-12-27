@@ -32,7 +32,7 @@ export const listContractsLabels = {
     heading: "Deployed Contracts"
 }
 
-export const jscJurisdicitonLabels = {
+export const jscJurisdictionLabels = {
     pageTitle: 'JSCJurisdiction',
     heading: "Jurisdiction Contracts",
     tableCaption: "Jurisdiction Contracts"

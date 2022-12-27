@@ -60,7 +60,7 @@ export const supportedContracts:ContractDefinition[] = [
         id: "JSCGovernor v0.5",
         name: "JSCGovernor",
         version: "0.5",
-        description: "Manages proposaled changes to the operation of the jurisdiciton contracts",
+        description: "Manages proposed changes to the operation of the jurisdiction contracts",
         loadArtifact: async () => await import("../../artifacts/contracts/production/JSCGovernor.sol/JSCGovernor.json") as unknown as HardhatArtifact,
         type: "contract",
         solidityType: "JSCGovernor", 

@@ -8,7 +8,7 @@ import * as tc from "../typechain-types"
    
    ERC165 is a standard mechanism for determining if a contract implements a given interface.
 
-   This file contains constants with the ID's of interfaces used by the jurisdiciton contracts.
+   This file contains constants with the ID's of interfaces used by the jurisdiction contracts.
  */
 const verbose = false;
 

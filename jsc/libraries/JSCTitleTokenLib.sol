@@ -26,7 +26,7 @@ library JSCTitleTokenLib {
 
   /** Storage struct for the JSCTitleToken */
   struct Storage {
-      // Owning Jurisdiciton contract address
+      // Owning Jurisdiction contract address
       address jurisdiction;
 
       // Flag indicating if this contract is unfrozen and operational
