@@ -71,6 +71,7 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   actionButtonDisabled: true,
   selectedOfferIndex: null,
   activeOffers: [],
+  favorited: false,
   handleInputChange: () => {},
   handleSelectChange: () => {},
   setSellModelField: () => {},
@@ -81,6 +82,7 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   buildActivity: () => '',
   onClose: () => {},
   onOpen: () => {},
+  toggleFavorite: () => {}
 };
 
 export const PropertyDetailsContext =
@@ -117,6 +119,7 @@ const PropertyDetailsProvider = function ({
     null
   );
   const [jscJurisdictionInfo, setJscJurisdictionInfo] = useState<jscJurisdictionInfo | undefined>(undefined);
+  const [favorited, setFavorited] = useState<boolean>(false);
 
   // ----------------------------------------------------------------
   // Private methods
@@ -307,6 +310,11 @@ const PropertyDetailsProvider = function ({
     return `${copy[offer.type]}`;
   }
 
+  function toggleFavorite() {
+    setFavorited(!favorited);
+    console.log('post here favorited or not');
+  }
+
   // ----------------------------------------------------------------
   // Effects
   // ----------------------------------------------------------------
@@ -357,6 +365,7 @@ const PropertyDetailsProvider = function ({
         actionButtonDisabled,
         selectedOfferIndex,
         activeOffers,
+        favorited,
         handleInputChange,
         handleSelectChange,
         setSellModelField,
@@ -365,6 +374,7 @@ const PropertyDetailsProvider = function ({
         showSellModal,
         showAcceptOfferModal,
         buildActivity,
+        toggleFavorite,
         onClose,
         onOpen,
       }}

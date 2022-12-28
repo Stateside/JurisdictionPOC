@@ -13,7 +13,6 @@ import {
   Text,
 } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
-import HeartPlusIcon from '@/components/icons/heartPlusIcon';
 import RealStateAgentIcon from '@/components/icons/realStateAgentIcon';
 import ArrowBack from '@/components/icons/smallArrowBackIcon';
 import CallReceivedIcon from '@/components/icons/callReceivedIcon';
@@ -21,11 +20,13 @@ import PropertyDetailsModal from '../modal';
 import PropertyDetailsModalHeader from '../modal/modalHeader';
 import SellPropertyModal from '../modal/sellPropertyModal';
 import AcceptOfferModal from '../modal/acceptOfferModal';
+import FavoriteButton from './favoriteButton';
 import PropertyDetailsModalActions from '../modal/modalActions';
 import { PropertyDetailsContext } from '../PropertyDetailsContext';
 import { PropertyInfo } from '@/utils/property-types';
 
 const gridLayout = 'repeat(12, 1fr)';
+const favoriteStyles = { position: 'relative', bottom: '0.3em'};
 
 // Temporary fix to remove errors from build
 declare global {
@@ -64,7 +65,7 @@ export default function PropertyDetailsMain() {
             <BreadcrumbItem h={{ base: '30px' }}>
               <NextLink passHref href="/dashboard">
                 <BreadcrumbLink>
-                  <ArrowBack w={{ base: '28px' }} />
+                  <ArrowBack w={{ base: '23px' }} />
                   Back to dashboard
                 </BreadcrumbLink>
               </NextLink>
@@ -78,7 +79,7 @@ export default function PropertyDetailsMain() {
         </GridItem>
         <GridItem colSpan={12}>
           <Box as="span" fontWeight="400" fontSize={{ base: '80px' }}>
-            {propertyId} <HeartPlusIcon w={{ base: '25px' }} />
+            {propertyId} <FavoriteButton />
           </Box>
         </GridItem>
         <GridItem colSpan={7}>
@@ -88,6 +89,7 @@ export default function PropertyDetailsMain() {
                 <Grid
                   templateColumns={gridLayout}
                   key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
+                  mb={{ base: '6px'}}
                 >
                   <GridItem colSpan={3}>{infoLabel}</GridItem>
                   <GridItem colSpan={9}>{infoValue}</GridItem>
@@ -114,6 +116,11 @@ export default function PropertyDetailsMain() {
             <div className="iframe-rwd" dangerouslySetInnerHTML={{ __html: `<iframe width="425" height="350" src="${mapUrl}" />`}} />
           }
         </GridItem>
+        <GridItem colSpan={12} mt={{ base: '30px' }}>
+          <Box as="span" fontWeight="700" fontSize={{ base: '15px' }}>
+            Photos
+          </Box>
+        </GridItem>
         <GridItem colSpan={12}>
           <Grid templateColumns={gridLayout}>
             {propertyImages.map(({ src, alt }, i) => {
@@ -129,7 +136,7 @@ export default function PropertyDetailsMain() {
             })}
           </Grid>
         </GridItem>
-        <GridItem colSpan={12}>
+        <GridItem colSpan={12} mt={{ base: '30px' }}>
           <Box as="span" fontWeight="700" fontSize={{ base: '15px' }}>
             Active Offers
           </Box>
