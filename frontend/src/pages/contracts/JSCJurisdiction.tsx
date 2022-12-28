@@ -4,7 +4,7 @@ import NextLink from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Heading, Box } from "@chakra-ui/layout"
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Container, Link, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack } from '@chakra-ui/react'
-import { jscJurisdicitonLabels } from '@/store/initial'
+import { jscJurisdictionLabels } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import * as tc from "../../../typechain-types"
 import { useRouter } from 'next/router'
@@ -66,7 +66,7 @@ const showJSCJurisdiction: NextPage = () => {
   return (
     <Box width='100%' >
       <Head>
-        <title>{jscJurisdicitonLabels.pageTitle}</title>
+        <title>{jscJurisdictionLabels.pageTitle}</title>
       </Head>
         {active &&
           <VStack padding='2rem 0' margin='0 0 40px 0'>
@@ -74,7 +74,7 @@ const showJSCJurisdiction: NextPage = () => {
               whiteSpace='pre-line'
               my={4}
               marginBottom='48px'>
-              {jscJurisdicitonLabels.heading}
+              {jscJurisdictionLabels.heading}
             </Heading>
             <Container
                 display='flex'
@@ -92,7 +92,7 @@ const showJSCJurisdiction: NextPage = () => {
                   (contracts.length == 0 ? <Loader /> : 
                   <TableContainer whiteSpace={'normal'}>
                     <Table variant='simple'>
-                      <TableCaption>{jscJurisdicitonLabels.tableCaption}</TableCaption>
+                      <TableCaption>{jscJurisdictionLabels.tableCaption}</TableCaption>
                       <Thead>
                         <Tr>
                           <Th>Name</Th>

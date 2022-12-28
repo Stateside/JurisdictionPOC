@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: CFN template for Jurisdiciton and Estate Registry deployment
+Description: CFN template for Jurisdiction and Estate Registry deployment
 Parameters:
   AMI:
     Description: ID of AMI used for web instance

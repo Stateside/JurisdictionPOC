@@ -2,11 +2,10 @@ import { MenuItemInterface, SiteLayoutData, SiteLabel, HomeLabels } from '@/inte
 
 
 export const siteMainMenu:Array<MenuItemInterface> = [
-    {label: 'Your Properties', url: '/tokens', command: '⌘T'},
+    {label: 'Dashboard', url: '/', command: '⌘H'},
+    {label: 'My Properties', url: '/my-properties', command: '⌘T'},
     {label: 'Create a Jurisdiction', url: '/jurisdiction/create', command: '⌘J'},
-    {label: 'Show sample token details', url: '/property-details', command: '⌘S'},
-    {label: 'Create a Propossal', url: '/create-propossal', command: '⌘P'},
-    {label: 'List Contracts', url: '/contracts', command: '⌘L'},
+    {label: 'Create a Proposal', url: '/jurisdiction/proposals/create', command: '⌘P'}
 ]
 
 export const siteLayoutData:SiteLayoutData = {
@@ -32,7 +31,7 @@ export const listContractsLabels = {
     heading: "Deployed Contracts"
 }
 
-export const jscJurisdicitonLabels = {
+export const jscJurisdictionLabels = {
     pageTitle: 'JSCJurisdiction',
     heading: "Jurisdiction Contracts",
     tableCaption: "Jurisdiction Contracts"

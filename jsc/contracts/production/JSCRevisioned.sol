@@ -8,7 +8,7 @@ import "../IJSCRevisioned.sol";
 
 /**
   @dev This is the base class that all smart contracts that want to take part in Jurisdiction governance should inherit from.
-  This base class provides a way for smart contracts to register "revisions" and have them executed by the jurisdiciton's
+  This base class provides a way for smart contracts to register "revisions" and have them executed by the jurisdiction's
   governor contract.
 
   Most applications use the form of governance supported by Compound and implemented by OpenZeppelin. 

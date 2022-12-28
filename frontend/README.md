@@ -51,8 +51,9 @@ For more commands see the [migrations documentation](https://typeorm.io/migratio
 
 # To do
 
-. Check if Jurisdiction still exists
-. Keep HH running or persist new transactions or replace with a different implementation
-. Add name, symbol, URI, maintainer, registry to titletoken when creating jurisdiction
-. Add favourites to the database
-. Use loader component
+- Check if Jurisdiction still exists
+- Keep HH running or persist new transactions or replace with a different implementation
+- Add maintainer, registry to titletoken when creating jurisdiction
+- Add favourites to the database
+- Use loader component
+- Ue \<NextLink> instead of \<Link href...>

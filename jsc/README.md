@@ -1,4 +1,4 @@
-# Jurisdiciton Smart Contracts
+# Jurisdiction Smart Contracts
 See [Docs](https://docs.google.com/document/d/1alcg28Ip54dXeU0KLeHTLtxxGtojkLuvdxDac-giKKg) for details
 
 In this proof of concept we will have 4 smart contracts
@@ -88,7 +88,7 @@ yarn hardhat --help
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
 - add jurisdiction to titletoken and cabinet and make sure this is is validated properly inside contracts
-- add function to validate jurisdicitons (make sure they are properly initialized and secured)
+- add function to validate jurisdictions (make sure they are properly initialized and secured)
 
 Payments
 1. Pay registry fees

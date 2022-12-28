@@ -12,7 +12,7 @@ import "../IJSCRevisioned.sol";
 import "../IJSCGovernor.sol";
 
 /**
- @dev This contract manages proposals for changes to the operation of the jurisdiciton contracts.
+ @dev This contract manages proposals for changes to the operation of the jurisdiction contracts.
  */
 contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     using SafeCast for uint256;
