@@ -31,6 +31,7 @@ export type InitializationResult = {
 }
   
 type InitializationMethod = (signer:ethers.Signer, deployments:Deployments)=>Promise<InitializationResult>
+type ConfirmationHandler = (address:string) => Promise<void>
 
 export interface IMember {
   name: string
@@ -312,6 +313,7 @@ export class Jurisdiction implements IJurisdiction {
       
       l.startingStep(this, 0, `Finalizing deployment`)
       await Jurisdiction.saveMemberInfo(this.members)
+      await Jurisdiction.addToJurisdiction(deploymentsByInterface["IJSCJurisdiction"].contract.address, Object.values(deploymentsByInterface).map(d => d.contract.address))
       l.onCompleted(this, deploymentsByInterface)
     } catch (e) {
       if (this.continueDeployment) {
@@ -344,16 +346,14 @@ export class Jurisdiction implements IJurisdiction {
         interface:type,
         address,
         description,
+        frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
         chainId
       })
     }
-    console.log("Saving jurisdiction and contract addresses", request)
     await fetch("/api/contracts/save", request)
       .then((r) => {
         if (r.status === 200)
-          console.log("Saved")
-        else
-          console.log("Error saving")
+          console.log(`Saved ${type} at ${address}`)
       },
       (e) => {
         console.log("Error saving", e)
@@ -382,5 +382,63 @@ export class Jurisdiction implements IJurisdiction {
       (e) => {
         console.log("Error saving", e)
       })
+  }
+
+  /** Confirm if the given address points to a Jurisdiciton contract */
+  static async confirmExists(signer:ethers.Signer, address: string, onExists?: ConfirmationHandler, onMissing?: ConfirmationHandler) {
+    let exists:boolean = false
+    try {
+      const instance = await tc.IJSCJurisdiction__factory.connect(address, signer)
+      const name = await instance.getJurisdictionName()
+      exists = name !== ""
     }
+    catch(e) {
+    }
+
+    if (exists === true && onExists)
+      onExists(address)
+    else if (exists === false && onMissing)
+      onMissing(address)
+  }
+
+  /** Remove the given jurisdiction from the list of contracts in the database */
+  static async removeJurisdiction(signer:ethers.Signer, address: string) {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({address})
+    }
+    fetch("/api/contracts/remove-jurisdiction", request)
+      .then((r) => {
+        if (r.status === 200)
+          console.log("Removed jurisdiction: ", address)
+      },
+      (e) => {
+        console.log("Error removing jurisdiction", e)
+      })
+  }
+
+  /** Add all the given contracts to the given jurisdiciton in the database */
+  static async addToJurisdiction(jurisdiction: string, contracts: string[]) {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        jurisdiction,
+        contracts
+      })
+    }
+    fetch("/api/contracts/add-to-jurisdiction", request)
+      .then((r) => {
+        if (r.status === 200)
+          console.log("Added contracts to jurisdiction in db")
+      },
+      (e) => {
+        console.log("Error adding contracts to jurisdiction", e)
+      })
+  }
 }

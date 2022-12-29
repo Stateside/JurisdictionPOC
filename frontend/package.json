@@ -11,9 +11,9 @@
     "update-typechain-types": "cp -r ../jsc/typechain-types .",
     "clean-artifacts": "rm -rf artifacts",
     "update-artifacts": "cp -r ../jsc/artifacts .",
-    "update-all": "node npm-run-all clean-typechain-types update-typechain-types clean-artifacts update-artifacts",
+    "update-all": "node node_modules/npm-run-all/bin/npm-run-all/index.js clean-typechain-types update-typechain-types clean-artifacts update-artifacts",
     "lint": "node node_modules/next/dist/bin/next lint",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "node node_modules/typeorm/cli-ts-node-commonjs.js"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.13",

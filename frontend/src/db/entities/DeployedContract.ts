@@ -29,6 +29,17 @@ export class DeployedContract {
   })
   address: string
 
+  @Column('char', {
+    length: 42,
+    nullable: true
+  })
+  jurisdiction: string
+
+  @Column({
+    length: 128,
+  })
+  frontend: string
+
   @Column({
     length: 255,
     nullable: true

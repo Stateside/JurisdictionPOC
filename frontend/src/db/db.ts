@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { DataSource } from "typeorm"
+import { DataSource, DataSourceOptions } from "typeorm"
 import { DeployedContract } from './entities/DeployedContract';
 import * as dotenv from 'dotenv'
 import { Alias } from './entities/Alias';
@@ -15,7 +15,7 @@ const username = process.env.DB_USERNAME
 const password = process.env.DB_PASSWORD
 const database = process.env.DB_DATABASE
 
-export const datasource:DataSource = new DataSource({
+const dbconfig:DataSourceOptions = {
   type: "mysql",
   host: host,
   port: port,
@@ -25,19 +25,38 @@ export const datasource:DataSource = new DataSource({
   entities: [Alias, DeployedContract],
   migrations: [__dirname + '/Migrations/**/*.ts'],
   synchronize: true,
-  logging: false
-})
+  logging: ['query', 'warn', 'error'],
+  extra: {
+    connectionLimit: 50
+  },
+  maxQueryExecutionTime: 2000
+}
 
-console.log(`Connecting to database ${database} on ${host}:${port}`)
+export const datasource:DataSource = new DataSource(dbconfig)
 
 export const db = async ():Promise<DataSource> => {
   if (!datasource.isInitialized)
     await datasource.initialize()
       .then(() => {
-        console.log(`Connected`)
       })
       .catch((err) => {
         console.error("Error during Data Source initialization", err)
       })
   return datasource
 }
+
+export const withDB = async (handler:any) => {
+  console.log(`Connecting to database ${database} on ${host}:${port}`)
+  const ds:DataSource = new DataSource(dbconfig)
+  await ds.initialize()
+  try {
+    await handler(ds)
+  }
+  finally {
+    console.log(`Closing database ${database} on ${host}:${port}`)
+    ds.destroy()
+  }
+}
+
+export { DataSource as Database } from "typeorm"
+
