@@ -145,7 +145,10 @@ const Home: NextPage = () => {
               </Box>
               <Box
                 width={'100%'}
-                maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
+                maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}
+                ml={{ base: '0', md: '30px' }}
+                mr={{ base: '0', md: '30px' }}
+              >
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
                 <Tag>
                   <Text variant={'15/20'}>{`Add new Member James`}</Text>
