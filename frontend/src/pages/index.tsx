@@ -1,24 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Head from 'next/head'
 import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { Link, Spinner, Text } from '@chakra-ui/react'
+import { CircularProgress, Link, Text } from '@chakra-ui/react'
+import { SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken'
-import { useRouter } from 'next/router';
+import { Jurisdiction } from 'classes/jurisdiction';
 
-const GreenSpinner = () => (
-  <Spinner
-    thickness='2px'
-    speed='0.65s'
-    emptyColor='gray.200'
-    color='green.500'
-    size='md'
-  />)
+const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
+const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
+const MissingCaret = () => <SmallCloseIcon marginRight=".5em" color="brand.coralRed" />
 
 type JurisdictionInfo = {
   address: string
@@ -27,19 +23,79 @@ type JurisdictionInfo = {
   description: string
 }
 
+type JurisdictionConfirmations = {[address:string]:boolean}
+
 const Home: NextPage = () => {
-  const { active, chainId } = useWeb3React();
+  const { active, chainId, library: web3Provider } = useWeb3React();
   const {tokens} = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const [jurisdictions, setJurisdictions] = useState<JurisdictionInfo[]|undefined>()
-  const router = useRouter()
+  const [confirmedJurisdictions, setConfirmedJurisdictions] = useState<JurisdictionConfirmations>({})
+  let checkedJurisdictions = false
 
   useEffect(() => {
-    fetch('api/contracts/get?interface=IJSCJurisdiction&chainId='+chainId)
-    .then(res => res.json())
-    .then(res => setJurisdictions(res))
+    if (chainId)
+      fetch(`api/contracts/get?interface=IJSCJurisdiction&chainId=${chainId}&frontend=${process.env.NEXT_PUBLIC_FRONTEND||""}`)
+        .then(res => res.json())
+        .then(res => setJurisdictions([...res, {
+          address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+          name: 'Test Jurisdiction',
+          version: '1.0.0',
+          description: 'This is a test jurisdiction'
+        }]))
   }, [chainId])
 
+  // Confirm that Jurisdictions still exist (in development only because our dev blockchain is volatile)
+  useEffect(() => {
+    if (jurisdictions && process.env.NEXT_PUBLIC_VOLATILE_BLOCKCHAIN) {
+      if (!checkedJurisdictions) {
+        const confirmExists = async () => {
+          const signer = await web3Provider.getSigner()
+          jurisdictions.forEach(async jurisdiction => {
+            Jurisdiction.confirmExists(signer, jurisdiction.address,
+              async (address:string) => {
+                setConfirmedJurisdictions(cj => ({...cj, [address]: true}))
+              },
+              async (address:string) => {
+                setConfirmedJurisdictions(cj => ({...cj, [address]: false}))
+              })
+          })
+        }
+        confirmExists()
+      }
+      else {
+        // assume all jurisdictions exist
+        const cj:JurisdictionConfirmations = {}
+        jurisdictions.forEach(async j => {
+          cj[j.address] = true
+        })
+        setConfirmedJurisdictions(cj)
+      }
+      checkedJurisdictions = true // Only do it once per session
+    }
+  }, [jurisdictions, web3Provider, chainId])
+
+  const getJurisdictionTag = useCallback((jurisdiction:JurisdictionInfo) => {
+    if (confirmedJurisdictions[jurisdiction.address] === true)
+      return (
+        <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`} key={jurisdiction.address}>
+          <Tag key={jurisdiction.address}>
+            <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
+          </Tag>
+        </Link>)
+    if (confirmedJurisdictions[jurisdiction.address] === false)
+      return (
+        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => Jurisdiction.removeJurisdiction(await web3Provider.getSigner(), jurisdiction.address)}>
+          <Tag caret={<MissingCaret/>}>
+            <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
+          </Tag>
+        </Link>)
+    return (
+      <Tag key={jurisdiction.address} caret={<LoadingCaret/>}>
+        <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
+      </Tag>)
+  }, [confirmedJurisdictions])   
+  
   //To-do: Connect this to real Smart COntracts and BC
   const fakeRecentActivity = [
     { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
@@ -63,9 +119,6 @@ const Home: NextPage = () => {
           marginBottom='48px'>
           {getLabel(active, homeLabels.mainTitle)}
         </Heading>
-        {
-          console.log('BOOM', tokens)
-        }
         {!active ?
             <Connect
               variant='Heading'
@@ -81,20 +134,14 @@ const Home: NextPage = () => {
               <Box
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
-                <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
-                {
-                  jurisdictions ? 
-                    jurisdictions.slice(0, 5).map(jurisdiction => {
-                      return (
-                        <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`}>
-                          <Tag key={jurisdiction.address}>
-                            <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
-                          </Tag>
-                        </Link>
-                      )
-                    }) :
-                    <Tag><GreenSpinner/></Tag>
-                }
+                <>
+                  <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
+                  {
+                    jurisdictions 
+                      ? jurisdictions.map(jurisdiction => getJurisdictionTag(jurisdiction))
+                      : <Tag justify='center'><LoadingIcon/></Tag>
+                  }
+                </>
               </Box>
               <Box
                 width={'100%'}

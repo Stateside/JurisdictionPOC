@@ -4,7 +4,8 @@ import ChevronRightIcon from '@/components/icons/chevronRightIcon';
 
 export default function Tag({
   type = 'default',
-  noCaret,
+  caret,
+  justify,
   ...props
 }: TagInterface) {
   const tags: ObjectHashInterface = {
@@ -25,7 +26,7 @@ export default function Tag({
       boxShadow="0px 0px 15px rgba(0, 0, 0, 0.1)"
       borderRadius="8px"
       position="relative"
-      justify="flex-start"
+      justify={justify||'flex-start'}
       direction="row"
       background={tags[type]}
       h={'40px'}
@@ -40,11 +41,9 @@ export default function Tag({
       {...props}
     >
       {props.children}
-      {noCaret || (
-        <Flex position="absolute" right="0">
-          <ChevronRightIcon />
-        </Flex>
-      )}
+      <Flex position="absolute" right="0">
+        {caret || <ChevronRightIcon />}
+      </Flex>
     </Flex>
   );
 }

@@ -138,7 +138,7 @@ export default function PropertyDetailsMain() {
           {activeOffers.map(
             ({ tokenId, price, fromAddress, expiresAfter, type }, i) => {
               return (
-                <Tag type={type} key={i} noCaret>
+                <Tag type={type} key={i} caret={null}>
                   <Flex
                     width={{ base: '100%' }}
                     align="center"

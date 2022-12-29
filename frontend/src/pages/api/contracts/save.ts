@@ -10,6 +10,7 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
     version: item.version,
     interface: item.interface,
     address: item.address,
+    frontend: item.frontend,
     description: item.description,
     chainId: item.chainId
   })

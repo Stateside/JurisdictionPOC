@@ -34,7 +34,8 @@ export interface ActivityInterface {
 
 export interface TagInterface {
   type?: string;
-  noCaret?: boolean;
+  justify?: string;
+  caret?: JSX.Element|null;
   children: JSX.Element | JSX.Element[];
 }
 
