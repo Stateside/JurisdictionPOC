@@ -42,6 +42,7 @@ export function Header(props: Props) {
                                 lineHeight='20px'
                                 letterSpacing='0px'
                                 textAlign='left'
+                                textTransform='uppercase'
                                 color='brand.black'>
                                 {siteTitle}
                             </Text>

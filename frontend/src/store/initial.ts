@@ -2,14 +2,13 @@ import { MenuItemInterface, SiteLayoutData, SiteLabel, HomeLabels } from '@/inte
 
 
 export const siteMainMenu:Array<MenuItemInterface> = [
-    {label: 'Dashboard', url: '/', command: '⌘H'},
     {label: 'My Properties', url: '/my-properties', command: '⌘T'},
     {label: 'Create a Jurisdiction', url: '/jurisdiction/create', command: '⌘J'},
     {label: 'Create a Proposal', url: '/jurisdiction/proposals/create', command: '⌘P'}
 ]
 
 export const siteLayoutData:SiteLayoutData = {
-    title: `Blockchain Estate Registry`,
+    title: `Blockchain Jurisdictions & Land Registries`,
     ctaConnect: 'Connect',
 };
 

@@ -22,7 +22,7 @@ export function Footer(props: Props) {
                 marginInlineStart='0'
                 maxWidth={{ base: '221px' }}
                 fontSize={{ base: '15px' }}
-                fontWeight='700'
+                fontWeight='400'
                 lineHeight='20px'
                 letterSpacing='0px'
                 textAlign='left'
