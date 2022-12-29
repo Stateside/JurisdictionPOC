@@ -20,8 +20,8 @@ export const homeLabels:HomeLabels = {
         Please connect your 
         wallet to access the 
         platform`,
-        vip: `Welcome to the 
-        Blockchain Estate Registry`
+        vip: `Welcome to your
+        digital registries`
     },
     ctaConnect: 'Connect with your Wallet'
 }

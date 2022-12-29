@@ -6,6 +6,7 @@ import RealStateAgentIcon from "@/components/icons/realStateAgentIcon";
 import CallReceivedIcon from "@/components/icons/callReceivedIcon";
 import CallMadeIcon from "@/components/icons/callMadeIcon";
 import { getAccountShortName } from '@/utils/util';
+import NextLink from 'next/link';
 
 export default function RecentActivity({ activities, ...props }: RecentActivityInterface) {
     const getIcon = (type: string) => {
@@ -32,19 +33,21 @@ export default function RecentActivity({ activities, ...props }: RecentActivityI
                 activities.map((item: any, key: number) => {
                     const { type } = item;
                     return (
-                        <Tag type={type} key={key}>
-                            <Flex width={type === 'sellingMe' ? '25px' : '50px'}>
-                                {getIcon(type)}
-                                {type !== 'sellingMe' && <PaymentsIcon />}
-                            </Flex>
-                            <Text 
-                                variant={{base: '13/16', sm: '13/16', md: '15/20', lg: '15/20'}}
-                                fontSize={{base: '0 20px', sm: '0 20px', md: '0 30px', lg: '0 45px' }}
-                                padding={{base: '0 10px 0 0', sm: '0 10px 0 0', md: '0', lg: '0' }}
-                                marginLeft='10px'>
-                                {buildActivity(item)}
-                            </Text>
-                        </Tag>
+                        <NextLink href='/property-details/title-1/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'>
+                            <Tag type={type} key={key}>
+                                <Flex width={type === 'sellingMe' ? '25px' : '50px'}>
+                                    {getIcon(type)}
+                                    {type !== 'sellingMe' && <PaymentsIcon />}
+                                </Flex>
+                                <Text 
+                                    variant={{base: '13/16', sm: '13/16', md: '15/20', lg: '15/20'}}
+                                    fontSize={{base: '0 20px', sm: '0 20px', md: '0 30px', lg: '0 45px' }}
+                                    padding={{base: '0 10px 0 0', sm: '0 10px 0 0', md: '0', lg: '0' }}
+                                    marginLeft='10px'>
+                                    {buildActivity(item)}
+                                </Text>
+                            </Tag>
+                        </NextLink>
                     )
                 })
             }

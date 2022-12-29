@@ -12,7 +12,7 @@ export default function Tag({
     default: 'brand.white',
     received: 'brand.white',
     made: 'brand.white',
-    sellingMe: 'brand.lemon',
+    sellingMe: 'brand.white',
   };
 
   return (
@@ -20,7 +20,9 @@ export default function Tag({
       _hover={{
         padding: '6px 8px 8px 8px',
         border: '3px solid',
+        cursor: 'pointer',
         borderColor: type === 'sellingMe' ? 'brand.grey04' : 'brand.javaHover',
+        backgroundColor: type === 'sellingMe' ? 'brand.lemon' : 'brand.white'
       }}
       alignItems="center"
       boxShadow="0px 0px 15px rgba(0, 0, 0, 0.1)"
