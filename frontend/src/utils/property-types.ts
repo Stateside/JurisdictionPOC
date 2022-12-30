@@ -57,6 +57,8 @@ export type ActionNames = '' | 'sell' | 'accept';
 export type PropertyDetailsContextDefoTypes = {
   actionName: ActionNames;
   isOpen: boolean;
+  jurisdiction: string
+  tokenId: string;
   propertyId: string;
   propertyInfo: PropertyInfo[];
   propertyImages: PropertyImage[];
@@ -65,7 +67,6 @@ export type PropertyDetailsContextDefoTypes = {
   actionButtonDisabled: boolean;
   selectedOfferIndex: number | null;
   activeOffers: OfferInfo[];
-  favorited: boolean;
   handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   setSellModelField: (params: ModelFieldSetter) => void;
@@ -76,5 +77,4 @@ export type PropertyDetailsContextDefoTypes = {
   buildActivity: (activity: OfferInfo) => ReactNode | string;
   onOpen: () => void;
   onClose: () => void;
-  toggleFavorite: () => void;
 };

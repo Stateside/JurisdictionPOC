@@ -3,6 +3,7 @@ import { DataSource, DataSourceOptions } from "typeorm"
 import { DeployedContract } from './entities/DeployedContract';
 import * as dotenv from 'dotenv'
 import { Alias } from './entities/Alias';
+import { Like } from './entities/Like';
 
 // Load environment variables using dotenv if we are running outside nextjs (i.e. for the typeorm CLI or for migrations)
 if (process.env.NODE_ENV === undefined) {	
@@ -22,10 +23,10 @@ const dbconfig:DataSourceOptions = {
   username: username,
   password: password,
   database: database,
-  entities: [Alias, DeployedContract],
+  entities: [Alias, DeployedContract, Like],
   migrations: [__dirname + '/Migrations/**/*.ts'],
   synchronize: true,
-  logging: ['query', 'warn', 'error'],
+  logging: ['warn', 'error'],
   extra: {
     connectionLimit: 50
   },

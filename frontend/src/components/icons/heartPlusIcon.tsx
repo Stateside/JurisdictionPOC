@@ -1,7 +1,9 @@
 import React from 'react'
 import { Icon } from '@chakra-ui/react'
 
-type Props = {}
+type Props = {
+    onClick?: () => void
+}
 
 const HeartPlusIcon = (props: Props) => {
     return (
