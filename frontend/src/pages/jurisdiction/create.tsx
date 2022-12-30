@@ -354,6 +354,14 @@ const CreateJurisdiction: NextPage = () => {
           <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
         </HStack>
       ))}
+      {jurisdiction.members.map((m:IMember, i:number) => (
+        <HStack width="100%" key={i}>
+          <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
+          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidMemberAddressProps} />
+          <RoleSelector width="15%" isValid={m.role!==undefined} required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
+          <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
+        </HStack>
+      ))}
       {newMemberRow}
     </VStack>
   ), [jurisdiction.members, newMemberRow])
@@ -426,8 +434,9 @@ const CreateJurisdiction: NextPage = () => {
         </TabList>
 
         <TabPanels>
-          {tabs.map((tab) => (
-            <TabPanel key={tab.name}>{tab.content}</TabPanel>
+          { //  css={{"&::-webkit-scrollbar":{display: "none"}} as any} (removes scrollbars on Windows)
+          tabs.map((tab) => (
+            <TabPanel height="48vh" overflow="scroll" key={tab.name}>{tab.content}</TabPanel>
           ))}
         </TabPanels>
       </Tabs>
