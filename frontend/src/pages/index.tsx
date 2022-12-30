@@ -18,7 +18,7 @@ const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
 const MissingCaret = () => <SmallCloseIcon marginRight=".5em" color="brand.coralRed" />
 
-type LikeURLCreator = (name:string, jurisdiction:string) => string
+type LikeURLCreator = (itemId:string, jurisdiction:string) => string
 const TokenURLCreator:LikeURLCreator = (titleId:string, jurisdiction:string) => `/property-details/${titleId}/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853` // should be ${jurisdiction} but component not finished
 const ProposalURLCreator:LikeURLCreator = (proposalId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/proposal/${proposalId}`
 
@@ -110,8 +110,8 @@ const Home: NextPage = () => {
     if (!loaded)
       return <Tag justify='center'><LoadingIcon/></Tag>
 
-    const getTag = (name:string, jurisdiction:string) => (
-      <NextLink href={getURL(name, jurisdiction)} key={jurisdiction+name}>
+    const getTag = (id:string, name:string, jurisdiction:string) => (
+      <NextLink href={getURL(id, jurisdiction)} key={jurisdiction+id}>
         <Link variant={'13/16'}>
           <Tag>
             <Text>{name}</Text>
@@ -132,13 +132,13 @@ const Home: NextPage = () => {
     // Sort by createdAt date
     displayLikedItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     displayLikedItems.forEach(like => {
-      items.push(getTag(like.name, like.jurisdiction))
+      items.push(getTag(like.itemId, like.name, like.jurisdiction))
     })
 
     // If none, then show some "interesting" ones
     if (items.length === 0) {
       items.push(<Text variant={'13/16'} marginBottom={"1em"} key="0">You have no favourite properties. Try these:</Text>)
-      defaultItems.forEach(i => items.push(getTag(i.name, i.jurisdiction)))
+      defaultItems.forEach(i => items.push(getTag(i.id, i.name, i.jurisdiction)))
     }
 
     return items
@@ -191,13 +191,13 @@ const Home: NextPage = () => {
                 mr={{ base: '0', md: '30px' }}
               >
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
-                {getFavourites(loaded, likedProposals, ProposalURLCreator, [{ name: 'Add new Member James', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
+                {getFavourites(loaded, likedProposals, ProposalURLCreator, [{ id: "1", name: 'Add new Member James', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
               </Box>
               <Box
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
-                {getFavourites(loaded, likedTokens, TokenURLCreator, [{ name: 'title-1', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
+                {getFavourites(loaded, likedTokens, TokenURLCreator, [{ id:"title-1", name: '001-456-87654-E', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
               </Box>
             </Flex>
           </VStack>

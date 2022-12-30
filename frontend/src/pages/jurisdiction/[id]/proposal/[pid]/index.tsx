@@ -24,7 +24,7 @@ const Proposal: NextPage = () => {
         <title>Proposal</title>
       </Head>
       <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
-        Proposal <FavoriteProposalButton jurisdiction={jurisdiction as string} itemId={proposalId as string} name="proposal-1" />
+        Proposal <FavoriteProposalButton jurisdiction={jurisdiction as string} itemId={proposalId as string} name="Add new Member James" />
       </Heading>
       <Box>
         <VStack width="100%" alignItems="flex-start">

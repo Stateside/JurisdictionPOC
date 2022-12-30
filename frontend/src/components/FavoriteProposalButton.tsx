@@ -13,8 +13,8 @@ export default function FavoriteProposalButton(props:FavoriteButtonProps) {
   const { likesProposal, likeProposal, unlikeProposal } = useLikes();
 
   return (
-    likesProposal(props) !== null 
-      ? <FavoriteFullIcon {... iconProps} color="#FF4850" onClick={() => unlikeProposal(props)} /> 
+    likesProposal(props) !== null
+      ? <FavoriteFullIcon {... iconProps} color="#FF4850" onClick={() => unlikeProposal(props)} />
       : <HeartPlusIcon {... iconProps} onClick={() => likeProposal(props)} />
   )
 };

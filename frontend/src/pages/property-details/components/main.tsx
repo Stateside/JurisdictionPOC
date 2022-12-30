@@ -81,7 +81,7 @@ export default function PropertyDetailsMain() {
         </GridItem>
         <GridItem colSpan={12}>
           <Box as="span" fontWeight="400" fontSize={{ base: '80px' }}>
-            {propertyId} <FavoriteTokenButton jurisdiction={jurisdiction as string} itemId={tokenId} name={propertyId} />
+            {propertyId} <FavoriteTokenButton jurisdiction={jurisdiction as string} itemId={propertyId} name={propertyId} />
           </Box>
         </GridItem>
         <GridItem colSpan={7}>
