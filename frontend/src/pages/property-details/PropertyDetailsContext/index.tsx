@@ -1,7 +1,7 @@
 import { createContext, useState, ReactNode, ChangeEvent, useEffect } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 import { deepCopy, getAccountShortName } from 'utils/util';
-import { ObjectHashInterface, ActivityInterface } from '@/interfaces/index';
+import { ObjectHashInterface } from '@/interfaces/index';
 import { useRouter } from 'next/router';
 import {
   SellFormModel,
@@ -19,6 +19,7 @@ import {
   buildTokenInfoByTitleId,
   buildActiveOffersInfoByTitleId,
   buildLocationString,
+  getTokenByTitleId,
 } from '@/model/factories/TokenFactory';
 import {getTokenInformationByTitleId} from '@/model/services/DataService';
 import useJSCTitleToken from '@/hooks/useJSCTitleToken';
@@ -63,6 +64,8 @@ const newSellFormModel: SellFormModel = {
 const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   actionName: '',
   isOpen: false,
+  jurisdiction: '',
+  tokenId: '',
   propertyId: '',
   propertyInfo: [],
   propertyImages: [],
@@ -71,7 +74,6 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   actionButtonDisabled: true,
   selectedOfferIndex: null,
   activeOffers: [],
-  favorited: false,
   handleInputChange: () => {},
   handleSelectChange: () => {},
   setSellModelField: () => {},
@@ -81,8 +83,7 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   showAcceptOfferModal: () => {},
   buildActivity: () => '',
   onClose: () => {},
-  onOpen: () => {},
-  toggleFavorite: () => {}
+  onOpen: () => {}
 };
 
 export const PropertyDetailsContext =
@@ -110,6 +111,7 @@ const PropertyDetailsProvider = function ({
     useState<boolean>(true);
   const [sellFormModel, setSellFormModel] =
     useState<SellFormModel>(newSellFormModel);
+  const [tokenId, setTokenId] = useState<string>('');
   const [propertyId, setPropertyId] = useState<string>('');
   const [propertyInfo, setPropertyInfo] = useState<PropertyInfo[]>([]);
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
@@ -119,7 +121,6 @@ const PropertyDetailsProvider = function ({
     null
   );
   const [jscJurisdictionInfo, setJscJurisdictionInfo] = useState<jscJurisdictionInfo | undefined>(undefined);
-  const [favorited, setFavorited] = useState<boolean>(false);
 
   // ----------------------------------------------------------------
   // Private methods
@@ -310,11 +311,6 @@ const PropertyDetailsProvider = function ({
     return `${copy[offer.type]}`;
   }
 
-  function toggleFavorite() {
-    setFavorited(!favorited);
-    console.log('post here favorited or not');
-  }
-
   // ----------------------------------------------------------------
   // Effects
   // ----------------------------------------------------------------
@@ -343,6 +339,7 @@ const PropertyDetailsProvider = function ({
         'buy'
       );
 
+      setTokenId(getTokenByTitleId(tokens, titleId)?.tokenId || '');
       setPropertyId(titleId);
       setPropertyInfo(tokenInfo);
       setActiveOffers(buyOffersInfo);
@@ -351,11 +348,12 @@ const PropertyDetailsProvider = function ({
     }
   }, [loading, jscJurisdictionInfo]);
 
-
   return (
     <PropertyDetailsContext.Provider
       value={{
         actionName,
+        tokenId,
+        jurisdiction: tokenJurisdictionAddress,
         propertyId,
         propertyInfo,
         propertyImages,
@@ -365,7 +363,6 @@ const PropertyDetailsProvider = function ({
         actionButtonDisabled,
         selectedOfferIndex,
         activeOffers,
-        favorited,
         handleInputChange,
         handleSelectChange,
         setSellModelField,
@@ -374,7 +371,6 @@ const PropertyDetailsProvider = function ({
         showSellModal,
         showAcceptOfferModal,
         buildActivity,
-        toggleFavorite,
         onClose,
         onOpen,
       }}

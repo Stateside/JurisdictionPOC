@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import Head from 'next/head'
+import NextLink from 'next/link'
 import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
@@ -9,12 +10,17 @@ import { SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
-import useJSCTitleToken from '@/hooks/useJSCTitleToken'
 import { Jurisdiction } from 'classes/jurisdiction';
+import { JurisdictionMap, useLikes } from '@/store/likes';
+import { Like } from 'db/entities/Like';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
 const MissingCaret = () => <SmallCloseIcon marginRight=".5em" color="brand.coralRed" />
+
+type LikeURLCreator = (itemId:string, jurisdiction:string) => string
+const TokenURLCreator:LikeURLCreator = (titleId:string, jurisdiction:string) => `/property-details/${titleId}/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853` // should be ${jurisdiction} but component not finished
+const ProposalURLCreator:LikeURLCreator = (proposalId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/proposal/${proposalId}`
 
 type JurisdictionInfo = {
   address: string
@@ -27,22 +33,17 @@ type JurisdictionConfirmations = {[address:string]:boolean}
 
 const Home: NextPage = () => {
   const { active, chainId, library: web3Provider } = useWeb3React();
-  const {tokens} = useJSCTitleToken('0xa513E6E4b8f2a923D98304ec87F64353C4D5C853')
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const [jurisdictions, setJurisdictions] = useState<JurisdictionInfo[]|undefined>()
   const [confirmedJurisdictions, setConfirmedJurisdictions] = useState<JurisdictionConfirmations>({})
+  const { loaded, likedProposals, likedTokens } = useLikes()
   let checkedJurisdictions = false
 
   useEffect(() => {
     if (chainId)
       fetch(`api/contracts/get?interface=IJSCJurisdiction&chainId=${chainId}&frontend=${process.env.NEXT_PUBLIC_FRONTEND||""}`)
         .then(res => res.json())
-        .then(res => setJurisdictions([...res, {
-          address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-          name: 'Test Jurisdiction',
-          version: '1.0.0',
-          description: 'This is a test jurisdiction'
-        }]))
+        .then(res => setJurisdictions(res))
   }, [chainId])
 
   // Confirm that Jurisdictions still exist (in development only because our dev blockchain is volatile)
@@ -78,11 +79,13 @@ const Home: NextPage = () => {
   const getJurisdictionTag = useCallback((jurisdiction:JurisdictionInfo) => {
     if (confirmedJurisdictions[jurisdiction.address] === true)
       return (
-        <Link variant={'13/16'} href={`/jurisdiction/${jurisdiction.address}`} key={jurisdiction.address}>
-          <Tag key={jurisdiction.address}>
-            <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
-          </Tag>
-        </Link>)
+        <NextLink href={`/jurisdiction/${jurisdiction.address}`} key={jurisdiction.address}>
+          <Link variant={'13/16'}>
+            <Tag key={jurisdiction.address}>
+              <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
+            </Tag>
+          </Link>
+        </NextLink>)
     if (confirmedJurisdictions[jurisdiction.address] === false)
       return (
         <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => Jurisdiction.removeJurisdiction(await web3Provider.getSigner(), jurisdiction.address)}>
@@ -102,6 +105,44 @@ const Home: NextPage = () => {
     { tokenId: '001-456-87654-E', price: '130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
     { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
   ]
+
+  const getFavourites = useCallback((loaded:boolean, jurisdictionMap:JurisdictionMap, getURL:LikeURLCreator, defaultItems:any[]) => {
+    if (!loaded)
+      return <Tag justify='center'><LoadingIcon/></Tag>
+
+    const getTag = (id:string, name:string, jurisdiction:string) => (
+      <NextLink href={getURL(id, jurisdiction)} key={jurisdiction+id}>
+        <Link variant={'13/16'}>
+          <Tag>
+            <Text>{name}</Text>
+          </Tag>
+        </Link>
+      </NextLink>)
+
+    const items:JSX.Element[] = []
+    const displayLikedItems: Like[] = []
+    const likedJurisdictions = Object.keys(jurisdictionMap)
+
+    // Get all likes for all jurisdictions
+    likedJurisdictions.forEach(jId => {
+      const likedItemIds = Object.keys(jurisdictionMap[jId])
+      likedItemIds.forEach(iId => displayLikedItems.push(jurisdictionMap[jId][iId]))
+    })
+
+    // Sort by createdAt date
+    displayLikedItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    displayLikedItems.forEach(like => {
+      items.push(getTag(like.itemId, like.name, like.jurisdiction))
+    })
+
+    // If none, then show some "interesting" ones
+    if (items.length === 0) {
+      items.push(<Text variant={'13/16'} marginBottom={"1em"} key="0">You have no favourite properties. Try these:</Text>)
+      defaultItems.forEach(i => items.push(getTag(i.id, i.name, i.jurisdiction)))
+    }
+
+    return items
+  }, [loaded])
 
   return (
     <Box width='100%'>
@@ -150,19 +191,13 @@ const Home: NextPage = () => {
                 mr={{ base: '0', md: '30px' }}
               >
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
-                <Tag>
-                  <Text variant={'15/20'}>{`Add new Member James`}</Text>
-                </Tag>
+                {getFavourites(loaded, likedProposals, ProposalURLCreator, [{ id: "1", name: 'Add new Member James', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
               </Box>
               <Box
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
-                <Link variant={'13/16'} href='/property-details/title-1/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'>
-                  <Tag>
-                    <Text>001-456-87654-E</Text>
-                  </Tag>
-                </Link>
+                {getFavourites(loaded, likedTokens, TokenURLCreator, [{ id:"title-1", name: '001-456-87654-E', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
               </Box>
             </Flex>
           </VStack>

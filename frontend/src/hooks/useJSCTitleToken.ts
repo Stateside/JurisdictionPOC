@@ -45,8 +45,8 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):useJSCTitleTokenHook => 
                     const t = await jscTitleToken.tokenAtIndex(ti)
                     const { owner, titleId, offersToBuy, offersToSell, frozen, url } = await getTokenData(jscTitleToken, t, aliasData)
                     const accountInfo = aliasData ? {
-                        name: owner,
-                        address: aliasData.aliasesByAddress.get(owner.toLowerCase())
+                        address: owner,
+                        name: aliasData.aliasesByAddress.get(owner.toLowerCase())
                      } : { 
                         name: "", 
                         address: owner 
@@ -56,7 +56,7 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):useJSCTitleTokenHook => 
                         tokenId: t.toHexString(),
                         titleId,
                         frozen,
-                        owner: accountInfo.name,
+                        owner: accountInfo.name || '',
                         ownerAddress: accountInfo.address,
                         ownerFrozen: await jscTitleToken.isFrozenOwner(owner),
                         url,

@@ -3,6 +3,7 @@ import { Icon } from '@chakra-ui/react'
 
 type Props = {
     color: string
+    onClick?: () => void
 }
 
 const FavoriteFullIcon = (props: Props) => {

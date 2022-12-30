@@ -2,7 +2,7 @@ import { db } from '../../../db/db'
 import { Alias } from "../../../db/entities/Alias";
 import { NextApiRequest, NextApiResponse } from "next";
 
-/** Saves a new aliases to the database */
+/** Saves new aliases to the database */
 const save = async (req: NextApiRequest, res: NextApiResponse) => {
   const items = req.body.aliases;
   const newItems = items.map((i:any) => new Alias({

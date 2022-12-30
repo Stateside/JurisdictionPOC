@@ -20,10 +20,10 @@ import PropertyDetailsModal from '../modal';
 import PropertyDetailsModalHeader from '../modal/modalHeader';
 import SellPropertyModal from '../modal/sellPropertyModal';
 import AcceptOfferModal from '../modal/acceptOfferModal';
-import FavoriteButton from './favoriteButton';
 import PropertyDetailsModalActions from '../modal/modalActions';
 import { PropertyDetailsContext } from '../PropertyDetailsContext';
 import { PropertyInfo } from '@/utils/property-types';
+import FavoriteTokenButton from '@/components/FavoriteTokenButton';
 
 const gridLayout = 'repeat(12, 1fr)';
 const favoriteStyles = { position: 'relative', bottom: '0.3em'};
@@ -38,6 +38,8 @@ declare global {
 export default function PropertyDetailsMain() {
   const {
     actionName,
+    tokenId,
+    jurisdiction,
     propertyId,
     propertyInfo,
     propertyImages,
@@ -45,7 +47,7 @@ export default function PropertyDetailsMain() {
     activeOffers,
     showSellModal,
     showAcceptOfferModal,
-    buildActivity,
+    buildActivity,    
   } = useContext(PropertyDetailsContext);
   const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo}&z=12&amp;output=embed`;
 
@@ -63,7 +65,7 @@ export default function PropertyDetailsMain() {
         <GridItem colSpan={12}>
           <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
             <BreadcrumbItem h={{ base: '30px' }}>
-              <NextLink passHref href="/dashboard">
+              <NextLink passHref href="/">
                 <BreadcrumbLink>
                   <ArrowBack w={{ base: '23px' }} />
                   Back to dashboard
@@ -79,7 +81,7 @@ export default function PropertyDetailsMain() {
         </GridItem>
         <GridItem colSpan={12}>
           <Box as="span" fontWeight="400" fontSize={{ base: '80px' }}>
-            {propertyId} <FavoriteButton />
+            {propertyId} <FavoriteTokenButton jurisdiction={jurisdiction as string} itemId={propertyId} name={propertyId} />
           </Box>
         </GridItem>
         <GridItem colSpan={7}>

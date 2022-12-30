@@ -11,15 +11,20 @@ import {
   Textarea,
   VStack,
 } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
+import FavoriteProposalButton from '@/components/FavoriteProposalButton';
 
 const Proposal: NextPage = () => {
+  const router = useRouter();
+  const { id:jurisdiction, pid:proposalId } = router.query;
+
   return (
     <Box width="100%">
       <Head>
         <title>Proposal</title>
       </Head>
       <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
-        Proposal
+        Proposal <FavoriteProposalButton jurisdiction={jurisdiction as string} itemId={proposalId as string} name="Add new Member James" />
       </Heading>
       <Box>
         <VStack width="100%" alignItems="flex-start">
