@@ -105,6 +105,9 @@ const CreateJurisdiction: NextPage = () => {
   const [ aliasData, setAliasData ] = useState<AliasData|undefined>()
   const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()
 
+  const [ selectedTab, setSelectedTab ] = useState(0)
+
+  console.log("Selected tab: ", selectedTab)
   useEffect(() => {
     reloadAliases().then((data) => {
         setAliasData(data)
@@ -341,7 +344,7 @@ const CreateJurisdiction: NextPage = () => {
     </HStack>
     ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
 
-  const membersRow= useMemo(() => (
+  const membersRows= useMemo(() => (
     <VStack spacing={4}>
       {jurisdiction.members.map((m:IMember, i:number) => (
         <HStack width="100%" key={i}>
@@ -355,7 +358,7 @@ const CreateJurisdiction: NextPage = () => {
     </VStack>
   ), [jurisdiction.members, newMemberRow])
   
-  const contractsRow = useMemo(() => (
+  const contractsRows = useMemo(() => (
     <VStack spacing={4}>
       {jurisdiction.contracts.map((c:ContractDefinition) => (
         <HStack width="100%" key={c.key}>
@@ -378,41 +381,54 @@ const CreateJurisdiction: NextPage = () => {
     </VStack>
   ), [jurisdiction.contracts, deploy])
 
-  const submitButtons = useMemo(() => (
-    <HStack width="100%" justifyContent="flex-end">
-      <Button onClick={() => reset()}>Reset</Button>
-      <Button {...(isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()}>Create Jurisdiction</Button>
-    </HStack>
-  ), [isValidForm, deploy])
+  const configTab = useMemo(() => (
+    <VStack alignItems="flex-start" spacing={4}>        
+      {jurisdictionNameRow}
+      {jurisdictionContractRow}
+      {titleTokenNameRow}
+      {titleTokenSymbolRow}
+      {titleTokenURIRow}
+    </VStack>
+  ), [jurisdictionNameRow, jurisdictionContractRow, titleTokenNameRow, titleTokenSymbolRow, titleTokenURIRow])
+
+  const membersTab = useMemo(() => membersRows, [membersRows])
+
+  const contractsTab = useMemo(() => contractsRows, [contractsRows])
+
+  const tabs = [
+    { name: "Configuration", content: configTab },
+    { name: "Members", content: membersTab },
+    { name: "Contracts", content: contractsTab },
+  ]
+
+  const submitButtons = useMemo(() => {
+    const isFirstTab = selectedTab===0
+    const isLastTab = selectedTab===tabs.length-1
+    return (
+      <HStack width="100%" justifyContent="flex-end">
+        <Button onClick={() => reset()}>Reset All</Button>
+        <Button {...(!isFirstTab?greenButtonProps:"")} onClick={() => setSelectedTab(selectedTab-1)} disabled={isFirstTab}>Previous</Button>
+        <Button {...(!isLastTab?greenButtonProps:"")} onClick={() => setSelectedTab(selectedTab+1)} disabled={isLastTab}>Next</Button>
+        <Button {...(isLastTab&&isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()} disabled={!isLastTab}>Create Jurisdiction</Button>
+      </HStack>)
+  }, [isValidForm, deploy, selectedTab])
 
   const page = useMemo(() => (
     <Box width="100%">
       <Head>
         <title>Create a Jurisdiction</title>
       </Head>
-      <Tabs variant="enclosed">
+      <Tabs variant="enclosed" onChange={i => setSelectedTab(i)} index={selectedTab}>
         <TabList>
-          <Tab>Configuration</Tab>
-          <Tab>Members</Tab>
-          <Tab>Contracts</Tab>
+          {tabs.map((tab, index) => (
+            <Tab key={tab.name}>{tab.name}</Tab>
+          ))}
         </TabList>
 
         <TabPanels>
-          <TabPanel>
-            <VStack alignItems="flex-start" spacing={4}>        
-              {jurisdictionNameRow}
-              {jurisdictionContractRow}
-              {titleTokenNameRow}
-              {titleTokenSymbolRow}
-              {titleTokenURIRow}
-            </VStack>
-          </TabPanel>
-          <TabPanel>
-            {membersRow}
-          </TabPanel>
-          <TabPanel>
-            {contractsRow}
-        </TabPanel>
+          {tabs.map((tab) => (
+            <TabPanel key={tab.name}>{tab.content}</TabPanel>
+          ))}
         </TabPanels>
       </Tabs>
       <Divider width="100%" marginBottom="1em"/>
@@ -420,7 +436,7 @@ const CreateJurisdiction: NextPage = () => {
       {errorDialog}
       {progressDialog}
     </Box>
-  ), [jurisdiction, jurisdictionNameRow, titleTokenNameRow, titleTokenSymbolRow, titleTokenURIRow, membersRow, contractsRow, submitButtons, errorDialog, progressDialog])
+  ), [tabs, submitButtons, errorDialog, progressDialog, selectedTab])
 
   return page
 }
