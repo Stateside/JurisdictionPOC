@@ -128,35 +128,50 @@ const Proposals = () => {
   }, [library, jscJurisdiction]);
 
   return (
-    <HStack alignItems="flex-start">
-      <VStack width={'80%'} marginRight={'10%'} alignItems="flex-start">
-        <Text variant={'15/20-BOLD'}>Active proposals</Text>
-        <Box width={'100%'}>
-          {Object.keys(jscProposals).map(proposal => {
-            const cProposal = jscProposals[proposal];
-            return (
-              !!cProposal.state && <Tag>
-                <Text variant={'15/20'}>
-                  {sampleProposals[proposal]?.description || 'unknown'}
-                </Text>
-              </Tag>
-            );
-          })}
+    <HStack alignItems="flex-start" marginTop="20px" marginBottom="20px">
+      <VStack
+        gap="40px"
+        width={'80%'}
+        marginRight={'10%'}
+        alignItems="flex-start"
+      >
+        <Box width="100%">
+          <Text variant={'15/20-BOLD'} marginBottom="20px">
+            Active proposals
+          </Text>
+          <Box>
+            {Object.keys(jscProposals).map(proposal => {
+              const cProposal = jscProposals[proposal];
+              return (
+                !!cProposal.state && (
+                  <Tag>
+                    <Text variant={'15/20'}>
+                      {sampleProposals[proposal]?.description || 'unknown'}
+                    </Text>
+                  </Tag>
+                )
+              );
+            })}
+          </Box>
         </Box>
-        <Text variant={'15/20-BOLD'}>Closed proposals</Text>
-        <Box width={'100%'}>
-          {Object.keys(jscProposals).map(proposal => {
-            const cProposal = jscProposals[proposal];
-            return (
-              !cProposal.state && (
-                <Tag>
-                  <Text variant={'15/20'}>
-                    {sampleProposals[proposal]?.description || 'unknown'}
-                  </Text>
-                </Tag>
-              )
-            );
-          })}
+        <Box width="100%">
+          <Text variant={'15/20-BOLD'} marginBottom="20px">
+            Closed proposals
+          </Text>
+          <Box>
+            {Object.keys(jscProposals).map(proposal => {
+              const cProposal = jscProposals[proposal];
+              return (
+                !cProposal.state && (
+                  <Tag>
+                    <Text variant={'15/20'}>
+                      {sampleProposals[proposal]?.description || 'unknown'}
+                    </Text>
+                  </Tag>
+                )
+              );
+            })}
+          </Box>
         </Box>
       </VStack>
       <Box>

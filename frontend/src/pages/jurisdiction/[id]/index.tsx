@@ -1,6 +1,17 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Tabs, TabList, TabPanels, Tab, TabPanel, Box } from '@chakra-ui/react';
+import { ArrowBackIcon } from '@chakra-ui/icons';
+import {
+  Box,
+  Heading,
+  Link,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Text
+} from '@chakra-ui/react';
 
 import Contracts from './Contracts';
 import Members from './Members';
@@ -9,19 +20,40 @@ import Properties from './Properties';
 
 
 const Jurisdiction: NextPage = () => {
+
+  const tabSelectedStyles = {
+    color: '#000',
+    borderColor: 'inherit',
+    borderBottomColor: '#fff',
+  };
+
   return (
     <Box width="100%">
       <Head>
         <title>Jurisdiction Name</title>
       </Head>
-      <Tabs variant="enclosed">
+      <Link href="/" display="flex" fontWeight="bold">
+        <ArrowBackIcon marginRight="10px" marginTop="5px" />
+        <Text>Back to Dashboard / Jurisdiction</Text>
+      </Link>
+      <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
+        Jurisdiction Name
+      </Heading>
+      <Tabs variant="enclosed" borderColor="#D3D3D3">
         <TabList>
-          <Tab>Members</Tab>
-          <Tab>Contracts</Tab>
-          <Tab>Proposals</Tab>
-          <Tab>Properties</Tab>
+          <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
+            Members
+          </Tab>
+          <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
+            Contracts
+          </Tab>
+          <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
+            Proposals
+          </Tab>
+          <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
+            Properties
+          </Tab>
         </TabList>
-
         <TabPanels>
           <TabPanel>
             <Members />

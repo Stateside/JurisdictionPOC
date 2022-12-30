@@ -118,13 +118,18 @@ const Members = () => {
   }, [members, aliasData])
 
   return (
-    <VStack alignItems="flex-start">
+    <VStack
+      alignItems="flex-start"
+      gap="20px"
+      marginTop="20px"
+      marginBottom="20px"
+    >
       {members.map((member: MemberInfo) => {
         return (
           <HStack width="100%" key={member.account}>
-            <Input width="20%" value={member.name} onChange={() => {}}/>
-            <Input width="40%" value={member.account} onChange={() => {}}/>
-            <Input width="20%" value={member.role.name} onChange={() => {}}/>
+            <Input width="20%" value={member.name} onChange={() => {}} />
+            <Input width="40%" value={member.account} onChange={() => {}} />
+            <Input width="20%" value={member.role.name} onChange={() => {}} />
             <Button width="20%" rightIcon={<DeleteIcon height={7} width={7} />}>
               Remove
             </Button>
