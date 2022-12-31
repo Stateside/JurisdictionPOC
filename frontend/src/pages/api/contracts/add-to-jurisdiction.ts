@@ -2,7 +2,7 @@ import { db } from '../../../db/db'
 import { DeployedContract } from "../../../db/entities/DeployedContract";
 import { NextApiRequest, NextApiResponse } from "next";
 
-/** Adds all given contracts to the given jurisdiciton in the database */
+/** Adds all given contracts to the given jurisdiction in the database */
 const addToJurisdiction = async (req: NextApiRequest, res: NextApiResponse) => {
   const { jurisdiction } = req.body;
   const contracts = JSON.parse(req.body.contracts)

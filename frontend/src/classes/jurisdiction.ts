@@ -384,7 +384,7 @@ export class Jurisdiction implements IJurisdiction {
       })
   }
 
-  /** Confirm if the given address points to a Jurisdiciton contract */
+  /** Confirm if the given address points to a Jurisdiction contract */
   static async confirmExists(signer:ethers.Signer, address: string, onExists?: ConfirmationHandler, onMissing?: ConfirmationHandler) {
     let exists:boolean = false
     try {
@@ -420,7 +420,7 @@ export class Jurisdiction implements IJurisdiction {
       })
   }
 
-  /** Add all the given contracts to the given jurisdiciton in the database */
+  /** Add all the given contracts to the given jurisdiction in the database */
   static async addToJurisdiction(jurisdiction: string, contracts: string[]) {
     const request = {
       method: "POST",
