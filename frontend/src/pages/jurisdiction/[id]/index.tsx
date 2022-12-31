@@ -1,10 +1,10 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { ArrowBackIcon } from '@chakra-ui/icons';
+import { Link } from '@/components/Link';
 import {
   Box,
   Heading,
-  Link,
   Tabs,
   TabList,
   TabPanels,

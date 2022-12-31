@@ -6,6 +6,7 @@ import { siteLayoutData, siteMainMenu } from '@/store/initial'
 import ConnectCheck from './ConnectCheck'
 import { useWeb3React } from '@web3-react/core'
 import { useLikes } from '@/store/likes'
+import { useJurisdictions } from '@/store/jurisdictions'
 
 type Props = {
   children: ReactNode
@@ -13,17 +14,16 @@ type Props = {
 
 export function Layout(props: Props) {
   const { account, chainId } = useWeb3React();
-  const likes = useLikes();
   const { title, ctaConnect } = siteLayoutData
 
   // Load the likes from the database, then reload when account or chainId changes
-  useEffect(() => {
-    if (account && chainId && process.env.NEXT_PUBLIC_FRONTEND) {
-      if (!likes.loaded || likes.owner !== account || likes.chainId !== chainId)
-        likes.load(account, process.env.NEXT_PUBLIC_FRONTEND, chainId);
-    }
-  }, [account, chainId, likes.loaded])
-
+  const likes = useLikes();
+  useEffect(() => { account && chainId && likes.init(account, chainId) }, [account, chainId])
+  
+  // Load the known jurisdictions from the database, then reload when chainId changes
+  const jurisdictions = useJurisdictions();
+  useEffect(() => { chainId && jurisdictions.init(chainId) }, [chainId])
+  
   return (
     <Box
       minHeight='100vh'

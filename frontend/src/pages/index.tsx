@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import Head from 'next/head'
-import NextLink from 'next/link'
 import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { CircularProgress, Link, Text } from '@chakra-ui/react'
+import { CircularProgress, Text } from '@chakra-ui/react'
 import { SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
@@ -13,6 +12,7 @@ import type { NextPage } from 'next';
 import { Jurisdiction } from 'classes/jurisdiction';
 import { JurisdictionMap, useLikes } from '@/store/likes';
 import { Like } from 'db/entities/Like';
+import { Link } from '@/components/Link';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
@@ -79,13 +79,11 @@ const Home: NextPage = () => {
   const getJurisdictionTag = useCallback((jurisdiction:JurisdictionInfo) => {
     if (confirmedJurisdictions[jurisdiction.address] === true)
       return (
-        <NextLink href={`/jurisdiction/${jurisdiction.address}`} key={jurisdiction.address}>
-          <Link variant={'13/16'}>
-            <Tag key={jurisdiction.address}>
-              <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
-            </Tag>
-          </Link>
-        </NextLink>)
+        <Link href={`/jurisdiction/${jurisdiction.address}`} variant={'13/16'} key={jurisdiction.address}>
+          <Tag key={jurisdiction.address}>
+            <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
+          </Tag>
+        </Link>)
     if (confirmedJurisdictions[jurisdiction.address] === false)
       return (
         <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => Jurisdiction.removeJurisdiction(await web3Provider.getSigner(), jurisdiction.address)}>
@@ -111,13 +109,11 @@ const Home: NextPage = () => {
       return <Tag justify='center'><LoadingIcon/></Tag>
 
     const getTag = (id:string, name:string, jurisdiction:string) => (
-      <NextLink href={getURL(id, jurisdiction)} key={jurisdiction+id}>
-        <Link variant={'13/16'}>
-          <Tag>
-            <Text>{name}</Text>
-          </Tag>
-        </Link>
-      </NextLink>)
+      <Link href={getURL(id, jurisdiction)} variant={'13/16'} key={jurisdiction+id}>
+        <Tag>
+          <Text>{name}</Text>
+        </Tag>
+      </Link>)
 
     const items:JSX.Element[] = []
     const displayLikedItems: Like[] = []

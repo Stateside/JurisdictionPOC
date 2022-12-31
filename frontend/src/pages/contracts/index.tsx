@@ -1,13 +1,13 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import NextLink from 'next/link'
 import { useEffect, useState } from 'react'
 import { Heading, Box } from "@chakra-ui/layout"
-import { Container, Link, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack, Text } from '@chakra-ui/react'
+import { Container, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack, Text } from '@chakra-ui/react'
 import { listContractsLabels } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import { ContractInfo } from '../api/getContracts'
 import { getAccountShortName } from '@/utils/util'
+import { Link } from '@/components/Link'
 
 const ListContracts: NextPage = () => {
   const { active, account } = useWeb3React();
@@ -58,9 +58,9 @@ const ListContracts: NextPage = () => {
                             <Td>
                               {c.type === "contract" 
                                 ? 
-                                <NextLink href={{ pathname: 'contracts/'+c.name, query: { address: c.address } }}>
-                                  <Link as='b' color={"darkblue"}>{c.name}</Link>
-                                </NextLink>
+                                <Link href={{ pathname: 'contracts/'+c.name, query: { address: c.address } }} as='b' color={"darkblue"}>
+                                  {c.name}
+                                </Link>
                                 : <Text color={"gray"}>{c.name}</Text>
                                 }
                             </Td>
