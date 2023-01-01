@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
@@ -10,9 +10,10 @@ import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
 import { Jurisdiction } from 'classes/jurisdiction';
-import { JurisdictionMap, useLikes } from '@/store/likes';
+import { JurisdictionMap, useLikes } from '@/store/useLikes';
 import { Like } from 'db/entities/Like';
 import { Link } from '@/components/Link';
+import { JurisdictionInfo, JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
@@ -22,71 +23,35 @@ type LikeURLCreator = (itemId:string, jurisdiction:string) => string
 const TokenURLCreator:LikeURLCreator = (titleId:string, jurisdiction:string) => `/property-details/${titleId}/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853` // should be ${jurisdiction} but component not finished
 const ProposalURLCreator:LikeURLCreator = (proposalId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/proposal/${proposalId}`
 
-type JurisdictionInfo = {
-  address: string
-  name: string
-  version: string
-  description: string
+type Sortable = { createdAt?:Date }
+const sortDescending = (a:Sortable,b:Sortable) => {
+  return (b.createdAt?.getTime()||0) - (a.createdAt?.getTime()||0)
 }
-
-type JurisdictionConfirmations = {[address:string]:boolean}
 
 const Home: NextPage = () => {
   const { active, chainId, library: web3Provider } = useWeb3React();
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
-  const [jurisdictions, setJurisdictions] = useState<JurisdictionInfo[]|undefined>()
-  const [confirmedJurisdictions, setConfirmedJurisdictions] = useState<JurisdictionConfirmations>({})
-  const { loaded, likedProposals, likedTokens } = useLikes()
-  let checkedJurisdictions = false
+  const { loaded: likesReady, likedProposals, likedTokens } = useLikes()
+  
+  const { loaded: jurisdictionsLoaded, infos: jurisdictionInfos, confirm: confirmJurisdictionsExist } = useJurisdictions()
+  const sortedJurisdictions = useMemo(() => 
+    Object.values(jurisdictionInfos).sort(sortDescending), [jurisdictionInfos])
 
   useEffect(() => {
-    if (chainId)
-      fetch(`api/contracts/get?interface=IJSCJurisdiction&chainId=${chainId}&frontend=${process.env.NEXT_PUBLIC_FRONTEND||""}`)
-        .then(res => res.json())
-        .then(res => setJurisdictions(res))
-  }, [chainId])
-
-  // Confirm that Jurisdictions still exist (in development only because our dev blockchain is volatile)
-  useEffect(() => {
-    if (jurisdictions && process.env.NEXT_PUBLIC_VOLATILE_BLOCKCHAIN) {
-      if (!checkedJurisdictions) {
-        const confirmExists = async () => {
-          const signer = await web3Provider.getSigner()
-          jurisdictions.forEach(async jurisdiction => {
-            Jurisdiction.confirmExists(signer, jurisdiction.address,
-              async (address:string) => {
-                setConfirmedJurisdictions(cj => ({...cj, [address]: true}))
-              },
-              async (address:string) => {
-                setConfirmedJurisdictions(cj => ({...cj, [address]: false}))
-              })
-          })
-        }
-        confirmExists()
-      }
-      else {
-        // assume all jurisdictions exist
-        const cj:JurisdictionConfirmations = {}
-        jurisdictions.forEach(async j => {
-          cj[j.address] = true
-        })
-        setConfirmedJurisdictions(cj)
-      }
-      checkedJurisdictions = true // Only do it once per session
-    }
-  }, [jurisdictions, web3Provider, chainId])
+    confirmJurisdictionsExist(web3Provider)
+  }, [web3Provider, jurisdictionInfos])
 
   const getJurisdictionTag = useCallback((jurisdiction:JurisdictionInfo) => {
-    if (confirmedJurisdictions[jurisdiction.address] === true)
+    if (jurisdiction.status === JurisdictionStatus.Exists)
       return (
         <Link href={`/jurisdiction/${jurisdiction.address}`} variant={'13/16'} key={jurisdiction.address}>
           <Tag key={jurisdiction.address}>
             <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
           </Tag>
         </Link>)
-    if (confirmedJurisdictions[jurisdiction.address] === false)
+    if (jurisdiction.status === JurisdictionStatus.NotFound)
       return (
-        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => Jurisdiction.removeJurisdiction(await web3Provider.getSigner(), jurisdiction.address)}>
+        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => Jurisdiction.removeJurisdiction(jurisdiction.address)}>
           <Tag caret={<MissingCaret/>}>
             <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
           </Tag>
@@ -95,7 +60,7 @@ const Home: NextPage = () => {
       <Tag key={jurisdiction.address} caret={<LoadingCaret/>}>
         <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
       </Tag>)
-  }, [confirmedJurisdictions])   
+  }, [])
   
   //To-do: Connect this to real Smart COntracts and BC
   const fakeRecentActivity = [
@@ -104,8 +69,8 @@ const Home: NextPage = () => {
     { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
   ]
 
-  const getFavourites = useCallback((loaded:boolean, jurisdictionMap:JurisdictionMap, getURL:LikeURLCreator, defaultItems:any[]) => {
-    if (!loaded)
+  const getFavourites = useCallback((jurisdictionMap:JurisdictionMap, getURL:LikeURLCreator, defaultItems:any[]) => {
+    if (!likesReady)
       return <Tag justify='center'><LoadingIcon/></Tag>
 
     const getTag = (id:string, name:string, jurisdiction:string) => (
@@ -126,7 +91,7 @@ const Home: NextPage = () => {
     })
 
     // Sort by createdAt date
-    displayLikedItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    displayLikedItems.sort(sortDescending)
     displayLikedItems.forEach(like => {
       items.push(getTag(like.itemId, like.name, like.jurisdiction))
     })
@@ -138,7 +103,7 @@ const Home: NextPage = () => {
     }
 
     return items
-  }, [loaded])
+  }, [likesReady])
 
   return (
     <Box width='100%'>
@@ -174,8 +139,8 @@ const Home: NextPage = () => {
                 <>
                   <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Jurisdictions</Text>
                   {
-                    jurisdictions 
-                      ? jurisdictions.map(jurisdiction => getJurisdictionTag(jurisdiction))
+                    jurisdictionsLoaded 
+                      ? sortedJurisdictions.map(jurisdiction => getJurisdictionTag(jurisdiction))
                       : <Tag justify='center'><LoadingIcon/></Tag>
                   }
                 </>
@@ -187,13 +152,13 @@ const Home: NextPage = () => {
                 mr={{ base: '0', md: '30px' }}
               >
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
-                {getFavourites(loaded, likedProposals, ProposalURLCreator, [{ id: "1", name: 'Add new Member James', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
+                {getFavourites(likedProposals, ProposalURLCreator, [{ id: "1", name: 'Add new Member James', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
               </Box>
               <Box
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
-                {getFavourites(loaded, likedTokens, TokenURLCreator, [{ id:"title-1", name: '001-456-87654-E', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
+                {getFavourites(likedTokens, TokenURLCreator, [{ id:"title-1", name: '001-456-87654-E', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
               </Box>
             </Flex>
           </VStack>

@@ -5,8 +5,8 @@ import { Footer } from '@/components/Footer'
 import { siteLayoutData, siteMainMenu } from '@/store/initial'
 import ConnectCheck from './ConnectCheck'
 import { useWeb3React } from '@web3-react/core'
-import { useLikes } from '@/store/likes'
-import { useJurisdictions } from '@/store/jurisdictions'
+import { useLikes } from '@/store/useLikes'
+import { useJurisdictions } from '@/store/useJurisdictions'
 
 type Props = {
   children: ReactNode

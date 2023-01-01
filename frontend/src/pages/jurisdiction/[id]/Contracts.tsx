@@ -4,24 +4,23 @@ import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';
 import ReloadIcon from '@/components/icons/reloadIcon';
-import { useJurisdictions } from '@/store/jurisdictions';
+import { useJurisdictions } from '@/store/useJurisdictions';
 
 const Contracts = () => {
   const router = useRouter();
   const jurisdictionAddress = router.query.id as string;
   const { library } = useWeb3React();
   
-  const loaded = useJurisdictions(state => state.loaded);
+  const { loaded, getContracts } = useJurisdictions();
   const contracts = useJurisdictions(state => state.contracts[jurisdictionAddress]);
-  const getContracts = useJurisdictions(state => state.getContracts);
 
   useEffect(() => {
-    if (contracts === undefined && loaded) {
-      // Database jurisdictions were loaded but this jurisdiction is new...
-      // Only needed if someone types in a new address manually into the URL
+    if (loaded && contracts === undefined) {
+      // Database jurisdictions were loaded but this jurisdictions's contracts were not loaded yet
+      // Could also happen if someone types in a new address manually into the URL
       getContracts(jurisdictionAddress, library);
     }
-  }, [jurisdictionAddress, loaded]);
+  }, [jurisdictionAddress, loaded, contracts]);
 
   return (
     <VStack alignItems="flex-start">

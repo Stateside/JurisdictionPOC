@@ -53,3 +53,4 @@ For more commands see the [migrations documentation](https://typeorm.io/migratio
 
 - Keep HH running or persist new transactions or replace with a different implementation
 - Add maintainer, registry to titletoken when creating jurisdiction
+- add useAliases hook with cache for Aliases
