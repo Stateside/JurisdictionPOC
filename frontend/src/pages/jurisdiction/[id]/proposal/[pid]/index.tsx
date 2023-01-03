@@ -6,13 +6,13 @@ import {
   Divider,
   Heading,
   HStack,
-  Input,
+  Link,
   Text,
-  Textarea,
   VStack,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import FavoriteProposalButton from '@/components/FavoriteProposalButton';
+import { ArrowBackIcon } from '@chakra-ui/icons';
 
 const Proposal: NextPage = () => {
   const router = useRouter();
@@ -23,8 +23,17 @@ const Proposal: NextPage = () => {
       <Head>
         <title>Proposal</title>
       </Head>
+      <Link onClick={() => router.back()} display="flex" fontWeight="bold">
+        <ArrowBackIcon marginRight="10px" marginTop="5px" />
+        <Text>Back to Dashboard / Jurisdiction</Text>
+      </Link>
       <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
-        Proposal <FavoriteProposalButton jurisdiction={jurisdiction as string} itemId={proposalId as string} name="Add new Member James" />
+        Proposal{' '}
+        <FavoriteProposalButton
+          jurisdiction={jurisdiction as string}
+          itemId={proposalId as string}
+          name="Add new Member James"
+        />
       </Heading>
       <Box>
         <VStack width="100%" alignItems="flex-start">
@@ -36,7 +45,11 @@ const Proposal: NextPage = () => {
             <Text width="20%">Expiry date:</Text>
             <Text>October 31st, 2022, 9: 00 AM</Text>
           </HStack>
-          <HStack alignItems="flex-start" width="100%">
+          <HStack
+            alignItems="flex-start"
+            width="100%"
+            style={{ marginBottom: '20px' }}
+          >
             <Text width="20%">Description:</Text>
             <Text>Proposal description</Text>
           </HStack>
@@ -50,11 +63,20 @@ const Proposal: NextPage = () => {
             </VStack>
           </HStack>
           <Divider />
-          <HStack width="100%" paddingTop="20px">
+          <HStack width="100%" paddingTop="20px" alignItems="flex-start">
             <HStack gap="20px" width="80%">
-              <Button variant="Header">Vote YES</Button>
-              <Button variant="Header">Vote NO</Button>
-              <Button variant="Header">Abstain</Button>
+              <VStack>
+                <Button variant="Header">Vote YES</Button>
+                <Text>1 Votes</Text>
+              </VStack>
+              <VStack>
+                <Button variant="Header">Vote NO</Button>
+                <Text>2 Votes</Text>
+              </VStack>
+              <VStack>
+                <Button variant="Header">Abstain</Button>
+                <Text>3 Votes</Text>
+              </VStack>
             </HStack>
             <HStack flexDirection="row-reverse" width="20%">
               <Button variant="Header">Execute</Button>
