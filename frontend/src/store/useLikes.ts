@@ -49,7 +49,7 @@ const removeFromLikedTokens = (state:ILikesState, like:Like, set:any) => {
  *
  * Zustand is a React state management library that is similar to Redux but much simpler.
  * Zustand state is created with a function that returns an object with the state properties and functions to modify the state.
- * Zustand state is accessed with the useLikes() hook. But it must be initialized with the load() function before it can be used.
+ * Zustand state is accessed with the useLikes() hook. But it must be initialized with the init() function before it can be used.
  * (In our case in the Layout component.)
  * 
  * Likes are created with the likeProposal() and likeToken() functions and passing in a Like entity object. They can be removed by
@@ -62,7 +62,7 @@ interface ILikesState {
   chainId:number
   loaded:boolean
 
-  /** Loads existing likes from the database. Must be called at once when React app loads */
+  /** Loads existing likes from the database. Must be called at least once when React app loads */
   init: (owner:string, chainId:number) => void,
 
   /** Returns Like object if the given proposal is liked by the current user or null otherwise */

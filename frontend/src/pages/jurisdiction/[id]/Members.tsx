@@ -6,7 +6,7 @@ import DeleteIcon from '@/components/icons/deleteIcon';
 import * as tc from '../../../../typechain-types';
 import * as roles from '../../../utils/roles';
 import { useRouter } from 'next/router';
-import { AliasData, reloadAliases } from '@/utils/aliases';
+import { useAliases } from '@/store/useAliases';
 
 type Role = {
   name: string;
@@ -25,15 +25,8 @@ const Members = () => {
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet | undefined>(undefined);
   const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction | undefined>(undefined);
-  const [ aliasData, setAliasData ] = useState<AliasData|undefined>()
+  const { aliasesByAddress, loaded:aliasesLoaded } = useAliases()
   const router = useRouter();
-
-  // Load aliases data
-  useEffect(() => {
-    reloadAliases().then((data) => {
-        setAliasData(data)
-    })
-  }, [])
 
   // Connect to the JSC Jurisdiction contract
   useEffect(() => {
@@ -101,21 +94,21 @@ const Members = () => {
 
   // Display aliases for known addresses in cabinet
   useEffect(() => {
-    if (members.length>0 && aliasData) {
+    if (members.length>0) {
         const _members = [...members]
         let changed = false
         for (let i = 0; i < _members.length; i++) {
           const member = _members[i]
-          const alias = aliasData.aliasesByAddress.get(member.account.toLowerCase())
-          if (alias && member.name != alias) {
-            member.name = alias
+          const aliasInfo = aliasesByAddress[member.account.toLowerCase()]
+          if (aliasInfo && member.name != aliasInfo.alias) {
+            member.name = aliasInfo.alias
             changed = true
           }
         }
         if (changed)
           setMembers(_members)
       }
-  }, [members, aliasData])
+  }, [members, aliasesByAddress])
 
   return (
     <VStack

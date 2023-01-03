@@ -68,6 +68,9 @@ export interface IJurisdictionsState {
 
   /** Adds the given jurisdiction address to the state */
   add: (info:JurisdictionInfo) => void,
+
+  /** Removes the given jurisdiction address from the state */
+  remove: (address:string) => void,
 }
 
 /** Create Zustand state with collection of all likes for current user */
@@ -166,6 +169,29 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
     const info = get().infos
     info[newJurisdiction.address] = {...newJurisdiction}
     set({infos: info})
+  },
+
+  remove: async (address:string) => {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({address})
+    }
+
+    await fetch("/api/contracts/remove-jurisdiction", request)
+      .then((r) => {
+        if (r.status === 200) {
+          console.log("Removed jurisdiction: ", address)
+          const info = {...get().infos}
+          delete info[address]
+          set({infos: info})
+        }
+      },
+      (e) => {
+        console.log("Error removing jurisdiction", e)
+      })
   }
 }))
 

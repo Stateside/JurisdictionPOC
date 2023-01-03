@@ -384,25 +384,6 @@ export class Jurisdiction implements IJurisdiction {
       })
   }
 
-  /** Remove the given jurisdiction from the list of contracts in the database */
-  static async removeJurisdiction(address: string) {
-    const request = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({address})
-    }
-    fetch("/api/contracts/remove-jurisdiction", request)
-      .then((r) => {
-        if (r.status === 200)
-          console.log("Removed jurisdiction: ", address)
-      },
-      (e) => {
-        console.log("Error removing jurisdiction", e)
-      })
-  }
-
   /** Add all the given contracts to the given jurisdiction in the database */
   static async addToJurisdiction(jurisdiction: string, contracts: string[]) {
     const request = {

@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer'
 import { siteLayoutData, siteMainMenu } from '@/store/initial'
 import ConnectCheck from './ConnectCheck'
 import { useWeb3React } from '@web3-react/core'
+import { useAliases } from '@/store/useAliases'
 import { useLikes } from '@/store/useLikes'
 import { useJurisdictions } from '@/store/useJurisdictions'
 
@@ -23,6 +24,10 @@ export function Layout(props: Props) {
   // Load the known jurisdictions from the database, then reload when chainId changes
   const jurisdictions = useJurisdictions();
   useEffect(() => { chainId && jurisdictions.init(chainId) }, [chainId])
+
+  // Load the known aliases from the database. Aliases are shared among all blockchains, so no need to reload
+  const aliases = useAliases();
+  useEffect(() => { aliases.init() }, [])
   
   return (
     <Box

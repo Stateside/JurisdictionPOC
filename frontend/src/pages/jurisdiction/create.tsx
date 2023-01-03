@@ -9,9 +9,9 @@ import create from 'zustand'
 import shallow from 'zustand/shallow'
 import useBlockchain from 'hooks/useBlockchain';
 import { ContractDefinition } from '@/utils/standard-contracts';
-import { AliasData, reloadAliases } from '@/utils/aliases';
 import { useRouter } from 'next/router';
 import { JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
+import { useAliases } from '@/store/useAliases';
 
 // Use Zustand for managing state changes to Jurisdiction
 
@@ -103,30 +103,29 @@ const CreateJurisdiction: NextPage = () => {
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<roles.Role>()
 
-  const [ aliasData, setAliasData ] = useState<AliasData|undefined>()
+  const { aliases, aliasesByAddress, loaded:aliasesLoaded } = useAliases()
   const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()
 
   const [ selectedTab, setSelectedTab ] = useState(0)
   const cacheJurisdiction = useJurisdictions(state => state.add)
 
   useEffect(() => {
-    reloadAliases().then((data) => {
-        setAliasData(data)
-        // Add some sample members to the new jurisdictions
-        if (jurisdiction.members.length === 0 && !isJurisdictionModified)
-          data.aliases.slice(0,5).forEach(a => {
-            addMember({name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE})
-          })
-    })
-  }, [addMember, jurisdiction.members])
+    if (aliasesLoaded) {
+      // Add some sample members to the new jurisdictions
+      if (jurisdiction.members.length === 0 && !isJurisdictionModified)
+        aliases.slice(0,5).forEach(a => {
+          addMember({name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE})
+        })
+      }
+  }, [addMember, jurisdiction.members, aliases, aliasesLoaded])
 
   // Memoized callbacks
 
   const getNameForAddress = useCallback((address:string) => {
     const address_lc = address.toLowerCase()
-    const acc = aliasData?.aliasesByAddress.get(address_lc)
+    const acc = aliasesByAddress[address_lc]?.alias
     return acc ? acc : ""
-  }, [aliasData])
+  }, [aliasesByAddress])
   
   const updateMemberAddress = useCallback((index: number, m:IMember, value: string): void => {
     let expectedName:string = getNameForAddress(m.address)

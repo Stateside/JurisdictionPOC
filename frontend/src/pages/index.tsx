@@ -33,7 +33,13 @@ const Home: NextPage = () => {
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const { loaded: likesReady, likedProposals, likedTokens } = useLikes()
   
-  const { loaded: jurisdictionsLoaded, infos: jurisdictionInfos, confirm: confirmJurisdictionsExist } = useJurisdictions()
+  const { 
+    loaded: jurisdictionsLoaded, 
+    infos: jurisdictionInfos, 
+    confirm: confirmJurisdictionsExist,
+    remove: removeJurisdiction
+  } = useJurisdictions()
+  
   const sortedJurisdictions = useMemo(() => 
     Object.values(jurisdictionInfos).sort(sortDescending), [jurisdictionInfos])
 
@@ -51,7 +57,7 @@ const Home: NextPage = () => {
         </Link>)
     if (jurisdiction.status === JurisdictionStatus.NotFound)
       return (
-        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => Jurisdiction.removeJurisdiction(jurisdiction.address)}>
+        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => removeJurisdiction(jurisdiction.address)}>
           <Tag caret={<MissingCaret/>}>
             <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
           </Tag>
