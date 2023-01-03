@@ -1,9 +1,8 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import NextLink from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Heading, Box } from "@chakra-ui/layout"
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Container, Link, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack } from '@chakra-ui/react'
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Container, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr, VStack } from '@chakra-ui/react'
 import { jscJurisdictionLabels } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import * as tc from "../../../typechain-types"
@@ -11,6 +10,7 @@ import { useRouter } from 'next/router'
 import { ParamType } from '@/utils/types'
 import Loader from '@/components/Loader'
 import { getAccountShortName } from '@/utils/util'
+import { Link } from '@/components/Link'
 
 type JurisdictionContracts = {
   name: string
@@ -104,9 +104,9 @@ const showJSCJurisdiction: NextPage = () => {
                         {contracts.map(c => 
                           <Tr key={c.name}>
                             <Td>
-                              <NextLink  href={{ pathname: getPathForContract(c.name), query: { address: c.address } }}>
-                                <Link>{c.name}</Link>
-                              </NextLink>
+                              <Link href={{ pathname: getPathForContract(c.name), query: { address: c.address } }}>
+                                {c.name}
+                              </Link>
                             </Td>
                             <Td>{getAccountShortName(c.address)}</Td>
                             <Td flexWrap={'wrap'}>{c.description}</Td>

@@ -73,7 +73,7 @@ const components = {
       "Header":{
         size:'md',
         fontWeight:'700',
-        fontSize:'15px',
+        fontSize:'16px',
         lineHeight:'20px',
         color:'brand.grey.grey04',
         background:'brand.java',

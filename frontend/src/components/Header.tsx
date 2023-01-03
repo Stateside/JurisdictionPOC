@@ -1,10 +1,10 @@
 import React from 'react'
-import NextLink from 'next/link'
 import { useWeb3React } from "@web3-react/core";
-import { Container, Text, HStack, Image, Link, Flex } from '@chakra-ui/react'
+import { Container, Text, HStack, Image, Flex } from '@chakra-ui/react'
 import { MenuItemInterface } from '@/interfaces/index'
 import Menu from '@/components/Menu'
 import Connect from '@/components/ConnectButton'
+import { Link } from './Link';
 
 
 type Props = {
@@ -26,29 +26,27 @@ export function Header(props: Props) {
                 justifyContent='flex-start'
                 maxWidth={'100%'}
                 padding='0'>
-                <NextLink passHref href='/' >
-                    <Link>
-                        <Flex>
-                            <Image 
-                                src='/imgs/logo.svg' 
-                                boxSize={{base: '40px', sm: '40px', md: '40px', lg: '40px' }}
-                                alt='Jurisdiction Logo' 
-                                marginRight={'11px'} />
-                            <Text
-                                marginInlineStart='0'
-                                maxWidth={{ base: '221px' }}
-                                fontSize={{ base: '12px', sm: '12px', md: '15px', lg: '15px'  }}
-                                fontWeight='700'
-                                lineHeight='20px'
-                                letterSpacing='0px'
-                                textAlign='left'
-                                textTransform='uppercase'
-                                color='brand.black'>
-                                {siteTitle}
-                            </Text>
-                        </Flex>
-                    </Link>
-                </NextLink>
+                <Link href='/' >
+                    <Flex>
+                        <Image 
+                            src='/imgs/logo.svg' 
+                            boxSize={{base: '40px', sm: '40px', md: '40px', lg: '40px' }}
+                            alt='Jurisdiction Logo' 
+                            marginRight={'11px'} />
+                        <Text
+                            marginInlineStart='0'
+                            maxWidth={{ base: '221px' }}
+                            fontSize={{ base: '12px', sm: '12px', md: '15px', lg: '15px'  }}
+                            fontWeight='700'
+                            lineHeight='20px'
+                            letterSpacing='0px'
+                            textAlign='left'
+                            textTransform='uppercase'
+                            color='brand.black'>
+                            {siteTitle}
+                        </Text>
+                    </Flex>
+                </Link>
             </Container>
             <Container
                 display='flex'

@@ -1,6 +1,6 @@
 import HeartPlusIcon from './icons/heartPlusIcon';
 import FavoriteFullIcon from './icons/favoriteFullIcon';
-import { useLikes, LikeAction } from '@/store/likes';
+import { useLikes, LikeAction } from '@/store/useLikes';
 
 const iconProps = {
   w: { base: '25px' },

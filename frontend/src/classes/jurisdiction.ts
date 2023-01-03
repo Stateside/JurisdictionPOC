@@ -384,25 +384,8 @@ export class Jurisdiction implements IJurisdiction {
       })
   }
 
-  /** Confirm if the given address points to a Jurisdiciton contract */
-  static async confirmExists(signer:ethers.Signer, address: string, onExists?: ConfirmationHandler, onMissing?: ConfirmationHandler) {
-    let exists:boolean = false
-    try {
-      const instance = await tc.IJSCJurisdiction__factory.connect(address, signer)
-      const name = await instance.getJurisdictionName()
-      exists = name !== ""
-    }
-    catch(e) {
-    }
-
-    if (exists === true && onExists)
-      onExists(address)
-    else if (exists === false && onMissing)
-      onMissing(address)
-  }
-
   /** Remove the given jurisdiction from the list of contracts in the database */
-  static async removeJurisdiction(signer:ethers.Signer, address: string) {
+  static async removeJurisdiction(address: string) {
     const request = {
       method: "POST",
       headers: {
@@ -420,7 +403,7 @@ export class Jurisdiction implements IJurisdiction {
       })
   }
 
-  /** Add all the given contracts to the given jurisdiciton in the database */
+  /** Add all the given contracts to the given jurisdiction in the database */
   static async addToJurisdiction(jurisdiction: string, contracts: string[]) {
     const request = {
       method: "POST",

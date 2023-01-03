@@ -11,6 +11,7 @@ import useBlockchain from 'hooks/useBlockchain';
 import { ContractDefinition } from '@/utils/standard-contracts';
 import { AliasData, reloadAliases } from '@/utils/aliases';
 import { useRouter } from 'next/router';
+import { JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
 
 // Use Zustand for managing state changes to Jurisdiction
 
@@ -31,7 +32,7 @@ interface IJurisdictionState {
 }
 
 /** Create Zustand state with instance of Jurisdiction class and methods to update it. This lets us optimize the rendering */
-const useJurisdiction = create<IJurisdictionState>((set) => ({
+const useNewJurisdiction = create<IJurisdictionState>((set) => ({
   jurisdiction: Jurisdiction.createDefaultJurisdiction(),
   modified: false,
   reset: () => set(state => ({jurisdiction: Jurisdiction.createDefaultJurisdiction(), modified: false})),
@@ -78,16 +79,16 @@ const RoleSelector = (props:RoleSelectorProps) =>
 const CreateJurisdiction: NextPage = () => {
   const router = useRouter()
   const { chainId, web3Provider } = useBlockchain();
-  const jurisdiction = useJurisdiction(state => state.jurisdiction, shallow)
-  const isJurisdictionModified = useJurisdiction(state => state.modified)
-  const resetJurisdiction = useJurisdiction(state => state.reset)
-  const setJurisdictionName = useJurisdiction(state => state.setJurisdictionName)
-  const setTitleTokenName = useJurisdiction(state => state.setTitleTokenName)
-  const setTitleTokenSymbol = useJurisdiction(state => state.setTitleTokenSymbol)
-  const setTitleTokenURI = useJurisdiction(state => state.setTitleTokenURI)
-  const addMember = useJurisdiction(state => state.addMember)
-  const removeMember = useJurisdiction(state => state.removeMember)
-  const replaceMember = useJurisdiction(state => state.replaceMember)
+  const jurisdiction = useNewJurisdiction(state => state.jurisdiction, shallow)
+  const isJurisdictionModified = useNewJurisdiction(state => state.modified)
+  const resetJurisdiction = useNewJurisdiction(state => state.reset)
+  const setJurisdictionName = useNewJurisdiction(state => state.setJurisdictionName)
+  const setTitleTokenName = useNewJurisdiction(state => state.setTitleTokenName)
+  const setTitleTokenSymbol = useNewJurisdiction(state => state.setTitleTokenSymbol)
+  const setTitleTokenURI = useNewJurisdiction(state => state.setTitleTokenURI)
+  const addMember = useNewJurisdiction(state => state.addMember)
+  const removeMember = useNewJurisdiction(state => state.removeMember)
+  const replaceMember = useNewJurisdiction(state => state.replaceMember)
 
   const { isOpen: isErrorAlertOpen, onOpen: onErrorAlertOpen, onClose: onCloseErrorAlert } = useDisclosure()
   const cancelErrorRef = useRef<HTMLButtonElement | null>(null)
@@ -106,6 +107,7 @@ const CreateJurisdiction: NextPage = () => {
   const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()
 
   const [ selectedTab, setSelectedTab ] = useState(0)
+  const cacheJurisdiction = useJurisdictions(state => state.add)
 
   useEffect(() => {
     reloadAliases().then((data) => {
@@ -209,6 +211,14 @@ const CreateJurisdiction: NextPage = () => {
     setProgressValue(1)
     setSuccessfulDeployments(successfulDeployments)
     console.log("Successful deployments:", successfulDeployments)
+    cacheJurisdiction({
+      address: successfulDeployments["IJSCJurisdiction"].contract.address,
+      name: jurisdiction.jurisdictionName,
+      version: successfulDeployments["IJSCJurisdiction"].definition.version,
+      description: successfulDeployments["IJSCJurisdiction"].definition.description,
+      status: JurisdictionStatus.Exists,
+      createdAt: new Date()
+    })
   }, [])
 
   const deploy = useCallback(async () => {
@@ -233,6 +243,8 @@ const CreateJurisdiction: NextPage = () => {
       isOpen={isProgressAlertOpen}
       leastDestructiveRef={cancelProgressRef}
       onClose={onCloseProgressAlert}
+      closeOnEsc={false}
+      closeOnOverlayClick={false}
       isCentered
     >
       <AlertDialogOverlay>
@@ -405,7 +417,7 @@ const CreateJurisdiction: NextPage = () => {
     const isLastTab = selectedTab===tabs.length-1
     return (
       <HStack width="100%" justifyContent="flex-end">
-        <Button onClick={() => reset()}>Reset All</Button>
+        <Button {...greenButtonProps} onClick={() => reset()}>Reset All</Button>
         <Button {...(!isFirstTab?greenButtonProps:"")} onClick={() => setSelectedTab(selectedTab-1)} disabled={isFirstTab}>Previous</Button>
         <Button {...(!isLastTab?greenButtonProps:"")} onClick={() => setSelectedTab(selectedTab+1)} disabled={isLastTab}>Next</Button>
         <Button {...(isLastTab&&isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()} disabled={!isLastTab}>Create Jurisdiction</Button>

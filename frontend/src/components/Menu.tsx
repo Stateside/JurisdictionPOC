@@ -1,8 +1,8 @@
 import React from 'react'
 import { Menu as MenuChakra, MenuButton, MenuList, MenuItem, IconButton, Text } from '@chakra-ui/react'
-import Link from 'next/link'
 import MenuIcon from '@/components/icons/menuIcon'
 import { MenuItemInterface} from '@/interfaces/index';
+import { Link } from './Link';
 
 type Props = {
     items: Array<MenuItemInterface>

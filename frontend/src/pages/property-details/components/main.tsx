@@ -1,5 +1,4 @@
 import { useContext } from 'react';
-import NextLink from 'next/link';
 import { Box, Spacer } from '@chakra-ui/layout';
 import {
   Image,
@@ -24,6 +23,7 @@ import PropertyDetailsModalActions from '../modal/modalActions';
 import { PropertyDetailsContext } from '../PropertyDetailsContext';
 import { PropertyInfo } from '@/utils/property-types';
 import FavoriteTokenButton from '@/components/FavoriteTokenButton';
+import { Link } from '@/components/Link';
 
 const gridLayout = 'repeat(12, 1fr)';
 const favoriteStyles = { position: 'relative', bottom: '0.3em'};
@@ -65,12 +65,12 @@ export default function PropertyDetailsMain() {
         <GridItem colSpan={12}>
           <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
             <BreadcrumbItem h={{ base: '30px' }}>
-              <NextLink passHref href="/">
+              <Link href="/">
                 <BreadcrumbLink>
                   <ArrowBack w={{ base: '23px' }} />
                   Back to dashboard
                 </BreadcrumbLink>
-              </NextLink>
+              </Link>
             </BreadcrumbItem>
             <BreadcrumbItem h={{ base: '30px' }}>
               <BreadcrumbLink href="#" isCurrentPage>

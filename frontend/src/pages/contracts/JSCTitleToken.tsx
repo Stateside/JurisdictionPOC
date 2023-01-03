@@ -7,8 +7,8 @@ import { jscTitleTokenLabels } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import { useRouter } from 'next/router'
 import Loader from '@/components/Loader'
-import Link from 'next/link'
 import useJSCTitleToken from '@/hooks/useJSCTitleToken'
+import { Link } from '@/components/Link'
 
 
 const showJSCTitleToken: NextPage = () => {

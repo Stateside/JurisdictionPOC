@@ -2,7 +2,7 @@ import create from 'zustand'
 import { LikableItem, Like } from "../db/entities/Like";
 
 export type LikeMap = { [itemId: string]: Like };
-export type JurisdictionMap = { [jurisdicition: string]: LikeMap };
+export type JurisdictionMap = { [jurisdiction: string]: LikeMap };
 
 export type LikeAction = {
   jurisdiction: string
@@ -59,12 +59,11 @@ interface ILikesState {
   likedProposals:JurisdictionMap,
   likedTokens:JurisdictionMap,
   owner:string
-  frontend:string
   chainId:number
   loaded:boolean
 
   /** Loads existing likes from the database. Must be called at once when React app loads */
-  load: (owner:string, frontend:string, chainId:number) => void,
+  init: (owner:string, chainId:number) => void,
 
   /** Returns Like object if the given proposal is liked by the current user or null otherwise */
   likesProposal: (like:LikeAction) => Like|null,
@@ -108,14 +107,16 @@ export const useLikes = create<ILikesState>((set, get) => ({
   likedProposals: {} as JurisdictionMap,  
   likedTokens: {} as JurisdictionMap,
   owner:'',
-  frontend:'',
   chainId:0,
   loaded: false,
 
-  load: async (owner:string, frontend:string, chainId:number) => {
+  init: async (owner:string, chainId:number) => {
+    if (get().loaded && owner===get().owner && chainId === get().chainId)
+      return
+
     const res = await fetch('/api/likes/get' +
       '?owner='+owner +
-      '&frontend='+frontend +
+      '&frontend='+process.env.NEXT_PUBLIC_FRONTEND||"" +
       '&chainId='+chainId)
     const likes:Like[] = await res.json()
 
@@ -137,7 +138,6 @@ export const useLikes = create<ILikesState>((set, get) => ({
       likedProposals, 
       likedTokens, 
       owner,
-      frontend,
       chainId,
       loaded:true})
   },
@@ -160,7 +160,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
         jurisdiction: like.jurisdiction,
         itemType: LikableItem.Proposal,
         itemId: like.itemId,
-        frontend: state.frontend,
+        frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
         chainId: state.chainId
       })
 
@@ -201,7 +201,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
         jurisdiction: like.jurisdiction,
         itemType: LikableItem.Token,
         itemId: like.itemId,
-        frontend: state.frontend,
+        frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
         chainId: state.chainId
       })
 

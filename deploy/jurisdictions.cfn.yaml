@@ -569,7 +569,8 @@ Resources:
               Forward: none
           ViewerProtocolPolicy: redirect-to-https
         CacheBehaviors:
-        - AllowedMethods:
+        - PathPattern: api/*
+          AllowedMethods:
           - DELETE
           - GET
           - HEAD
@@ -578,15 +579,18 @@ Resources:
           - POST
           - PUT
           TargetOriginId: WebOrigin
-          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
           ViewerProtocolPolicy: redirect-to-https
-          PathPattern: api/*
+          Compress: true
+          MinTTL: 0
+          DefaultTTL: 0
+          MaxTTL: 0
+          ForwardedValues:
+            QueryString: true
         PriceClass: PriceClass_100
         ViewerCertificate:
           AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
           MinimumProtocolVersion: TLSv1.2_2019
           SslSupportMethod: sni-only
-
   HardhatCloudFront:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
