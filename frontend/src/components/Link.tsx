@@ -10,12 +10,19 @@ type Props = {
 export const Link = (props: Props) => {
 	const router = useRouter()
 	const href = props.href
+	const onClick = props.onClick
 
 	const localProps = { ...props }
 	delete localProps.href
+	delete localProps.onClick
 
 	return (
-		<ChakraLink {...localProps as any} onClick={() => router.push(href)}>
+		<ChakraLink {...localProps as any} onClick={(...args) => {
+			if (href)
+				router.push(href)
+			if (onClick)
+				onClick(...args)
+		}}>
 			{props.children}
 		</ChakraLink>)
 }

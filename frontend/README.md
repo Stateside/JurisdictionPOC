@@ -5,7 +5,7 @@ In a terminal window, run the hardhat blockchain:
 
 1. cd ../jsc
 2. yarn
-4. yarn typechain
+4. yarn hardhat typechain
 5. yarn dev
 
 In a separate terminal window, run the frontend NextJS server:
@@ -53,4 +53,4 @@ For more commands see the [migrations documentation](https://typeorm.io/migratio
 
 - Keep HH running or persist new transactions or replace with a different implementation
 - Add maintainer, registry to titletoken when creating jurisdiction
-- add useAliases hook with cache for Aliases
+- add useTitleToken() and useCabinet() and useGovernor() hooks
