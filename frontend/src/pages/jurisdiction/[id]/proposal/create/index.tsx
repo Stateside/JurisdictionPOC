@@ -14,31 +14,32 @@ const CreateProposal: NextPage = () => {
       </Heading>
       <Box>
         <VStack width="100%" alignItems="flex-start">
-          <HStack alignItems="flex-start" width="100%">
+          <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Jurisdiction Name:</Text>
             <Text>Costa Rica</Text>
           </HStack>
           <Divider />
-          <HStack alignItems="flex-start" width="100%">
+          <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Proposal Name:</Text>
             <Input width="80%" />
           </HStack>
           <Divider />
-          <HStack alignItems="flex-start" width="100%">
+          <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Description:</Text>
             <Textarea width="80%" />
           </HStack>
           <Divider />
-          <HStack alignItems="flex-start" width="100%">
+          <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Revisions:</Text>
-            <VStack alignItems="flex-start" width="80%">
+            <VStack alignItems="flex-start" width="80%" gap="20px">
               <Revision />
               <Revision />
               <Revision />
               <Button variant="Header">Add new revision</Button>
             </VStack>
           </HStack>
-          <HStack flexDirection="row-reverse" width="100%">
+          <Divider />
+          <HStack flexDirection="row-reverse" width="100%" padding="20px 0">
             <Button variant="Header">Create Jurisdiction</Button>
           </HStack>
         </VStack>
