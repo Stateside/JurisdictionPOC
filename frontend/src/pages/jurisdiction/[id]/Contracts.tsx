@@ -24,20 +24,24 @@ const Contracts = () => {
 
   return (
     <VStack alignItems="flex-start">
-      {contracts?.map(contract => {
-        return (
-          <HStack width="100%" key={contract.address}>
-            <p style={{ width: '20%' }}>{contract.name}</p>
-            <Text>{contract.address}</Text>
-            <Button width="20%" rightIcon={<ReloadIcon height={7} width={7} />}>
-              Replace
-            </Button>
-            <Button width="20%" rightIcon={<LockIcon height={7} width={7} />}>
-              Freeze
-            </Button>
-          </HStack>
-        );
-      })}
+      {contracts?.length ?
+        contracts.map(contract => {
+          return (
+            <HStack width="100%" key={contract.address}>
+              <p style={{ width: '20%' }}>{contract.name}</p>
+              <Text>{contract.address}</Text>
+              <Button
+                width="20%"
+                rightIcon={<ReloadIcon height={7} width={7} />}
+              >
+                Replace
+              </Button>
+              <Button width="20%" rightIcon={<LockIcon height={7} width={7} />}>
+                Freeze
+              </Button>
+            </HStack>
+          );
+        }) : <Text>No information available</Text>}
     </VStack>
   );
 };

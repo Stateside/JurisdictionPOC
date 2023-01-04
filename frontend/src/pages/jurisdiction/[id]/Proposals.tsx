@@ -129,7 +129,7 @@ const Proposals = () => {
 
   return (
     <HStack alignItems="flex-start" marginTop="20px" marginBottom="20px">
-      <VStack
+      {Object.keys(jscProposals).length ? <VStack
         gap="40px"
         width={'80%'}
         marginRight={'10%'}
@@ -173,7 +173,7 @@ const Proposals = () => {
             })}
           </Box>
         </Box>
-      </VStack>
+      </VStack> : <Text>No information available</Text>}
       <Box>
         <Button variant="Heading">Create New Proposal</Button>
       </Box>
