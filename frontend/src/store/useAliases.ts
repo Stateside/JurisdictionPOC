@@ -1,3 +1,4 @@
+import accounts from '@/utils/accounts';
 import create from 'zustand'
 
 export type IAlias = {
@@ -65,9 +66,9 @@ export const useAliases = create<IAliasesState>((set, get) => ({
     if (get().loaded)
       return
 
+    // Load aliases from database
     const res = await fetch('/api/aliases/get')
     const aliases:IAlias[] = await res.json()
-    aliases.sort((a,b) => a.alias.localeCompare(b.alias))
 
     const aliasesByAddress:AliasMap = {}
     const aliasesByName:AliasMap = {}
@@ -75,6 +76,20 @@ export const useAliases = create<IAliasesState>((set, get) => ({
       aliasesByAddress[a.address.toLowerCase()] = a
       aliasesByName[a.alias] = a
     })
+
+    // Include aliases from utils/accounts file
+    accounts.forEach(a => {
+      if (!aliasesByAddress[a.address.toLowerCase()]) {
+        const alias = {address:a.address, alias:a.name}
+        aliases.push(alias)
+        aliasesByAddress[a.address.toLowerCase()] = alias
+        aliasesByName[a.name] = alias
+      }
+    })  
+
+    // Sort aliases by name
+    aliases.sort((a,b) => a.alias.localeCompare(b.alias))
+
     set({
       aliases,
       aliasesByAddress, 

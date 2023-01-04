@@ -3,7 +3,7 @@ import { useWeb3React } from "@web3-react/core"
 import { ethers } from 'ethers'
 import { Token, Offer } from '@/interfaces/index'
 import * as tc from "../../typechain-types"
-import { AliasData, reloadAliases } from "@/utils/aliases";
+import { AliasMap, useAliases } from "@/store/useAliases";
 
 type useJSCTitleTokenHook = {
     tokens:Token[],
@@ -18,7 +18,7 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):useJSCTitleTokenHook => 
     const [jscTitleToken, setJSCTitleToken] = useState<tc.IJSCTitleToken | undefined>(undefined);
     const [tokenJurisdictionAddress, setTokenJurisdictionAddress] = useState<string>('');
     const [tokens, setTokens] = useState<Token[]>([])
-    const [ aliasData, setAliasData ] = useState<AliasData|undefined>()
+    const { loaded: aliasesLoaded, aliases, aliasesByAddress } = useAliases()
 
     useEffect(() => {
         if (active && account && library)
@@ -30,28 +30,18 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):useJSCTitleTokenHook => 
     }, [active, account])
 
     useEffect(() => {
-        reloadAliases().then((data) => {
-            setAliasData(data)
-        })
-    }, [])
-
-    useEffect(() => {
-        if (jscTitleToken) {
+        if (jscTitleToken && aliasesLoaded) {
             const loadData = async () => {
                 let _tokens: Token[] = []
                 const tokensCounter = await getTotalTokens(jscTitleToken);
                 const tkJurisdictionAddress = await jscTitleToken.getJurisdiction();
                 for (let ti = 0; ti < tokensCounter; ti++) {
                     const t = await jscTitleToken.tokenAtIndex(ti)
-                    const { owner, titleId, offersToBuy, offersToSell, frozen, url } = await getTokenData(jscTitleToken, t, aliasData)
-                    const accountInfo = aliasData ? {
+                    const { owner, titleId, offersToBuy, offersToSell, frozen, url } = await getTokenData(jscTitleToken, t, aliasesByAddress)
+                    const accountInfo = {
                         address: owner,
-                        name: aliasData.aliasesByAddress.get(owner.toLowerCase())
-                     } : { 
-                        name: "", 
-                        address: owner 
-                    }
-
+                        name: aliasesByAddress[owner.toLowerCase()]?.alias || ""
+                     } 
                     _tokens.push({
                         tokenId: t.toHexString(),
                         titleId,
@@ -74,23 +64,20 @@ const useJSCTitleToken = (jscTitleTokenConnect: string):useJSCTitleTokenHook => 
                 setLoading(false)
             })
         }
-    }, [jscTitleToken, aliasData])
+    }, [jscTitleToken, aliasesLoaded, aliasesByAddress])
 
     return {tokens, tokenJurisdictionAddress, loading, error};
 };
 
-const getOffersToBuy = async (jscTitleToken: any, token: any, aliasData:AliasData|undefined) => {
+const getOffersToBuy = async (jscTitleToken: any, token: any, aliasesByAddress:AliasMap) => {
     const offersToBuy: Offer[] = []
     const offersToBuyCount = (await jscTitleToken.countOffersToBuy(token)).toNumber()
     for (let obi = 0; obi < offersToBuyCount; obi++) {
         const ob = await jscTitleToken.offerToBuyAtIndex(token, obi);
-        const accountInfo = aliasData ? {
+        const accountInfo = {
             name: ob.buyer,
-            address: aliasData.aliasesByAddress.get(ob.buyer.toLowerCase())
-         } : { 
-            name: "", 
-            address: ob.buyer 
-        }
+            address: aliasesByAddress[ob.buyer.toLowerCase()]?.address || ""
+         }
 
         offersToBuy.push({
             amount: parseFloat(ethers.utils.formatEther(ob.amount)),
@@ -101,18 +88,15 @@ const getOffersToBuy = async (jscTitleToken: any, token: any, aliasData:AliasDat
     return offersToBuy;
 }
 
-const getOffersToSell = async (jscTitleToken: any, token: any, aliasData:AliasData|undefined) => {
+const getOffersToSell = async (jscTitleToken: any, token: any, aliasesByAddress:AliasMap) => {
     const offersToSell: Offer[] = []
     const osCount = (await jscTitleToken.countOffersToSell(token)).toNumber()
     for (let osi = 0; osi < osCount; osi++) {
         const os = await jscTitleToken.offerToSellAtIndex(token, osi);
-        const accountInfo = aliasData ? {
+        const accountInfo = {
             name: os.buyer,
-            address: aliasData.aliasesByAddress.get(os.buyer.toLowerCase())
-         } : { 
-            name: "", 
-            address: os.buyer 
-        }
+            address: aliasesByAddress[os.buyer.toLowerCase()]?.address || ""
+         }
         offersToSell.push({
             amount: parseFloat(ethers.utils.formatEther(os.amount)),
             buyer: accountInfo.name,
@@ -126,12 +110,12 @@ const getTotalTokens = async (jscTitleToken: any) => {
     return (await jscTitleToken.totalSupply()).toNumber() || 0;
 }
 
-const getTokenData = async (jscTitleToken: any, token: any, aliasData:AliasData|undefined) => {
+const getTokenData = async (jscTitleToken: any, token: any, aliasesByAddress:AliasMap) => {
     const owner = await jscTitleToken.ownerOf(token)
     const url = ""//await jscTitleToken.tokenURI(t)
     const titleId = await jscTitleToken.tokenToTitleId(token)
-    const offersToBuy = await getOffersToBuy(jscTitleToken, token, aliasData)
-    const offersToSell = await getOffersToSell(jscTitleToken, token, aliasData)
+    const offersToBuy = await getOffersToBuy(jscTitleToken, token, aliasesByAddress)
+    const offersToSell = await getOffersToSell(jscTitleToken, token, aliasesByAddress)
     const frozen  = await jscTitleToken.isFrozenToken(token)
     return {
         owner: owner,
