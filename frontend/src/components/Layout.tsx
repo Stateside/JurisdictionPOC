@@ -32,7 +32,7 @@ export function Layout(props: Props) {
   return (
     <Box
       minHeight='100vh'
-      maxW='container.xl'
+      
       backgroundImage='url("/imgs/jurisdictionBackgroundShapes.svg")'
       backgroundPosition={{ base: 'bottom', sm: 'bottom', md: 'right', lg: 'right' }}
       backgroundSize={{ base: '100%', sm: '100%', md: '80%', lg: '65%' }}

@@ -51,7 +51,7 @@ const Jurisdiction: NextPage = () => {
             Proposals
           </Tab>
           <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
-            Properties
+            Tokens
           </Tab>
         </TabList>
         <TabPanels>
