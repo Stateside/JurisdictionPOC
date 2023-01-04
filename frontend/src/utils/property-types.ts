@@ -55,6 +55,7 @@ export type ModelFieldSetter = {
 export type ActionNames = '' | 'sell' | 'accept';
 
 export type PropertyDetailsContextDefoTypes = {
+  dataReady: boolean;
   actionName: ActionNames;
   isOpen: boolean;
   jurisdiction: string
