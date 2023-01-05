@@ -35,7 +35,7 @@ export default function RecentActivity({ activities, ...props }: RecentActivityI
                     return (
                         <Link href='/property-details/title-1/0xa513E6E4b8f2a923D98304ec87F64353C4D5C853' key={key}>
                             <Tag type={type}>
-                                <Flex width={type === 'sellingMe' ? '25px' : '50px'}>
+                                <Flex width={type === 'sellingMe' ? '20px' : '52px'}>
                                     {getIcon(type)}
                                     {type !== 'sellingMe' && <PaymentsIcon />}
                                 </Flex>
