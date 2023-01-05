@@ -5,8 +5,9 @@
       "ownerInfo": {
         "id": "0123456789-01",
         "fname": "Bob",
-        "lname": ""
+        "lname": "Ross"
       },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
       "url": "/title-1/",
       "locationData": {
         "address": "unnamed road, Guanacaste Province, Veintisiete de Abril, 50303 Costa Rica",

@@ -85,5 +85,6 @@ export type thisPropertyInfo = {
     ownerInfo: ownerInfo,
     url: string,
     locationData: locationData,
-    images: imageInfo[]
+    images: imageInfo[],
+    propertyDescription: string
 }
