@@ -78,6 +78,10 @@ export const buildTokenInfoByTitleId = (
       {
         infoLabel: 'Location:',
         infoValue: propertyLocationInDegrees,
+      },
+      {
+        infoLabel: 'Description:',
+        infoValue: thisPropertyInfo.propertyDescription
       }
     ];
   }

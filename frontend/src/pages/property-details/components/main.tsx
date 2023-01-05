@@ -10,6 +10,8 @@ import {
   GridItem,
   Flex,
   Text,
+  Skeleton,
+  SkeletonText,
 } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 import RealStateAgentIcon from '@/components/icons/realStateAgentIcon';
@@ -26,7 +28,6 @@ import FavoriteTokenButton from '@/components/FavoriteTokenButton';
 import { Link } from '@/components/Link';
 
 const gridLayout = 'repeat(12, 1fr)';
-const favoriteStyles = { position: 'relative', bottom: '0.3em'};
 
 // Temporary fix to remove errors from build
 declare global {
@@ -35,10 +36,25 @@ declare global {
   }
 }
 
+const aPropertyInfoElement:PropertyInfo = {
+  infoLabel: '-',
+  infoValue: '-'
+}
+
+const defoPropertyInfo:PropertyInfo[] = [
+  aPropertyInfoElement,
+  aPropertyInfoElement,
+  aPropertyInfoElement,
+  aPropertyInfoElement,
+  aPropertyInfoElement,
+  aPropertyInfoElement,
+];
+
+
 export default function PropertyDetailsMain() {
   const {
+    dataReady,
     actionName,
-    tokenId,
     jurisdiction,
     propertyId,
     propertyInfo,
@@ -63,60 +79,73 @@ export default function PropertyDetailsMain() {
         gap={6}
       >
         <GridItem colSpan={12}>
-          <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
-            <BreadcrumbItem h={{ base: '30px' }}>
-              <Link href="/">
-                <BreadcrumbLink>
-                  <ArrowBack w={{ base: '23px' }} />
-                  Back to dashboard
+          <Skeleton h={{ base: '30px' }} w={{base: '100%', md: '300px'}} isLoaded={dataReady}>
+            <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
+              <BreadcrumbItem h={{ base: '30px' }}>
+                <Link href="/">
+                  <BreadcrumbLink>
+                    <ArrowBack w={{ base: '23px' }} />
+                    Back to dashboard
+                  </BreadcrumbLink>
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem h={{ base: '30px' }}>
+                <BreadcrumbLink href="#" isCurrentPage>
+                  Your Properties
                 </BreadcrumbLink>
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem h={{ base: '30px' }}>
-              <BreadcrumbLink href="#" isCurrentPage>
-                Your Properties
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </Breadcrumb>
+              </BreadcrumbItem>
+            </Breadcrumb>
+          </Skeleton>  
         </GridItem>
         <GridItem colSpan={12}>
           <Box as="span" fontWeight="400" fontSize={{ base: '80px' }}>
-            {propertyId} <FavoriteTokenButton jurisdiction={jurisdiction as string} itemId={propertyId} name={propertyId} />
+            <Skeleton isLoaded={dataReady}>
+              {propertyId} <FavoriteTokenButton jurisdiction={jurisdiction as string} itemId={propertyId} name={propertyId} />
+            </Skeleton>
           </Box>
         </GridItem>
-        <GridItem colSpan={7}>
-          <Grid templateColumns={gridLayout}>
-            <GridItem colSpan={12}>
-              {propertyInfo.map(({ infoLabel, infoValue }:PropertyInfo) => (
-                <Grid
-                  templateColumns={gridLayout}
-                  key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
-                  mb={{ base: '6px'}}
-                >
-                  <GridItem colSpan={3}>{infoLabel}</GridItem>
-                  <GridItem colSpan={9}>{infoValue}</GridItem>
-                </Grid>
-              ))}
+        <GridItem colSpan={12}>
+          <Grid templateColumns={gridLayout} gap={6}>
+            <GridItem colSpan={{base: 12, lg: 7}}>
+              <Grid templateColumns={gridLayout}>
+                <GridItem colSpan={12}>
+                  <SkeletonText noOfLines={3} isLoaded={dataReady} />
+                  {propertyInfo.map(({ infoLabel, infoValue }:PropertyInfo) => (
+                    <Grid
+                      templateColumns={gridLayout}
+                      key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
+                      mb={{ base: '6px'}}
+                    >
+                      <GridItem colSpan={3}>{infoLabel}</GridItem>
+                      <GridItem colSpan={9}>{infoValue}</GridItem>
+                    </Grid>
+                  ))}
+                </GridItem>
+                <GridItem colSpan={12}>
+                  <Skeleton isLoaded={dataReady} w={{base: '200px'}} h={{base: '40px'}} mt={{ base: '30px' }} endColor='brand.javaHover'>
+                    <Button
+                      variant="Header"
+                      rightIcon={<RealStateAgentIcon w={{ base: '25px' }} />}
+                      mt={{ base: '30px' }}
+                      onClick={showSellModal}
+                      _hover={{
+                        background: 'brand.javaHover',
+                      }}
+                    >
+                      Sell this Property
+                    </Button>
+                  </Skeleton>
+                </GridItem>
+              </Grid>
             </GridItem>
-            <GridItem colSpan={12}>
-              <Button
-                variant="Header"
-                rightIcon={<RealStateAgentIcon w={{ base: '25px' }} />}
-                mt={{ base: '30px' }}
-                onClick={showSellModal}
-                _hover={{
-                  background: 'brand.javaHover',
-                }}
-              >
-                Sell this Property
-              </Button>
+            <GridItem colSpan={{base: 12, lg: 5}} mt={{base: '40px', lg: 0}}>
+              <Skeleton isLoaded={dataReady} w={{base: '100%'}} h={{base: '100%'}}>
+                {propertyMapInfo.length > 0 &&
+                  <div className="iframe-rwd" style={{width: '100%', height: '100%'}} dangerouslySetInnerHTML={{ __html: `<iframe width="100%" height="100%" src="${mapUrl}" />`}} />
+                }
+              </Skeleton>
             </GridItem>
           </Grid>
-        </GridItem>
-        <GridItem colSpan={5}>
-          {propertyMapInfo.length > 0 &&
-            <div className="iframe-rwd" dangerouslySetInnerHTML={{ __html: `<iframe width="425" height="350" src="${mapUrl}" />`}} />
-          }
         </GridItem>
         <GridItem colSpan={12} mt={{ base: '30px' }}>
           <Box as="span" fontWeight="700" fontSize={{ base: '15px' }}>
@@ -124,7 +153,14 @@ export default function PropertyDetailsMain() {
           </Box>
         </GridItem>
         <GridItem colSpan={12}>
-          <Grid templateColumns={gridLayout}>
+          <Grid templateColumns={gridLayout} gap={6}>
+            {propertyImages.length <= 0 &&
+              <GridItem colSpan={12}>
+                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}>a</Skeleton>
+                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}>a</Skeleton>
+                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}>a</Skeleton>
+              </GridItem>
+            }
             {propertyImages.map(({ src, alt }, i) => {
               return (
                 <GridItem colSpan={12 / propertyImages.length} key={i}>
@@ -144,6 +180,13 @@ export default function PropertyDetailsMain() {
           </Box>
         </GridItem>
         <GridItem colSpan={12}>
+          {activeOffers.length <= 0 && (
+            <>
+              <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>a</Skeleton>
+              <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>a</Skeleton>
+              <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>a</Skeleton>
+            </>
+          )}
           {activeOffers.map(
             ({ tokenId, price, fromAddress, expiresAfter, type }, i) => {
               return (

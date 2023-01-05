@@ -62,6 +62,7 @@ const newSellFormModel: SellFormModel = {
 };
 
 const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
+  dataReady: false,
   actionName: '',
   isOpen: false,
   jurisdiction: '',
@@ -95,6 +96,7 @@ const PropertyDetailsProvider = function ({
   children,
   text,
 }: PropertyDetailsContextProps) {
+  
   const { query } = useRouter();
   const { slug = [] } = query;
   const titleId = slug[0] || '';
@@ -121,11 +123,12 @@ const PropertyDetailsProvider = function ({
     null
   );
   const [jscJurisdictionInfo, setJscJurisdictionInfo] = useState<jscJurisdictionInfo | undefined>(undefined);
+  const [dataReady, setDataReady] = useState<boolean>(false);
 
   // ----------------------------------------------------------------
   // Private methods
   // ----------------------------------------------------------------
-  function modelToPayload(currentModel: SellFormModel): FormPayload {
+  const modelToPayload = (currentModel: SellFormModel): FormPayload => {
     const payload: FormPayload = {};
     const fieldsInModel = currentModel.fields;
 
@@ -142,11 +145,11 @@ const PropertyDetailsProvider = function ({
     return payload;
   }
 
-  function clearFormModel() {
+  const clearFormModel = () => {
     setSellFormModel(newSellFormModel);
   }
 
-  function isModelValid(currentModel: SellFormModel): boolean {
+  const isModelValid = (currentModel: SellFormModel): boolean => {
     const fieldsInModel = currentModel.fields;
     let formValid = true;
 
@@ -164,7 +167,7 @@ const PropertyDetailsProvider = function ({
     return formValid;
   }
 
-  function validateInput(value: InputValue, validators: Validators): boolean {
+  const validateInput = (value: InputValue, validators: Validators): boolean => {
     const { pattern, max, min, required } = validators;
     const patt = new RegExp(pattern || '');
     const valueAsNumber: number = Number(value);
@@ -190,11 +193,11 @@ const PropertyDetailsProvider = function ({
     return patternValid && maxValid && minValid && requiredValid;
   }
 
-  function inputPristine(
+  const inputPristine = (
     value: InputValue,
     name: string,
     currentModel: SellFormModel
-  ): boolean {
+  ): boolean => {
     const currentPristineStatus = currentModel.fields[name].pristine;
     const currentTouchedStatus = currentModel.fields[name].touched;
 
@@ -209,12 +212,12 @@ const PropertyDetailsProvider = function ({
     return true;
   }
 
-  function changeEvent(
+  const changeEvent = (
     value: InputValue,
     name: string,
     validators: Validators,
     currentModel: SellFormModel
-  ) {
+  ) => {
     const valid = validateInput(value, validators);
     const pristine = inputPristine(value, name, currentModel);
 
@@ -234,7 +237,7 @@ const PropertyDetailsProvider = function ({
   // Public exposed methods
   // ----------------------------------------------------------------
 
-  function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { currentTarget } = e;
     const { value, name, pattern, min, max, required } = currentTarget;
     const modelCopy = deepCopy(sellFormModel);
@@ -242,7 +245,7 @@ const PropertyDetailsProvider = function ({
     changeEvent(value, name, { pattern, min, max, required }, modelCopy);
   }
 
-  function handleSelectChange(e: ChangeEvent<HTMLSelectElement>) {
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { currentTarget } = e;
     const { value, name, required } = currentTarget;
     const modelCopy = deepCopy(sellFormModel);
@@ -250,7 +253,7 @@ const PropertyDetailsProvider = function ({
     changeEvent(value, name, { required }, modelCopy);
   }
 
-  function setSellModelField({ fieldName, newModel }: ModelFieldSetter) {
+  const setSellModelField = ({ fieldName, newModel }: ModelFieldSetter) => {
     const modelCopy = deepCopy(sellFormModel);
     const { fields } = modelCopy;
 
@@ -258,7 +261,7 @@ const PropertyDetailsProvider = function ({
     setSellFormModel(modelCopy);
   }
 
-  function postSellForm() {
+  const postSellForm = () => {
     const payload = modelToPayload(sellFormModel);
 
     console.log(payload);
@@ -267,14 +270,14 @@ const PropertyDetailsProvider = function ({
     onClose();
   }
 
-  function postAcceptOffer() {
+  const postAcceptOffer = () => {
     const payload = activeOffers[selectedOfferIndex || 0];
 
     console.log(payload);
     onClose();
   }
 
-  function propertyDetailsModalAction() {
+  const propertyDetailsModalAction = () => {
     console.log('post the form here');
     if (actionName === 'sell') {
       postSellForm();
@@ -283,7 +286,7 @@ const PropertyDetailsProvider = function ({
     }
   }
 
-  function showSellModal() {
+  const showSellModal = () => {
     const formValid = isModelValid(sellFormModel);
 
     setActionName('sell');
@@ -291,14 +294,14 @@ const PropertyDetailsProvider = function ({
     onOpen();
   }
 
-  function showAcceptOfferModal(i: number) {
+  const showAcceptOfferModal = (i: number) => {
     setActionName('accept');
     setActionButtonDisabled(true);
     setSelectedOfferIndex(i);
     onOpen();
   }
 
-  function buildActivity(offer: OfferInfo) {
+  const buildActivity = (offer: OfferInfo) => {
     const copy: ObjectHashInterface = {
       received:
         offer.fromAddress &&
@@ -316,6 +319,8 @@ const PropertyDetailsProvider = function ({
   // ----------------------------------------------------------------
   useEffect(() => {
     if (!loading) {
+      // console.log('propertyTiming: loading done!');
+      console.timeLog('propertyTiming', 'Property context: has finished loading');
       const loadData = async () => {
         const jurisdictionInfo = await getJurisdictionInfo(tokenJurisdictionAddress);
 
@@ -330,6 +335,7 @@ const PropertyDetailsProvider = function ({
 
   useEffect(() => {
     if (!loading && jscJurisdictionInfo) {
+      console.timeLog('propertyTiming', 'Property context: has finished loading and jscJurisdictionInfo is ready');
       const thisPropertyInfo = getTokenInformationByTitleId(titleId);
       const cartesianMapInfo = buildLocationString(thisPropertyInfo.locationData, 'cartesian');
       const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, thisPropertyInfo, titleId);
@@ -345,12 +351,15 @@ const PropertyDetailsProvider = function ({
       setActiveOffers(buyOffersInfo);
       setPropertyImages(thisPropertyInfo.images);
       setPropertyMapInfo(cartesianMapInfo);
+      setDataReady(true);
+      console.timeEnd('propertyTiming');
     }
   }, [loading, jscJurisdictionInfo]);
 
   return (
     <PropertyDetailsContext.Provider
       value={{
+        dataReady,
         actionName,
         tokenId,
         jurisdiction: tokenJurisdictionAddress,

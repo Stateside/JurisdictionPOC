@@ -44,7 +44,7 @@ export default function Tag({
     >
       {props.children}
       <Flex position="absolute" right="2">
-        {caret || <ChevronRightIcon />}
+        {caret === null || <ChevronRightIcon />}
       </Flex>
     </Flex>
   );
