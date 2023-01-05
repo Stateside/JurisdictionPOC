@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Button, HStack, Input, VStack } from '@chakra-ui/react';
+import { Button, HStack, Input, Text, VStack } from '@chakra-ui/react';
 import DeleteIcon from '@/components/icons/deleteIcon';
 
 import * as tc from '../../../../typechain-types';
@@ -117,7 +117,7 @@ const Members = () => {
       marginTop="20px"
       marginBottom="20px"
     >
-      {members.map((member: MemberInfo) => {
+      {members.length ? members.map((member: MemberInfo) => {
         return (
           <HStack width="100%" key={member.account}>
             <Input width="20%" value={member.name} onChange={() => {}} />
@@ -128,7 +128,7 @@ const Members = () => {
             </Button>
           </HStack>
         );
-      })}
+      }) : <Text>No information available</Text>}
     </VStack>
   );
 };

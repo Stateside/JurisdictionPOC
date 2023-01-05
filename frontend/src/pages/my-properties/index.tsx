@@ -3,10 +3,11 @@ import Head from 'next/head';
 import {
   Box,
   Heading,
-  HStack,
+  Link,
   Text,
 } from '@chakra-ui/react';
 import Property from './Property';
+import { ArrowBackIcon } from '@chakra-ui/icons';
 
 const MyProperties: NextPage = () => {
   return (
@@ -14,10 +15,14 @@ const MyProperties: NextPage = () => {
       <Head>
         <title>Create Proposal</title>
       </Head>
-      <Heading as="h1" size="3xl" whiteSpace="pre-line" marginBottom="48px">
+      <Link href="/" display="flex" fontWeight="bold">
+        <ArrowBackIcon marginRight="10px" marginTop="5px" />
+        <Text>Back to Dashboard</Text>
+      </Link>
+      <Heading whiteSpace="pre-line" marginBottom="48px">
         My properties
       </Heading>
-      <Box>
+      <Box width="80%">
         <Property />
         <Property />
         <Property />
