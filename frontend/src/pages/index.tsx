@@ -105,7 +105,7 @@ const Home: NextPage = () => {
     // If none, then show some "interesting" ones
     if (items.length === 0) {
       defaultItems.forEach(i => items.push(getTag(i.id, i.name, i.jurisdiction)))
-      items.push(<Text variant={'13/16'} key="0">You have no favorite properties. Try the above:</Text>)
+      items.push(<Text variant={'13/16'} key="0">You have no favorite properties. Try the above.</Text>)
     }
 
     return items
