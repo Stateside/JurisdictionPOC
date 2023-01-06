@@ -33,7 +33,8 @@ const defoInfo: thisPropertyInfo = {
       "src": "",
       "alt": ""
     }
-  ]
+  ],
+  propertyDescription: ''
 }
 
 export const getTokenInformationByTitleId = (titleId: string):thisPropertyInfo  => {
