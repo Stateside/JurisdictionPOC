@@ -11,7 +11,7 @@ const Property = () => {
           001 - 456 - 87654 - E
         </Text>
         {/* Activity */}
-        <Text style={{ position: "absolute", right: "50px" }} variant={'15/20'}>
+        <Text position="absolute" right="50px" variant={'15/20'}>
           <RealStateAgentIcon height={5} width={5} /> Selling for <b>78 ETH</b>
         </Text>
       </HStack>
