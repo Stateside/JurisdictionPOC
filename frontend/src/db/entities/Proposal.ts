@@ -13,6 +13,9 @@ export class Proposal implements IProposal {
   })
   id: string
 
+  @PrimaryColumn('int')
+  chainId: number
+
   @Column('int')
   startBlock: number
 
@@ -32,9 +35,6 @@ export class Proposal implements IProposal {
     nullable: true
   })
   description: string
-
-  @Column('int')
-  chainId: number
 
   @Column('char', {
     length: 42

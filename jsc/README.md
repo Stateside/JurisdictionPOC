@@ -68,6 +68,12 @@ To create database entries for the sample proposals used in development and the 
 yarn hardhat save-proposals --network localhost
 ```
 
+On the staging server this command looks like this:
+
+```
+node node_modules/hardhat/internal/cli/cli.js save-proposals --network localhost --config hardhat.config.staging.ts
+```
+
 You can change the webserver and the prefix for the contracts that are used to create the proposals as follows:
 
 ```

@@ -3,6 +3,7 @@ import "@nomiclabs/hardhat-ethers"
 import "@typechain/hardhat"
 import "@nomicfoundation/hardhat-chai-matchers"
 import { HardhatUserConfig } from "hardhat/config"
+import "./tasks/save-proposals"
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
