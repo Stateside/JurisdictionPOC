@@ -1,6 +1,3 @@
-// @ts-ignore
-import { ethers } from "hardhat" 
-
 /*
     This module contains the details of 20 sample accounts with their addresses and private keys.
 
@@ -42,12 +39,20 @@ const accounts:Account[] = [
 
 export const accountsByName:{[name:string] : Account} = {}
 export const accountsByAddress:{[name:string] : Account} = {}
-export const walletsByName:{[name:string] : any} = {}
+const walletsByName:{[name:string] : any} = {}
 
 accounts.forEach(a => {
     accountsByName[a.name] = a
     accountsByAddress[a.address] = a
-    walletsByName[a.name] = new ethers.Wallet(a.privateKey, ethers.provider)
 })
+
+export const buildWallets = (ethers:any) => {
+    if (Object.keys(walletsByName).length === 0)
+        accounts.forEach(a => {
+            walletsByName[a.name] = new ethers.Wallet(a.privateKey, ethers.provider)
+        })
+
+    return walletsByName
+}
 
 export default accounts

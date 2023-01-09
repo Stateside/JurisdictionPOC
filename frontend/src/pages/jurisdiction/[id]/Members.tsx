@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Button, HStack, Input, Text, VStack } from '@chakra-ui/react';
+import { Button, CircularProgress, HStack, Input, Text, VStack } from '@chakra-ui/react';
 import DeleteIcon from '@/components/icons/deleteIcon';
 
 import * as tc from '../../../../typechain-types';
-import * as roles from '../../../utils/roles';
+import { buildRoles } from '../../../utils/roles';
 import { useRouter } from 'next/router';
 import { useAliases } from '@/store/useAliases';
+import { ethers } from 'ethers';
+import { useJurisdictions } from '@/store/useJurisdictions';
+
+const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 
 type Role = {
   name: string;
@@ -19,38 +23,37 @@ type MemberInfo = {
   role: Role;
 };
 
+const roles = buildRoles(ethers);
+
 const Members = () => {
   const [localError, setLocalError] = useState<string>('');
   const { library } = useWeb3React();
-  const [members, setMembers] = useState<MemberInfo[]>([]);
+  const [members, setMembers] = useState<MemberInfo[]|undefined>();
   const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet | undefined>(undefined);
-  const [jscJurisdiction, setJSCJurisdiction] = useState<tc.IJSCJurisdiction | undefined>(undefined);
   const { aliasesByAddress, loaded:aliasesLoaded } = useAliases()
   const router = useRouter();
 
-  // Connect to the JSC Jurisdiction contract
+  // First load jurisdiction, then Cabinet, then members...
+  // If this page was saved as a bookmark, then none of the above may be loaded yet.
+
+  const jurisdictionAddress = router.query.id as string;
+  const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
+  const jscCabinetAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.cabinet']?.address)
+
   useEffect(() => {
-    if (library && router.query.id)
-      try {
-        setJSCJurisdiction(
-          tc.IJSCJurisdiction__factory.connect(
-            router.query.id as string,
-            library
-          )
-        );
-      } catch (err) {
-        setLocalError(err as string);
-      }
-  }, [library, router.query.id]);
+    if (jurisdictionsLoaded && jscCabinet === undefined) {
+      loadContracts(jurisdictionAddress, library);
+    }
+  }, [jurisdictionAddress, jurisdictionsLoaded, jscCabinet, library]);
 
   // Connect to the JSC Cabinet contract
   useEffect(() => {
-    if (library && jscJurisdiction) {
+    if (library && jscCabinetAddress) {
       const connect = async () => {
         try {
           setJSCCabinet(
             tc.IJSCCabinet__factory.connect(
-              await jscJurisdiction.getAddressParameter('jsc.contracts.cabinet'),
+              jscCabinetAddress,
               library
             )
           );
@@ -60,7 +63,7 @@ const Members = () => {
       }
       connect()
     }
-  }, [library, jscJurisdiction]);
+  }, [library, jscCabinetAddress]);
 
   // Load the members from the cabinet contract
   useEffect(() => {
@@ -94,7 +97,7 @@ const Members = () => {
 
   // Display aliases for known addresses in cabinet
   useEffect(() => {
-    if (members.length>0) {
+    if (members && members.length>0) {
         const _members = [...members]
         let changed = false
         for (let i = 0; i < _members.length; i++) {
@@ -117,18 +120,22 @@ const Members = () => {
       marginTop="20px"
       marginBottom="20px"
     >
-      {members.length ? members.map((member: MemberInfo) => {
-        return (
-          <HStack width="100%" key={member.account}>
-            <Input width="20%" value={member.name} onChange={() => {}} />
-            <Input width="40%" value={member.account} onChange={() => {}} />
-            <Input width="20%" value={member.role.name} onChange={() => {}} />
-            <Button width="20%" rightIcon={<DeleteIcon height={7} width={7} />}>
-              Remove
-            </Button>
-          </HStack>
-        );
-      }) : <Text>No information available</Text>}
+      {members && members.length > 0 &&
+        members.map((member: MemberInfo) => {
+          return (
+            <HStack width="100%" key={member.account}>
+              <Input width="20%" value={member.name} onChange={() => {}} />
+              <Input width="40%" value={member.account} onChange={() => {}} />
+              <Input width="20%" value={member.role.name} onChange={() => {}} />
+              <Button width="20%" rightIcon={<DeleteIcon height={7} width={7} />}>
+                Remove
+              </Button>
+            </HStack>
+          );
+        })
+      }
+      {members && members.length === 0 && <Text>No information available</Text>}
+      {!members && <LoadingIcon/>}
     </VStack>
   );
 };

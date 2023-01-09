@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import * as roles from "@/utils/roles"
+import { Role } from "@/utils/roles"
 import * as tc from "../../typechain-types"
 import { ContractDefinition, contractDefinitionsById, supportedContracts } from '@/utils/standard-contracts'
 
@@ -36,7 +36,7 @@ type ConfirmationHandler = (address:string) => Promise<void>
 export interface IMember {
   name: string
   address: string
-  role: roles.Role
+  role: Role
 }
 
 export interface IJurisdiction {

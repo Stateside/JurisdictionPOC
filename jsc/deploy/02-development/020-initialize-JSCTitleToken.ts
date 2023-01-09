@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import { Account, accountsByName, accountsByAddress, walletsByName } from "../../utils/accounts"
+import { Account, accountsByName, accountsByAddress, buildWallets } from "../../utils/accounts"
 import * as tc from "../../typechain-types"
 
 // @ts-ignore
@@ -156,6 +156,7 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     ],
   }
 
+  const wallets = buildWallets(ethers)
   for (const name in tokens) {
       const titles = tokens[name];
       for (let i = 0; i < titles.length; i++) {
@@ -165,11 +166,11 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
         const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
         for (let b = 0; b < t.offersToBuy.length; b++) {
           const o = t.offersToBuy[b];
-          await jscTitleToken.connect(walletsByName[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
+          await jscTitleToken.connect(wallets[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
         }
         for (let s = 0; s < t.offersToSell.length; s++) {
           const o = t.offersToSell[s];
-          await jscTitleToken.connect(walletsByName[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
+          await jscTitleToken.connect(wallets[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
         }
       }
   }

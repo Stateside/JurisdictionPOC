@@ -6,7 +6,6 @@ import * as tc from "../../typechain-types"
 import { ethers } from "hardhat" 
 import { createSampleProposals } from "../../utils/sample-proposals"
 import { PreparedProposal } from "../../utils/proposals"
-import { BigNumber } from "ethers"
 
 const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -23,7 +22,7 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscGovernor.init(jscJurisdiction.address, true)
 
-  const sampleProposals = await createSampleProposals(jscGovernor, jscCabinet, jscTitleToken)
+  const sampleProposals = await createSampleProposals(ethers, jscGovernor, jscCabinet, jscTitleToken)
   const proposalMap:{[hash:string]: PreparedProposal} = {}
   for (let i = 0; i < sampleProposals.length; i++) {
     const p = sampleProposals[i];

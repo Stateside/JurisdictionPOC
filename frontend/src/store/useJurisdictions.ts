@@ -3,10 +3,15 @@ import { Provider } from '@ethersproject/providers';
 import create from 'zustand'
 import { IJSCJurisdiction, IJSCJurisdiction__factory } from '../../typechain-types';
 
-export interface IContract {
+export type IContract = {
   name: string
   address: string
   description: string
+}
+
+export type IContracts = {
+  list: IContract[]
+  byName: { [name: string]: IContract }
 }
 
 export enum JurisdictionStatus {
@@ -25,13 +30,13 @@ export type  JurisdictionInfo = {
 };
 
 export type JurisdictionInfoMap = { [address: string]: JurisdictionInfo }
-export type JurisdictionContractsMap = { [address: string]: IContract[] }
+export type JurisdictionContractsMap = { [address: string]: IContracts }
 export type JurisdictionInstanceMap = { [address: string]: IJSCJurisdiction }
 
 /*
  * Zustand state to load and cache jurisdiction addresses with convenience methods to access typechain instances and some details like the name and contracts 
  *
- * State must be iitialized by loading all known jurisdiction addresses from the database with the init() function. This should be called once from
+ * State must be initialized by loading all known jurisdiction addresses from the database with the init() function. This should be called once from
  * a top level component like the Layout component.
  * 
  * The state is accessed with the useJurisdictions() hook. Individual jurisdictions can be accessed get() function. 
@@ -55,16 +60,16 @@ export interface IJurisdictionsState {
    * If a provider is given and the requested jurisdicitn is not found in the database,
    * it will attempt to connect to it on the blockchain
    */
-  getInfo: (address:string, provider?:Provider) => Promise<JurisdictionInfo>,
+  loadInfo: (address:string, provider?:Provider) => Promise<JurisdictionInfo>,
 
   /** Returns the addresses of all available Jurisdictions */
   getAllInfo: () => JurisdictionInfo[],
 
   /** Access a cached Typechain instance of the given jurisdiction */
-  getInstance: (address:string, provider:Provider) => Promise<IJSCJurisdiction>,
+  getInstance: (address:string, provider:Provider) => IJSCJurisdiction,
 
   /** Access the cached contacts of the given jurisdiction */
-  getContracts: (address:string, provider:Provider) => Promise<IContract[]>,
+  loadContracts: (address:string, provider:Provider) => Promise<IContracts>,
 
   /** Adds the given jurisdiction address to the state */
   add: (info:JurisdictionInfo) => void,
@@ -73,7 +78,7 @@ export interface IJurisdictionsState {
   remove: (address:string) => void,
 }
 
-/** Create Zustand state with collection of all likes for current user */
+/** Create Zustand state with collection of all known jurisdicitons */
 export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
   infos: {} as JurisdictionInfoMap,
   contracts: {} as JurisdictionContractsMap,
@@ -96,6 +101,7 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
           createdAt: j.createdAt ? new Date(j.createdAt) : undefined
         }
       })
+
       set({infos: details, chainId, loaded:true})
     })
   },
@@ -114,7 +120,10 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
     })
   },
 
-  getInfo: async (address:string, provider?:Provider) => {
+  loadInfo: async (address:string, provider?:Provider) => {
+    if (!get().loaded)
+      throw new Error("useJurisdictions state not initialized")
+
     const info:JurisdictionInfo = get().infos[address]
     if (!info && provider) {
       const instance = await get().getInstance(address, provider)
@@ -128,34 +137,51 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
   },
 
   /** Returns the addresses of all available Jurisdictions */
-  getAllInfo: () => Object.values(get().infos),
+  getAllInfo: () => {
+    if (!get().loaded)
+      throw new Error("useJurisdictions state not initialized")
+    
+    return Object.values(get().infos)
+  },
 
   /** Access a cached Typechain instance of the given jurisdiction */
-  getInstance: async (address:string, provider:Provider) => {
+  getInstance: (address:string, provider:Provider) => {
+    if (!get().loaded)
+      throw new Error("useJurisdictions state not initialized")
+      
     const instances = get().instances
     if (instances[address]) 
       return instances[address]
 
-    const instance = await IJSCJurisdiction__factory.connect(address, provider)
+    const instance = IJSCJurisdiction__factory.connect(address, provider)
     instances[address] = instance
     set({instances})
+
     return instance
   },
 
   /** Access the cached contacts of the given jurisdiction */
-  getContracts: async (address:string, provider:Provider) => {
+  loadContracts: async (address:string, provider:Provider) => {
+    if (!get().loaded)
+      throw new Error("useJurisdictions state not initialized")
+      
     const contracts = get().contracts
     if (contracts[address]) 
       return contracts[address]
     
-    const newContracts:IContract[] = []
+    const newContracts:IContracts = {
+      list: [],
+      byName: {}
+    }
     const instance = await get().getInstance(address, provider)
     let i = await instance.iterateParameters()
     while(await instance.isValidParameterIterator(i)){
       const p = await instance.parameterIteratorGet(i);
       if (p.ptype == ParamType.t_address) {
-        let a = await instance.getAddressParameter(p.name);
-        newContracts.push({name:p.name, address:a, description:p.description})
+        const a = await instance.getAddressParameter(p.name);
+        const c = {name:p.name, address:a, description:p.description}
+        newContracts.list.push(c)
+        newContracts.byName[p.name] = c
         i = await instance.nextParameter(i)
       }
     }
@@ -166,12 +192,18 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
 
   /** Adds the given jurisdiction info to the state */
   add: (newJurisdiction:JurisdictionInfo) => {
+    if (!get().loaded)
+      throw new Error("useJurisdictions state not initialized")
+      
     const info = get().infos
     info[newJurisdiction.address] = {...newJurisdiction}
     set({infos: info})
   },
 
   remove: async (address:string) => {
+    if (!get().loaded)
+      throw new Error("useJurisdictions state not initialized")
+      
     const request = {
       method: "POST",
       headers: {

@@ -8,6 +8,8 @@ import { useWeb3React } from '@web3-react/core'
 import { useAliases } from '@/store/useAliases'
 import { useLikes } from '@/store/useLikes'
 import { useJurisdictions } from '@/store/useJurisdictions'
+import { useGovernors } from '@/store/useGovernors'
+import { useRevisions } from '@/store/useRevisions'
 
 type Props = {
   children: ReactNode
@@ -29,6 +31,14 @@ export function Layout(props: Props) {
   const aliases = useAliases();
   useEffect(() => { aliases.init() }, [])
   
+  // Initialize the useGovernors hook, then reload when chainId changes
+  const governors = useGovernors();
+  useEffect(() => { chainId && governors.init(chainId) }, [chainId])
+
+  // Initialize the useRevisions hook, then reload when chainId changes
+  const revisions = useRevisions();
+  useEffect(() => { chainId && revisions.init(chainId) }, [chainId])
+
   return (
     <Box
       minHeight='100vh'

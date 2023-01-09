@@ -321,6 +321,19 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     }
 
     /**
+     * @dev See {IJSCGovernor-existsProposal}.
+     */
+    function existsProposal(uint256 proposalId)
+        public
+        view
+        override
+        returns (bool)
+    {
+        ProposalCore storage proposal = _proposals[proposalId];
+        return proposal.voteStart > 0;
+    }
+
+    /**
      * @dev Is the proposal successful or not. The forVotes must be strictly over the againstVotes.
      */
     function _voteSucceeded(uint256 proposalId) internal view returns (bool) {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import Head from 'next/head'
 import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
@@ -9,9 +9,8 @@ import { SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
-import { Jurisdiction } from 'classes/jurisdiction';
 import { JurisdictionMap, useLikes } from '@/store/useLikes';
-import { Like } from 'db/entities/Like';
+import { ILike } from 'db/interfaces/ILike';
 import { Link } from '@/components/Link';
 import { JurisdictionInfo, JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
 
@@ -39,8 +38,8 @@ const Home: NextPage = () => {
     confirm: confirmJurisdictionsExist,
     remove: removeJurisdiction
   } = useJurisdictions()
-  
-  const sortedJurisdictions = useMemo(() => 
+
+  const sortedJurisdictions:JurisdictionInfo[] = useMemo(() => 
     Object.values(jurisdictionInfos).sort(sortDescending), [jurisdictionInfos])
 
   useEffect(() => {
@@ -81,13 +80,13 @@ const Home: NextPage = () => {
 
     const getTag = (id:string, name:string, jurisdiction:string) => (
       <Link href={getURL(id, jurisdiction)} variant={'13/16'} key={jurisdiction+id}>
-        <Tag>
-          <Text>{name}</Text>
+        <Tag style={{ whiteSpace: "nowrap" }}>
+          <Text width="90%" overflow="hidden">{name}</Text>
         </Tag>
       </Link>)
 
     const items:JSX.Element[] = []
-    const displayLikedItems: Like[] = []
+    const displayLikedItems: ILike[] = []
     const likedJurisdictions = Object.keys(jurisdictionMap)
 
     // Get all likes for all jurisdictions

@@ -62,6 +62,18 @@ For other commands run
 yarn hardhat --help
 ```
 
+To create database entries for the sample proposals used in development and the local webserver, run the following command:
+
+```
+yarn hardhat save-proposals --network localhost
+```
+
+You can change the webserver and the prefix for the contracts that are used to create the proposals as follows:
+
+```
+yarn hardhat save-proposals --website https://jurisdictions.stateside.agency --prefix development --network localhost
+```
+
 # Tasks
 
 - Create UUPSUpgradeable

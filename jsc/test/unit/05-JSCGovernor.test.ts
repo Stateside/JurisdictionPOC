@@ -8,7 +8,7 @@ import "@nomicfoundation/hardhat-chai-matchers/panic"
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
 
 import * as iid from "../../utils/getInterfaceId"
-import { ProposalState, VoteType } from "../../utils/types"
+import { ParamType, ProposalState, VoteType } from "../../utils/types"
 import { createProposalVersion, PreparedProposal, prepareProposal } from "../../utils/proposals";
 
 /**
@@ -149,11 +149,21 @@ describe("JSCGovernor", async () => {
   }
 
   it('accepts simple proposal', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await basicProposalTests(proposal, ceilDiv(3*51, 100))
   });
@@ -179,11 +189,21 @@ describe("JSCGovernor", async () => {
   }
 
   it('executes simple winning proposal', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]  
+      }], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(await jurisdiction.isFrozen()).to.equal(false);
     await testWinningProposal(proposal)
@@ -191,23 +211,54 @@ describe("JSCGovernor", async () => {
   });
 
   it('executes complex winning proposal', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: jurisdiction.address,
-      name: "AddContract",
-      pdata: defaultAbiCoder.encode(
-        ["string", "string", "address"],
-        ["jsc.contracts.myontract", "A contract", "0x111122223333444455556666777788889999aAaa"])
-    }, {
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Add a contract and then freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: jurisdiction.address,
+        name: "AddContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "key",
+            value: "jsc.contracts.mycontract",
+            type: ParamType.t_string,
+            hint: ""
+          },
+          {
+            name: "description",
+            value: "A contract",
+            type: ParamType.t_string,
+            hint: ""
+          },
+          {
+            name: "address",
+            value: "0x111122223333444455556666777788889999aAaa",
+            type: ParamType.t_address,
+            hint: ""
+          }
+        ]
+      },
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Add a contract and then freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(await jurisdiction.isFrozen()).to.equal(false);
-    await expect(jurisdiction.getAddressParameter("jsc.contracts.myontract")).to.be.revertedWith("Trying to access non-existant parameter")
+    await expect(jurisdiction.getAddressParameter("jsc.contracts.mycontract")).to.be.revertedWith("Trying to access non-existant parameter")
     await testWinningProposal(proposal)
     await expect(await jurisdiction.isFrozen()).to.equal(true);
-    await expect(await jurisdiction.getAddressParameter("jsc.contracts.myontract")).to.equal("0x111122223333444455556666777788889999aAaa")
+    await expect(await jurisdiction.getAddressParameter("jsc.contracts.mycontract")).to.equal("0x111122223333444455556666777788889999aAaa")
   });
 
   const testLosingProposal = async (proposal:PreparedProposal) => {
@@ -228,11 +279,22 @@ describe("JSCGovernor", async () => {
   }
 
   it('processes losing proposals', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await testLosingProposal(proposal)
   });
@@ -253,59 +315,124 @@ describe("JSCGovernor", async () => {
   }
 
   it('expires proposals', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await testExpiredProposal(proposal)
   });
 
   it('accepts proposal with multiple revisions', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }, {
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[false])
-    }], "Freeze and unfreeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      },
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: false,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Freeze and unfreeze the jurisdiction contract", ++proposalVersion)
 
     await basicProposalTests(proposal, ceilDiv(3*51, 100))
   });
 
   it('rejects simple proposal with unknown contract', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: revisionsLib.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: revisionsLib.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
   });
 
   it('rejects simple proposal with zero contract', async function() {
-    const proposal = await prepareProposal(governor, [{
-      target: zeroAddress,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    }], "Freeze the jurisdiction contract", ++proposalVersion)
+    const proposal = await prepareProposal(ethers, governor, [
+      {
+        target: zeroAddress,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
   });
 
   it('iterates all existing proposals', async function() {
-    const propData = {
-      target: jurisdiction.address,
-      name: "FreezeContract",
-      pdata: defaultAbiCoder.encode(["bool"],[true])
-    };
-    const p1 = await prepareProposal(governor, [propData], "1", 1)
-    const p2 = await prepareProposal(governor, [propData], "2", 2)
-    const p3 = await prepareProposal(governor, [propData], "3", 3)
-    const p4 = await prepareProposal(governor, [propData], "4", 4)
+    const propData = [
+      {
+        target: jurisdiction.address,
+        name: "FreezeContract",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "freeze",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ];
+    const p1 = await prepareProposal(ethers, governor, propData, "1", 1)
+    const p2 = await prepareProposal(ethers, governor, propData, "2", 2)
+    const p3 = await prepareProposal(ethers, governor, propData, "3", 3)
+    const p4 = await prepareProposal(ethers, governor, propData, "4", 4)
 
     await expect(governor.propose(p1.revs, p1.description, p1.version)).to.not.be.reverted;
     await expect(governor.propose(p2.revs, p2.description, p2.version)).to.not.be.reverted;

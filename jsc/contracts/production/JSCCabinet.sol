@@ -115,14 +115,14 @@ contract JSCCabinet is
         _addRevision(
             _createRevisionForAddMemberRole(
                 "AddMemberRole",
-                "Add a new member {account} with role {role}"
+                "Add a new member {account} with {role} role"
             )
         );
         _addHandler("AddMemberRole", _handlerAddMemberRole);
         _addRevision(
             _createRevisionForRemoveMemberRole(
                 "RemoveMemberRole",
-                "Remove the role {role} from member {key}"
+                "Remove the {role} role from member {account}"
             )
         );
         _addHandler("RemoveMemberRole", _handleRemoveMemberRole);

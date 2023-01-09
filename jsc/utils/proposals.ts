@@ -1,7 +1,6 @@
 import * as tc from "../typechain-types"
-// @ts-ignore
-import { ethers } from "hardhat"
 import { BigNumber } from "ethers";
+import { ParamType, ParamType2SolidyType } from "./types";
 
 /*
    These are some utilities to make working with proposals easier in unit tests and development. Since
@@ -20,8 +19,23 @@ export const createProposalVersion = (d: Date) => {
     return v*100;
 }
 
+export type IPreparedParameter = {
+    name: string,
+    type: ParamType,
+    hint: string,
+    value: any,
+}
+
+export type PreparedRevision = {
+    target: string
+    name: string
+    description: string
+    pdata: string
+    parameters: IPreparedParameter[]
+}
+
 export type PreparedProposal = {
-    revs: tc.IJSCGovernor.RevisionCallStruct[],
+    revs: PreparedRevision[],
     description: string,
     descriptionHash: string,
     proposalHash: BigNumber,
@@ -30,8 +44,14 @@ export type PreparedProposal = {
 }
 
 /** Calculates the description and proposal hashes */
-export const prepareProposal = async (governor:tc.IJSCGovernor, revs: tc.IJSCGovernor.RevisionCallStruct[], description: string, version:number):Promise<PreparedProposal> => {
+export const prepareProposal = async (ethers:any, governor:tc.IJSCGovernor, revs: PreparedRevision[], description: string, version:number):Promise<PreparedProposal> => {
     const descriptionHash:string = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description))
+    revs.forEach(r => {
+        r.pdata = ethers.utils.defaultAbiCoder.encode(
+            r.parameters.map(p => ParamType2SolidyType[p.type]),
+            r.parameters.map(p => p.value)
+        )
+    })
     const pp:PreparedProposal = {
         revs,
         description,

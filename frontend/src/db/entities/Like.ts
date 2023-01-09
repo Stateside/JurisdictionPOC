@@ -1,12 +1,8 @@
+import { ILike, LikableItem } from "db/interfaces/ILike"
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
-export enum LikableItem {
-  Token = "token",
-  Proposal = "proposal"
-}
-
 @Entity()
-export class Like {
+export class Like implements ILike {
   constructor(init?:Partial<Like>) {
     Object.assign(this, init)
   }
