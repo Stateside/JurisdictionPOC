@@ -57,3 +57,4 @@ For more commands see the [migrations documentation](https://typeorm.io/migratio
 - Database connection pool fills up because of /api/*
 - Add a page with all sample accounts and their balances plus copy buttons for key
 - Check behaviour when bad addresses and IDs manually edited into URLs
+- Display inactive proposals
