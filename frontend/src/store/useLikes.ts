@@ -125,7 +125,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
     const jsonLikes = await res.json()
     
     //change date string to Date objects
-    const likes:ILike[] = jsonLikes.map(l => {
+    const likes:ILike[] = jsonLikes.map((l:any) => {
       l.createdAt = new Date(l.createdAt)
       l.updatedAt = new Date(l.updatedAt)
       return l
