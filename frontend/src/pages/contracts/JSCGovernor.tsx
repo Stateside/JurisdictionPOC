@@ -12,6 +12,7 @@ import Loader from '@/components/Loader'
 import { createSampleProposals } from '@/utils/sample-proposals'
 import { PreparedProposal } from '@/utils/proposals'
 import { getAccountShortName } from '@/utils/util'
+import { ethers } from 'ethers'
 
 type PreparedProposalMap = {[hash:string]: PreparedProposal}
 type BlockchainProposal = {id: string, state: ProposalState}
@@ -98,7 +99,7 @@ const showJSCGovernor: NextPage = () => {
   useEffect(() => {
     const loadSampleProposals = async () => {
       if (jscGovernor && jscCabinet && jscTitleToken) {
-        const sp = await createSampleProposals(jscGovernor, jscCabinet, jscTitleToken)
+        const sp = await createSampleProposals(ethers, jscGovernor, jscCabinet, jscTitleToken)
         const proposalMap:{[hash:string]: PreparedProposal} = {}
         for (let i = 0; i < sp.length; i++) {
           const p = sp[i];

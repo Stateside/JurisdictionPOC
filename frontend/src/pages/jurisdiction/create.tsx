@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, CircularProgress, CircularProgressLabel, Divider, HStack, Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure, VStack } from '@chakra-ui/react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as roles from "../../utils/roles"
+import { Role, buildRoles } from "../../utils/roles"
 import DeleteIcon from '@/components/icons/deleteIcon';
 import { Deployments, IMember, Jurisdiction, JurisdictionId } from 'classes/jurisdiction';
 import create from 'zustand'
@@ -12,6 +12,7 @@ import { ContractDefinition } from '@/utils/standard-contracts';
 import { useRouter } from 'next/router';
 import { JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
 import { useAliases } from '@/store/useAliases';
+import { ethers } from 'ethers';
 
 // Use Zustand for managing state changes to Jurisdiction
 
@@ -60,6 +61,8 @@ type RoleSelectorProps = {
   onChange:ChangeEventHandler<HTMLSelectElement>
 }
 
+const roles = buildRoles(ethers)
+
 /** Select component for selecting a role */
 const RoleSelector = (props:RoleSelectorProps) => 
   <Select
@@ -72,7 +75,7 @@ const RoleSelector = (props:RoleSelectorProps) =>
     width={props.width}
     onChange={props.onChange}
   >
-    {roles.rolesArray.map((r:roles.Role) => (<option key={r.id} value={r.friendlyName}>{r.friendlyName}</option>))}
+    {roles.rolesArray.map((r:Role) => (<option key={r.id} value={r.friendlyName}>{r.friendlyName}</option>))}
   </Select>
 
 /** Component for creating a new jurisdiction */
@@ -101,7 +104,7 @@ const CreateJurisdiction: NextPage = () => {
 
   const [newMemberName, setNewMemberName] = useState("")
   const [newMemberAddress, setNewMemberAddress] = useState("")
-  const [newMemberRole, setNewMemberRole] = useState<roles.Role>()
+  const [newMemberRole, setNewMemberRole] = useState<Role>()
 
   const { aliases, aliasesByAddress, loaded:aliasesLoaded } = useAliases()
   const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()

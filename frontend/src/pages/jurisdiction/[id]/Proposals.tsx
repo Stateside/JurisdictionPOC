@@ -1,135 +1,69 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { ProposalState } from '@/utils/types';
-import { PreparedProposal } from '@/utils/proposals';
-import { createSampleProposals } from '@/utils/sample-proposals';
-import * as tc from '../../../../typechain-types';
-import { Box, Button, HStack, Select, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, HStack, Select, Text, VStack } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
+import { useRouter } from 'next/router';
+import { useJurisdictions } from '@/store/useJurisdictions';
+import { useGovernors } from '@/store/useGovernors';
+import { Link } from '@/components/Link';
 
-type PreparedProposalMap = { [hash: string]: PreparedProposal };
-type BlockchainProposal = { id: string; state: ProposalState };
-type BlockchainProposalMap = { [hash: string]: BlockchainProposal };
+const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java' />
+const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
 
 const Proposals = () => {
-  const [localError, setLocalError] = useState<string>('');
-  const { active, account, library, error } = useWeb3React();
-  const [jscJurisdiction, setJSCJurisdiction] = useState<
-    tc.IJSCJurisdiction | undefined
-  >(undefined);
-  const [jscGovernor, setJSCGovernor] = useState<tc.IJSCGovernor | undefined>(
-    undefined
-  );
-  const [sampleProposals, setSampleProposals] = useState<PreparedProposalMap>(
-    {}
-  );
-  const [jscCabinet, setJSCCabinet] = useState<tc.IJSCCabinet | undefined>(
-    undefined
-  );
-  const [jscTitleToken, setJSCTitleToken] = useState<
-    tc.IJSCTitleToken | undefined
-  >(undefined);
-  const [jscProposals, setJSCProposals] = useState<BlockchainProposalMap>({});
+  const { library } = useWeb3React();
+  const router = useRouter();
 
-  useEffect(() => {
-    if (library)
-      try {
-        setJSCGovernor(
-          tc.IJSCGovernor__factory.connect(
-            '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
-            library
-          )
-        );
-      } catch (err) {
-        setLocalError(err as string);
-      }
-  }, [library]);
+  // First load jurisdiction, then contracts, then Governor, then proposals...
+  // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
-  useEffect(() => {
-    const getJurisdictionAddress = async () => {
-      try {
-        if (jscGovernor)
-          setJSCJurisdiction(
-            tc.IJSCJurisdiction__factory.connect(
-              await jscGovernor.getJurisdiction(),
-              library
-            )
-          );
-      } catch (err) {
-        setLocalError(err as string);
-      }
-    };
-    if (library && jscGovernor)
-      getJurisdictionAddress().catch(err => setLocalError(err.toString()));
-  }, [library, jscGovernor]);
+  const jurisdictionAddress = router.query.id as string;
+  const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
 
+  const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
+  const loadGovernorDetails = useGovernors(state => state.get)
+  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
+  const proposalIds = jscGovernorDetails?.proposalIds
+  const proposals = jscGovernorDetails?.proposals
+
+  // Load contracts from jurisdiciton
+  useEffect(() => { jurisdictionsLoaded && loadContracts(jurisdictionAddress, library) },
+    [jurisdictionAddress, jurisdictionsLoaded, library]);
+
+  // Load governor details
+  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
+    [jscGovernorAddress, jscGovernorDetails, library]);
+
+  // Load governor proposals
   useEffect(() => {
-    if (jscGovernor) {
-      const loadData = async () => {
-        let _proposals: BlockchainProposalMap = {};
-        const pCount = (await jscGovernor.proposalCount()).toNumber();
-        for (let pi = 0; pi < pCount; pi++) {
-          const p = (await jscGovernor.proposalAtIndex(pi))
-            .toHexString()
-            .toLowerCase();
-          const state: ProposalState = await jscGovernor.state(p);
-          _proposals[p] = { id: p, state: state };
-        }
-        setJSCProposals(_proposals);
-      };
-      loadData().catch(err => setLocalError(err.toString()));
+    if (jscGovernorDetails && !jscGovernorDetails.proposalsLoading && !jscGovernorDetails.allProposalsLoaded) {
+      jscGovernorDetails.loadAllProposals()
     }
-  }, [jscGovernor]);
+  }, [jscGovernorDetails]);
 
+  // Load proposal details for each proposal if not loaded or loading
   useEffect(() => {
-    const loadSampleProposals = async () => {
-      if (jscGovernor && jscCabinet && jscTitleToken) {
-        const sp = await createSampleProposals(
-          jscGovernor,
-          jscCabinet,
-          jscTitleToken
-        );
-        const proposalMap: { [hash: string]: PreparedProposal } = {};
-        for (let i = 0; i < sp.length; i++) {
-          const p = sp[i];
-          proposalMap[p.proposalHash.toHexString().toLowerCase()] = p;
+    if (proposalIds?.length) {
+      proposalIds.forEach(id => {
+        const pd = proposals && proposals[id]
+        if (pd && !pd.detailsLoading && !pd.revisions) {
+          pd.loadDetails()
         }
-        setSampleProposals(proposalMap);
-      }
-    };
-    loadSampleProposals().catch(err => setLocalError(err.toString()));
-  }, [jscGovernor, jscCabinet, jscTitleToken]);
-
-  useEffect(() => {
-    const getAddresses = async () => {
-      if (library && jscJurisdiction)
-        try {
-          setJSCCabinet(
-            tc.IJSCCabinet__factory.connect(
-              (await jscJurisdiction.getContractAddress(
-                'jsc.contracts.cabinet'
-              )) as string,
-              library
-            )
-          );
-          setJSCTitleToken(
-            tc.IJSCTitleToken__factory.connect(
-              (await jscJurisdiction.getContractAddress(
-                'jsc.contracts.tokens'
-              )) as string,
-              library
-            )
-          );
-        } catch (err) {
-          setLocalError((err as any).toString());
-        }
-    };
-    getAddresses().catch(err => setLocalError(err.toString()));
-  }, [library, jscJurisdiction]);
-
+      })
+    }
+  }, [proposalIds])
+  
+  const getTag = (id:string, name:string) => (
+    <Link href={jurisdictionAddress+"/proposal/"+id} variant={'15/20'} key={id}>
+      <Tag>
+        <Text>{name}</Text>
+      </Tag>
+    </Link>)
+  
   return (
     <HStack alignItems="flex-start" marginTop="20px" marginBottom="20px">
-      {Object.keys(jscProposals).length ? <VStack
+      { proposals && proposalIds && proposalIds.length > 0 && 
+      <VStack
         gap="40px"
         width={'80%'}
         marginRight={'10%'}
@@ -140,18 +74,19 @@ const Proposals = () => {
             Active proposals
           </Text>
           <Box>
-            {Object.keys(jscProposals).map(proposal => {
-              const cProposal = jscProposals[proposal];
-              return (
-                !!cProposal.state && (
-                  <Tag>
-                    <Text variant={'15/20'}>
-                      {sampleProposals[proposal]?.description || 'unknown'}
-                    </Text>
-                  </Tag>
-                )
-              );
-            })}
+            {
+              proposalIds.map(id => {
+                const p = proposals[id]
+                if (jscGovernorDetails?.allProposalsLoaded && !p.description)
+                  return getTag(id, `(${id})`)
+                if (p.description)
+                  return getTag(id, p.description)
+                return (
+                  <Tag key={id} caret={<LoadingCaret/>}>
+                    <Text variant={'15/20'}>({id})</Text>
+                  </Tag>)
+              })
+            }
           </Box>
         </Box>
         <Box width="100%">
@@ -159,21 +94,22 @@ const Proposals = () => {
             Closed proposals
           </Text>
           <Box>
-            {Object.keys(jscProposals).map(proposal => {
-              const cProposal = jscProposals[proposal];
-              return (
-                !cProposal.state && (
-                  <Tag>
-                    <Text variant={'15/20'}>
-                      {sampleProposals[proposal]?.description || 'unknown'}
-                    </Text>
-                  </Tag>
-                )
-              );
-            })}
+            {
+                proposalIds.map(id => {
+                  const p = proposals[id];
+                  return p.description
+                    ? getTag(id, p.description)
+                    : <Tag key={id} caret={<LoadingCaret/>}>
+                        <Text variant={'15/20'}>{id}</Text>
+                      </Tag>
+                
+                })
+            }
           </Box>
         </Box>
-      </VStack> : <Text>No information available</Text>}
+      </VStack> }
+      { (jscGovernorDetails?.proposalsLoading || !proposalIds) && <Tag justify='center' caret={null}><LoadingIcon/></Tag> }
+      { !jscGovernorDetails?.proposalsLoading && proposalIds && proposalIds.length == 0 && <Text>No information available</Text> }
       <Box>
         <Button variant="Heading">Create New Proposal</Button>
       </Box>

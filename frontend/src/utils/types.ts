@@ -5,6 +5,13 @@ export enum ParamType {
     t_string
 }
 
+export const ParamType2SolidyType = {
+    [ParamType.t_address]: "address",
+    [ParamType.t_bool]: "bool",
+    [ParamType.t_number]: "uint256",
+    [ParamType.t_string]: "string"
+}
+
 export enum ProposalState {
     Active,
     Canceled,

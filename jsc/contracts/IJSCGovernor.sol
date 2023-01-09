@@ -157,6 +157,14 @@ interface IJSCGovernor is IJSCConfigurable {
         returns (uint256);
 
     /**
+     * @dev Returns true if this proposal exists in this governor
+     */
+    function existsProposal(uint256 proposalId)
+        external
+        view
+        returns (bool);
+
+    /**
      * @dev Cast a vote
      *
      * Emits a {VoteCast} event.

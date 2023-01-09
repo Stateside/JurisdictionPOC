@@ -4,7 +4,7 @@ import { deployments, ethers } from "hardhat"
 import { expect } from "chai"
 import { BigNumber } from "ethers";
 import { defaultAbiCoder } from "ethers/lib/utils"
-import * as roles from "../../utils/roles"
+import { buildRoles } from "../../utils/roles"
 import "@nomicfoundation/hardhat-chai-matchers/panic"
 import * as iid from "../../utils/getInterfaceId"
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
@@ -17,6 +17,7 @@ describe("JSCCabinet", async () => {
   let jurisdiction: tc.IJSCJurisdiction
   let revisionsLib: tc.JSCRevisionsLib
   let configurableLib: any
+  let roles = buildRoles(ethers)
 
   let owner, bob, jane, sara, bryan, paul, alex, peter, susan, otherAccounts;
 

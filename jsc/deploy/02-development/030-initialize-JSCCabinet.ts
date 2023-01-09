@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
 import * as tc from "../../typechain-types"
 import {accountsByName, accountsByAddress} from "../../utils/accounts"
-import * as roles from "../../utils/roles"
+import { buildRoles } from "../../utils/roles"
 
 // @ts-ignore
 import { ethers } from "hardhat" 
@@ -15,6 +15,7 @@ const initializeJSCCabinet: DeployFunction = async function (hre: HardhatRuntime
   const jscGovernorContract = await get("development_JSCGovernor")
   const jscCabinetContract = await get("development_JSCCabinet")
 
+  const roles = buildRoles(ethers)
   log("Initializing development_JSCCabinet...")
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscCabinet.init(jscJurisdiction.address,

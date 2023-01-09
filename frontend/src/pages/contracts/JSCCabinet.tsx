@@ -8,9 +8,10 @@ import { useWeb3React } from "@web3-react/core";
 import * as tc from "../../../typechain-types"
 import { useRouter } from 'next/router'
 import Loader from '@/components/Loader'
-import * as roles from "../../utils/roles"
+import { buildRoles } from "../../utils/roles"
 import { accountsByAddress } from '@/utils/accounts'
 import { getAccountShortName } from '@/utils/util'
+import { ethers } from 'ethers'
 
 type CabinetRole = {
   name: string
@@ -45,6 +46,7 @@ const showJSCCabinet: NextPage = () => {
     if (jscCabinet) {
       const loadData = async () => {
         let _members:CabinetMember[] = []
+        const roles = buildRoles(ethers)
         const roleCount = (await jscCabinet.getRoleCount()).toNumber();
         for (let r = 0; r < roleCount; r++) {
           const roleId = await jscCabinet.getRoleAt(r);
