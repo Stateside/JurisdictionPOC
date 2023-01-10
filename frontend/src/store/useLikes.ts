@@ -120,7 +120,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
 
     const res = await fetch('/api/likes/get' +
       '?owner='+owner +
-      '&frontend='+process.env.NEXT_PUBLIC_FRONTEND||"" +
+      ('&frontend='+process.env.NEXT_PUBLIC_FRONTEND||"") +
       '&chainId='+chainId)
     const jsonLikes = await res.json()
     

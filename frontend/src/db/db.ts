@@ -28,38 +28,14 @@ const dbconfig:DataSourceOptions = {
   database: database,
   entities: [Alias, DeployedContract, Like, Proposal, Revision, RevisionParameter],
   synchronize: true,
-  logging: false,
-  extra: {
-    connectionLimit: 50
-  },
-  maxQueryExecutionTime: 2000
+  logging: false
 }
 
 export const datasource:DataSource = new DataSource(dbconfig)
 
+const connection = datasource.initialize()
 export const db = async ():Promise<DataSource> => {
-  if (!datasource.isInitialized)
-    await datasource.initialize()
-      .then(() => {
-      })
-      .catch((err) => {
-        console.error("Error during Data Source initialization", err)
-      })
-  return datasource
+  return await connection
 }
 
-export const withDB = async (handler:any) => {
-  console.log(`Connecting to database ${database} on ${host}:${port}`)
-  const ds:DataSource = new DataSource(dbconfig)
-  await ds.initialize()
-  try {
-    await handler(ds)
-  }
-  finally {
-    console.log(`Closing database ${database} on ${host}:${port}`)
-    ds.destroy()
-  }
-}
-
-export { DataSource as Database } from "typeorm"
 
