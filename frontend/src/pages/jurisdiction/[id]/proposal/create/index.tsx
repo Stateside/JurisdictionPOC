@@ -13,7 +13,7 @@ const CreateProposal: NextPage = () => {
       <Head>
         <title>Create Proposal</title>
       </Head>
-      <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
+      <Heading whiteSpace="pre-line" my={4} variant="80" marginBottom="48px">
         Create Proposal
       </Heading>
       <Box>
@@ -25,12 +25,12 @@ const CreateProposal: NextPage = () => {
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Proposal Name:</Text>
-            <Input width="80%" />
+            <Input width="60%" />
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Description:</Text>
-            <Textarea width="80%" />
+            <Textarea width="60%" />
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
@@ -43,7 +43,7 @@ const CreateProposal: NextPage = () => {
           </HStack>
           <Divider />
           <HStack flexDirection="row-reverse" width="100%" padding="20px 0">
-            <Button variant="Header">Create Jurisdiction</Button>
+            <Button variant="Header">Create proposal</Button>
           </HStack>
         </VStack>
       </Box>

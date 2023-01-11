@@ -118,7 +118,12 @@ const Proposal: NextPage = () => {
             <Text>{proposal?.description || proposal?.id || ''}</Text>
           </HStack>
           <Divider />
-          <HStack alignItems="flex-start" width="100%" paddingBottom="20px">
+          <HStack
+            alignItems="flex-start"
+            width="100%"
+            paddingBottom="20px"
+            paddingTop="20px"
+          >
             <Text width="20%">Revisions:</Text>
             <VStack alignItems="flex-start" width="80%">
               {proposal?.revisions ? (
@@ -128,6 +133,7 @@ const Proposal: NextPage = () => {
                     variant={'15/20'}
                     key={r.id}
                     width="100%"
+                    style={{paddingBottom: "20px"}}
                   >
                     <Tag>
                       <Text>{r.name}</Text>
@@ -139,7 +145,6 @@ const Proposal: NextPage = () => {
                   <LoadingIcon />
                 </Tag>
               )}
-              <Divider />
             </VStack>
           </HStack>
           <Divider />
