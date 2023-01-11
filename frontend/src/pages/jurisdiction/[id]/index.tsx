@@ -16,7 +16,7 @@ import {
 import Contracts from './Contracts';
 import Members from './Members';
 import Proposals from './Proposals';
-import Properties from './Properties';
+import Tokens from './Tokens';
 
 
 const Jurisdiction: NextPage = () => {
@@ -36,7 +36,7 @@ const Jurisdiction: NextPage = () => {
         <ArrowBackIcon marginRight="10px" marginTop="5px" />
         <Text>Back to Dashboard / Jurisdiction</Text>
       </Link>
-      <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
+      <Heading whiteSpace="pre-line" variant="80" my={4} marginBottom="48px">
         Jurisdiction Name
       </Heading>
       <Tabs variant="enclosed" borderColor="#D3D3D3">
@@ -65,7 +65,7 @@ const Jurisdiction: NextPage = () => {
             <Proposals />
           </TabPanel>
           <TabPanel>
-            <Properties />
+            <Tokens />
           </TabPanel>
         </TabPanels>
       </Tabs>
