@@ -26,6 +26,7 @@ import { PropertyDetailsContext } from '../PropertyDetailsContext';
 import { PropertyInfo } from '@/utils/property-types';
 import FavoriteTokenButton from '@/components/FavoriteTokenButton';
 import { Link } from '@/components/Link';
+import Gmaps from './Gmaps';
 
 const gridLayout = 'repeat(12, 1fr)';
 
@@ -65,7 +66,7 @@ export default function PropertyDetailsMain() {
     showAcceptOfferModal,
     buildActivity,    
   } = useContext(PropertyDetailsContext);
-  const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo}&z=12&amp;output=embed`;
+  const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo.lat},${propertyMapInfo.lon}&z=12&amp;output=embed`;
 
   return (
     <>
@@ -140,8 +141,11 @@ export default function PropertyDetailsMain() {
             </GridItem>
             <GridItem colSpan={{base: 12, lg: 5}} mt={{base: '40px', lg: 0}}>
               <Skeleton isLoaded={dataReady} w={{base: '100%'}} h={{base: '100%'}}>
-                {propertyMapInfo.length > 0 &&
-                  <div className="iframe-rwd" style={{width: '100%', height: '100%'}} dangerouslySetInnerHTML={{ __html: `<iframe width="100%" height="100%" src="${mapUrl}" />`}} />
+                {Object.keys(propertyMapInfo).length > 0 &&
+                  <>
+                    <Gmaps lat={propertyMapInfo.lat} lng={propertyMapInfo.lon} />
+                    {/* <div className="iframe-rwd" style={{width: '100%', height: '100%'}} dangerouslySetInnerHTML={{ __html: `<iframe width="100%" height="100%" src="${mapUrl}" />`}} /> */}
+                  </>
                 }
               </Skeleton>
             </GridItem>

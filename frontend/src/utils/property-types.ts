@@ -54,6 +54,11 @@ export type ModelFieldSetter = {
 
 export type ActionNames = '' | 'sell' | 'accept';
 
+export type PropertyMapInfo = {
+  lat: number,
+  lon: number,
+}
+
 export type PropertyDetailsContextDefoTypes = {
   dataReady: boolean;
   actionName: ActionNames;
@@ -63,7 +68,7 @@ export type PropertyDetailsContextDefoTypes = {
   propertyId: string;
   propertyInfo: PropertyInfo[];
   propertyImages: PropertyImage[];
-  propertyMapInfo: string,
+  propertyMapInfo: PropertyMapInfo,
   sellFormModel: SellFormModel;
   actionButtonDisabled: boolean;
   selectedOfferIndex: number | null;
