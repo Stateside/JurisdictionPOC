@@ -87,8 +87,13 @@ const Proposal: NextPage = () => {
         <ArrowBackIcon marginRight="10px" marginTop="5px" />
         <Text>Back to Dashboard / Jurisdiction</Text>
       </Link>
-      <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
-        Proposal <FavoriteProposalButton jurisdiction={jurisdictionAddress} itemId={proposalId as string} name={proposal?.description || proposal?.id || ""} />
+      <Heading whiteSpace="pre-line" variant={'80'} my={4} marginBottom="48px">
+        Proposal{' '}
+        <FavoriteProposalButton
+          jurisdiction={jurisdictionAddress}
+          itemId={proposalId as string}
+          name={proposal?.description || proposal?.id || ''}
+        />
       </Heading>
       <Box>
         <VStack width="100%" alignItems="flex-start">
@@ -98,7 +103,11 @@ const Proposal: NextPage = () => {
           </HStack>
           <HStack alignItems="flex-start" width="100%">
             <Text width="20%">Expiry date:</Text>
-            <Text>{(proposal?.deadline && blockNumber) ? blocksToDate((proposal?.deadline||0) - blockNumber) : ""}</Text>
+            <Text>
+              {proposal?.deadline && blockNumber
+                ? blocksToDate((proposal?.deadline || 0) - blockNumber)
+                : ''}
+            </Text>
           </HStack>
           <HStack
             alignItems="flex-start"
@@ -106,22 +115,30 @@ const Proposal: NextPage = () => {
             style={{ marginBottom: '20px' }}
           >
             <Text width="20%">Description:</Text>
-            <Text>{proposal?.description || proposal?.id || ""}</Text>
+            <Text>{proposal?.description || proposal?.id || ''}</Text>
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" width="100%" paddingBottom="20px">
             <Text width="20%">Revisions:</Text>
             <VStack alignItems="flex-start" width="80%">
-              {
-                proposal?.revisions
-                ? proposal?.revisions.map(r => (
-                  <Link href={`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId}/revision/${r.id}`} variant={'15/20'} key={r.id} width="100%">
+              {proposal?.revisions ? (
+                proposal?.revisions.map(r => (
+                  <Link
+                    href={`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId}/revision/${r.id}`}
+                    variant={'15/20'}
+                    key={r.id}
+                    width="100%"
+                  >
                     <Tag>
                       <Text>{r.name}</Text>
                     </Tag>
-                  </Link>))
-                : <Tag><LoadingIcon /></Tag>
-              } 
+                  </Link>
+                ))
+              ) : (
+                <Tag>
+                  <LoadingIcon />
+                </Tag>
+              )}
               <Divider />
             </VStack>
           </HStack>
