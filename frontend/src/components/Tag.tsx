@@ -18,8 +18,9 @@ export default function Tag({
   return (
     <Flex
       _hover={{
-        padding: '6px 8px 8px 8px',
-        border: '3px solid',
+        // padding: '6px 8px 8px 8px',
+        // border: '3px solid',
+        boxShadow: 'inset 0 0 0 3px var(--chakra-colors-brand-javaHover), 0px 0px 15px rgba(0, 0, 0, 0.1)',
         cursor: 'pointer',
         borderColor: type === 'sellingMe' ? 'brand.grey04' : 'brand.javaHover',
         backgroundColor: type === 'sellingMe' ? 'brand.lemon' : 'brand.white'
