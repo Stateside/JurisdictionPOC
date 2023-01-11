@@ -12,7 +12,7 @@ const Menu = (props: Props) => {
     const { items } = props;
 
     return (
-      <MenuChakra variant={'mainMenu'} {...props}>
+      <MenuChakra  variant={'mainMenu'} {...props}>
         <MenuButton
           width="54px"
           background="brand.grey.grey04"
@@ -23,11 +23,11 @@ const Menu = (props: Props) => {
           icon={<MenuIcon width="24px" height="24px" />}
           variant="outline"
         />
-        <MenuList borderWidth="0" >
+        <MenuList borderWidth="0" position="absolute" left="-170px" top="15px">
           <Box
             position="absolute"
             top="-15px"
-            left="7px"
+            left="177px"
             borderLeft="20px solid transparent"
             borderRight="20px solid transparent"
             borderBottom="20px solid #fff"
