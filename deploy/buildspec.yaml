@@ -53,6 +53,7 @@ phases:
         NEXT_PUBLIC_CHAIN_DECIMALS=18        
         NEXT_PUBLIC_VOLATILE_BLOCKCHAIN=true
         NEXT_PUBLIC_FRONTEND=staging
+        NEXT_PUBLIC_GMAPS_API=AIzaSyDCurLmsvnyf7VD8lFZRzAcUluBW7YEviI
         DB_HOST = ${DB_HOST}
         DB_PORT = ${DB_PORT}
         DB_USERNAME = ${DB_USERNAME}
