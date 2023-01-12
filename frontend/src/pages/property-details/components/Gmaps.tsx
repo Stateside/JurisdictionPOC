@@ -12,7 +12,7 @@ interface GmapsProps {
   lng: number,
 }
 
-const Marker = ({ text }: Marker) => <img style={{position: 'absolute', transform: 'translate(-50%, -50%)'}} src='/imgs/googleMapsPin.svg' />;
+const Marker = ({ text }: Marker) => <img style={{transform: 'translate(-50%, -50%)'}} src='/imgs/googleMapsPin.svg' />;
 
 const key = process.env.NEXT_PUBLIC_GMAPS_API || '';
 

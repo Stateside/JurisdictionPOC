@@ -64,7 +64,7 @@ describe("JSCTitleToken", async () => {
 
   it('fails on second init()', async function() {
     await expect(await titleToken.isFrozen()).to.equal(false);
-    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address, zeroAddress, 0, zeroAddress, 0, zeroAddress)).to.be.revertedWith('init() cannot be called twice');
+    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address, zeroAddress, 0, zeroAddress, 0, true, zeroAddress)).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('correctly checks interfaces IDs', async function() {
@@ -845,13 +845,13 @@ describe("JSCTitleToken", async () => {
     await expect(titleTokenTest.connect(ownerAccount).offerToBuy(tokenId2, eth2WEI(1), payETH(1)), "owner offers to buy other account's token").to.not.be.reverted;
     await expect(titleTokenTest.connect(operator).cancelOfferToBuy(tokenId1), "operator cancels offer to buy other account's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(approved).cancelOfferToBuy(tokenId1), "approved cancels offer to buy other account's token").to.be.revertedWith("no offer found");
-    await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, ownerAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
-    await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, ownerAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
+    await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, ownerAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("not owner");
+    await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, ownerAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("not owner");
     await expect(titleTokenTest.connect(ownerAccount).cancelOfferToBuy(tokenId2), "owner cancels offer to buy").to.not.be.reverted;
 
     await expect(titleTokenTest.connect(otherAccount).offerToBuy(tokenId1, eth2WEI(1), payETH(1)), "other account offers to buy owner's token").to.not.be.reverted;
-    await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, otherAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
-    await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, otherAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("only the owner can accept an offer to buy");
+    await expect(titleTokenTest.connect(operator).acceptOfferToBuy(tokenId1, otherAccount.address), "operator accepts offer to buy owner's token").to.be.revertedWith("not owner");
+    await expect(titleTokenTest.connect(approved).acceptOfferToBuy(tokenId1, otherAccount.address), "approved accepts offer to buy owner's token").to.be.revertedWith("not owner");
     await expect(titleTokenTest.connect(operator).cancelOfferToBuy(tokenId1), "operator cancels offer to buy owner's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(approved).cancelOfferToBuy(tokenId1), "approved cancels offer to buy owner's token").to.be.revertedWith("no offer found");
     await expect(titleTokenTest.connect(otherAccount).cancelOfferToBuy(tokenId1), "other account cancels offer to buy").to.not.be.reverted;

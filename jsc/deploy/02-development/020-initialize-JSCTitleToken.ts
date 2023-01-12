@@ -29,6 +29,7 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     0,
     zeroAddress,
     0,
+    true,
     zeroAddress
   )
 

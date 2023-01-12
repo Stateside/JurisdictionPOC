@@ -32,6 +32,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
         uint256 registryFee_,
         address maintainerAccount_,
         uint256 maintainerFee_,
+        bool nftSupport_,
         address newOwner
       ) external onlyOwner {
     require(
@@ -47,6 +48,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
     _addAddressParameter(tlib.getRegistryAccountParam(registryAccount_));
     _addNumberParameter(tlib.getMaintainerFeeParam(maintainerFee_));
     _addAddressParameter(tlib.getMaintainerAccountParam(maintainerAccount_));
+    _addBoolParameter(tlib.getContractNFTSupportParam(nftSupport_));
     _addParameterRevisions();
 
     _storage.name = name_;
@@ -137,18 +139,20 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IERC721Metadata-tokenURI}.
    */
   function tokenURI(uint256 tokenId) public view override returns (string memory) {
-    _storage.requireMinted(tokenId);
+    return _storage.tokenURI(tokenId);
+  }
 
-    return
-      bytes(_storage.baseURI).length > 0
-        ? string(abi.encodePacked(_storage.baseURI, tokenId))
-        : "";
+  function requireNFTSupport() internal view {
+    require(
+      getBoolParameter("jsc.nft.enabled"),
+      "NFT support disabled");
   }
 
   /**
    * @dev See {IERC721-approve}.
    */
   function approve(address to, uint256 tokenId) public override unfrozenContract {
+    requireNFTSupport();
     _storage.validateAndApprove(_msgSender(), to, tokenId);
   }
 
@@ -157,6 +161,8 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    */
   function getApproved(uint256 tokenId) public view override returns (address) {
     _storage.requireMinted(tokenId);
+    if (!getBoolParameter("jsc.nft.enabled"))
+      return address(0);
 
     return _storage.tokens[tokenId].approval;
   }
@@ -165,6 +171,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IERC721-setApprovalForAll}.
    */
   function setApprovalForAll(address operator, bool approved) public override unfrozenContract {
+    requireNFTSupport();
     _setApprovalForAll(_msgSender(), operator, approved);
   }
 
@@ -172,13 +179,17 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IERC721-isApprovedForAll}.
    */
   function isApprovedForAll(address owner, address operator) public view override returns (bool) {
-    return _storage.operatorApprovals[owner][operator];
+    return getBoolParameter("jsc.nft.enabled") && _storage.operatorApprovals[owner][operator];
   }
 
   /**
    * @dev See {IERC721-transferFrom}.
    */
   function transferFrom(address from, address to, uint256 tokenId ) public override unfrozenContract {
+    _transferFrom(from, to, tokenId);
+  }
+
+  function _transferFrom(address from, address to, uint256 tokenId ) internal {
     _checkApprovedOrOwner(_msgSender(), tokenId);
     _transfer(from, to, tokenId);
   }
@@ -194,6 +205,11 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IERC721-safeTransferFrom}.
    */
   function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public override unfrozenContract {
+    requireNFTSupport();
+    _safeTransferFrom(from, to, tokenId, data);
+  }
+
+  function _safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) internal {
     _checkApprovedOrOwner(_msgSender(), tokenId);
     _safeTransfer(from, to, tokenId, data);
   }
@@ -266,9 +282,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * Emits a {Transfer} event.
    */
   function mint(address owner, string memory titleId) external onlyOwner {
-    uint256 tokenId = titleToTokenId(titleId);
-    require(!_storage.exists(tokenId), "token already minted");
-    _storage.mint(owner, titleId, tokenId);
+    _storage.mint(owner, titleId);
   }
 
   /**
@@ -286,8 +300,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
   }
 
   function _burn(uint256 tokenId) internal {
-    address owner = ownerOf(tokenId);
-    _storage.burn(tokenId, owner);
+    _storage.burn(tokenId, ownerOf(tokenId));
   }
 
   /**
@@ -314,7 +327,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
   function _setApprovalForAll(address owner, address operator, bool approved) internal {
     require(owner != operator, "approve to caller");
     _storage.requireFrozenOwner(owner, false);
-    if (approved) // Do not approve frozen accounts - be we can remove them
+    if (approved) // Do not approve frozen accounts - but we can remove them
       _storage.requireFrozenOwner(operator, false);
     _storage.operatorApprovals[owner][operator] = approved;
     emit ApprovalForAll(owner, operator, approved);
@@ -322,9 +335,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
 
   /** Freezes the given token so that it can no longer be transferred */
   function _setFrozenToken(uint256 tokenId, bool frozen) internal onlyOwner {
-    _storage.requireMinted(tokenId);
-    _storage.requireFrozenToken(tokenId, !frozen);
-    _storage.tokens[tokenId].frozen = frozen;
+    _storage.setFrozenToken(tokenId, frozen);
     emit TokenFrozen(tokenId, frozen);
   }
 
@@ -332,14 +343,12 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IJSCTitleToken-isFrozenToken}.
    */
   function isFrozenToken(uint256 tokenId) public view returns (bool) {
-    _storage.requireMinted(tokenId);
-    return _storage.tokens[tokenId].frozen;
+    return _storage.isFrozenToken(tokenId);
   }
 
   /** Freezes the given owner so that they can no longer send or receive tokens */
   function _setFrozenOwner(address owner, bool frozen) internal onlyOwner {
-    _storage.requireFrozenOwner(owner, !frozen);
-    _storage.frozenOwners[owner] = frozen;
+    _storage.setFrozenOwner(owner, frozen);
     emit OwnerFrozen(owner, frozen);
   }
 
@@ -347,28 +356,21 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IJSCTitleToken-isFrozenOwner}.
    */
   function isFrozenOwner(address owner) public view returns (bool) {
-    return _storage.frozenOwners[owner];
+    return _storage.isFrozenOwner(owner);
   }
 
   /**
    * @dev See {IJSCTitleToken-countOffersToBuy}.
    */
   function countOffersToBuy(uint256 tokenId) external view returns (uint256) {
-    _storage.requireMinted(tokenId);
-    return _storage.tokens[tokenId].offersToBuy.arr.length;
+    return _storage.countOffersToBuy(tokenId);
   }
 
   /**
    * @dev See {IJSCTitleToken-offerToBuyAtIndex}.
    */
   function offerToBuyAtIndex(uint256 tokenId, uint256 index) external view returns (tlib.Offer memory) {
-    _storage.requireMinted(tokenId);
-    require(
-      index < _storage.tokens[tokenId].offersToBuy.arr.length,
-      "unknown offer to buy"
-    );
-    tlib.Offer storage o = _storage.tokens[tokenId].offersToBuy.arr[index];
-    return o;
+    return _storage.offerToBuyAtIndex(tokenId, index);
   }
 
   /**
@@ -384,12 +386,12 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    */
   function acceptOfferToBuy(uint256 tokenId, address buyer) external unfrozenContract {
     address owner = ownerOf(tokenId);
-    require(_msgSender() == owner, "only the owner can accept an offer to buy");
+    require(_msgSender() == owner, "not owner");
 
     uint amt = _storage.tokens[tokenId].offersToBuy.getOfferFrom(buyer);
 
     _storage.cancelOfferToBuyFrom(tokenId, buyer);
-    safeTransferFrom(owner, buyer, tokenId);
+    _safeTransferFrom(owner, buyer, tokenId, "");
 
     tlib.pay(amt, amt, payable(owner));
   }
@@ -421,13 +423,7 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
    * @dev See {IJSCTitleToken-offerToSellAtIndex}.
    */
   function offerToSellAtIndex(uint256 tokenId, uint256 index) external view returns (tlib.Offer memory) {
-    _storage.requireMinted(tokenId);
-    require(
-      index < _storage.tokens[tokenId].offersToSell.arr.length,
-      "unknown offer to sell"
-    );
-    tlib.Offer storage o = _storage.tokens[tokenId].offersToSell.arr[index];
-    return o;
+    return _storage.offerToSellAtIndex(tokenId, index);
   }
 
   /**

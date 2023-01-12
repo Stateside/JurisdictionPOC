@@ -78,6 +78,7 @@ library JSCTitleTokenLib {
   function getRegistryAccountParam(address registryAccount) public pure returns(clib.AddressParameter memory) { return clib.AddressParameter("jsc.accounts.registry", "Account where registry fees are paid", registryAccount); }
   function getMaintainerFeeParam(uint256 maintainerFee) public pure returns(clib.NumberParameter memory) { return clib.NumberParameter("jsc.fees.maintainer", "Transfer fee paid to maintainer", maintainerFee); }
   function getMaintainerAccountParam(address maintainerAccount) public pure returns(clib.AddressParameter memory) { return clib.AddressParameter("jsc.accounts.maintainer", "Account where maintainer fees are paid", maintainerAccount); }
+  function getContractNFTSupportParam(bool nftSupport) public pure returns(clib.BoolParameter memory) { return clib.BoolParameter("jsc.nft.enabled", "Allow owners to exchange tokens as NFTs", nftSupport); }
 
   function requireAddress(address a) public pure {
     require(a != address(0), "address zero is not a valid owner");
@@ -93,7 +94,15 @@ library JSCTitleTokenLib {
       "transfer to non ERC721Receiver implementer"
     );
   }
-  
+
+  /** @dev Deterines a suitable URI for the given token id */
+  function tokenURI(Storage storage self, uint tokenId) public view returns (string memory) {
+    requireMinted(self, tokenId);
+    return
+      bytes(self.baseURI).length > 0
+        ? string(abi.encodePacked(self.baseURI, getTitleToken(self, tokenId).titleId))
+        : "";
+  }
 
   /**
     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
@@ -326,9 +335,12 @@ library JSCTitleTokenLib {
     *
     * Emits a {Transfer} event.
     */
-  function mint(Storage storage self, address owner, string memory titleId, uint tokenId) public {
+  function mint(Storage storage self, address owner, string memory titleId) public {
       require(owner != address(0), "mint to the zero address");
       
+      uint256 tokenId = uint256(keccak256(abi.encode(titleId)));
+      require(!exists(self, tokenId), "token already minted");
+
       addTokenId(self.tokensByOwner[owner], tokenId);
       addTokenId(self.tokenIds, tokenId);
       self.tokens[tokenId].titleId = titleId;
@@ -411,6 +423,53 @@ library JSCTitleTokenLib {
     );
 
     approve(self, to, tokenId);
+  }
+
+  /** Freezes the given token so that it can no longer be transferred */
+  function setFrozenToken(Storage storage self, uint256 tokenId, bool frozen) public {
+    requireMinted(self, tokenId);
+    requireFrozenToken(self, tokenId, !frozen);
+    self.tokens[tokenId].frozen = frozen;
+  }
+
+  function isFrozenToken(Storage storage self, uint256 tokenId) public view returns (bool) {
+    requireMinted(self, tokenId);
+    return self.tokens[tokenId].frozen;
+  }
+
+  /** Freezes the given owner so that they can no longer send or receive tokens */
+  function setFrozenOwner(Storage storage self, address owner, bool frozen) public {
+    requireFrozenOwner(self, owner, !frozen);
+    self.frozenOwners[owner] = frozen;
+  }
+
+  function isFrozenOwner(Storage storage self, address owner) public view returns (bool) {
+    return self.frozenOwners[owner];
+  }
+
+  function countOffersToBuy(Storage storage self, uint256 tokenId) public view returns (uint256) {
+    requireMinted(self, tokenId);
+    return self.tokens[tokenId].offersToBuy.arr.length;
+  }
+
+  function offerToBuyAtIndex(Storage storage self, uint256 tokenId, uint256 index) external view returns (Offer memory) {
+    requireMinted(self, tokenId);
+    require(
+      index < self.tokens[tokenId].offersToBuy.arr.length,
+      "unknown offer to buy"
+    );
+    Offer storage o = self.tokens[tokenId].offersToBuy.arr[index];
+    return o;
+  }
+
+  function offerToSellAtIndex(Storage storage self, uint256 tokenId, uint256 index) public view returns (Offer memory) {
+    requireMinted(self, tokenId);
+    require(
+      index < self.tokens[tokenId].offersToSell.arr.length,
+      "unknown offer to sell"
+    );
+    Offer storage o = self.tokens[tokenId].offersToSell.arr[index];
+    return o;
   }
 
   /**
