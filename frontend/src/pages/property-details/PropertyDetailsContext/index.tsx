@@ -14,6 +14,7 @@ import {
   PropertyImage,
   ActionNames,
   OfferInfo,
+  PropertyMapInfo,
 } from '../../../utils/property-types';
 import {
   buildTokenInfoByTitleId,
@@ -61,6 +62,11 @@ const newSellFormModel: SellFormModel = {
   formValid: false,
 };
 
+const defoMapInfo:PropertyMapInfo = {
+  lat: 0,
+  lon: 0,
+}
+
 const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   dataReady: false,
   actionName: '',
@@ -70,7 +76,10 @@ const ComponentWithContextDefoValues: PropertyDetailsContextDefoTypes = {
   propertyId: '',
   propertyInfo: [],
   propertyImages: [],
-  propertyMapInfo: '',
+  propertyMapInfo: {
+    lat: 0,
+    lon: 0,
+  },
   sellFormModel: newSellFormModel,
   actionButtonDisabled: true,
   selectedOfferIndex: null,
@@ -118,7 +127,7 @@ const PropertyDetailsProvider = function ({
   const [propertyInfo, setPropertyInfo] = useState<PropertyInfo[]>([]);
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [activeOffers, setActiveOffers] = useState<OfferInfo[]>([]);
-  const [propertyMapInfo, setPropertyMapInfo] = useState<string>('');
+  const [propertyMapInfo, setPropertyMapInfo] = useState<PropertyMapInfo>(defoMapInfo);
   const [selectedOfferIndex, setSelectedOfferIndex] = useState<number | null>(
     null
   );
@@ -337,7 +346,12 @@ const PropertyDetailsProvider = function ({
     if (!loading && jscJurisdictionInfo) {
       console.timeLog('propertyTiming', 'Property context: has finished loading and jscJurisdictionInfo is ready');
       const thisPropertyInfo = getTokenInformationByTitleId(titleId);
-      const cartesianMapInfo = buildLocationString(thisPropertyInfo.locationData, 'cartesian');
+      // const cartesianMapInfo = buildLocationString(thisPropertyInfo.locationData, 'cartesian');
+      const {lat, lon} = thisPropertyInfo.locationData;
+      const mapInfo = {
+        lat, lon
+      };
+      
       const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, thisPropertyInfo, titleId);
       const buyOffersInfo = buildActiveOffersInfoByTitleId(
         tokens,
@@ -350,7 +364,7 @@ const PropertyDetailsProvider = function ({
       setPropertyInfo(tokenInfo);
       setActiveOffers(buyOffersInfo);
       setPropertyImages(thisPropertyInfo.images);
-      setPropertyMapInfo(cartesianMapInfo);
+      setPropertyMapInfo(mapInfo);
       setDataReady(true);
       console.timeEnd('propertyTiming');
     }
