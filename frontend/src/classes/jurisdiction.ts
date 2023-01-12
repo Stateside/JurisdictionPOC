@@ -208,7 +208,9 @@ export class Jurisdiction implements IJurisdiction {
       0,
       ethers.constants.AddressZero,
       0,
-      deployments["IJSCGovernor"].contract.address)
+      true,
+      deployments["IJSCGovernor"].contract.address
+    )
   
     return {
       contract, 
