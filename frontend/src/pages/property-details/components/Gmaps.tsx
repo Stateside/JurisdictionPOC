@@ -27,7 +27,7 @@ export default function Gmaps({lat, lng}: GmapsProps) {
     zoom: 12
   };
 
-  return <div style={{ height: '100%', width: '100%' }}>
+  return <div style={{ width: '100%', height: '300px', margin: '0 auto' }}>
       <GoogleMapReact
         bootstrapURLKeys={{ key }}
         defaultCenter={defaultProps.center}

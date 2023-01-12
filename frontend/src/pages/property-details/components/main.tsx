@@ -83,11 +83,9 @@ export default function PropertyDetailsMain() {
           <Skeleton h={{ base: '30px' }} w={{base: '100%', md: '300px'}} isLoaded={dataReady}>
             <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
               <BreadcrumbItem h={{ base: '30px' }}>
-                <Link href="/">
-                  <BreadcrumbLink>
-                    <ArrowBack w={{ base: '23px' }} />
+                <Link href="/" display='flex' h='30px' style={{alignItems: 'center'}}>
+                    <ArrowBack w={{ base: '23px' }} style={{display: 'flex', height: '30px', paddingTop: '5px'}} />
                     Back to dashboard
-                  </BreadcrumbLink>
                 </Link>
               </BreadcrumbItem>
               <BreadcrumbItem h={{ base: '30px' }}>
@@ -99,13 +97,13 @@ export default function PropertyDetailsMain() {
           </Skeleton>  
         </GridItem>
         <GridItem colSpan={12}>
-          <Box as="span" fontWeight="400" fontSize={{ base: '80px' }}>
+          <Box as="span" fontWeight="400" fontSize={{ base: '80px' }} lineHeight={{base: '.63'}}>
             <Skeleton isLoaded={dataReady}>
               {propertyId} <FavoriteTokenButton jurisdiction={jurisdiction as string} itemId={propertyId} name={propertyId} />
             </Skeleton>
           </Box>
         </GridItem>
-        <GridItem colSpan={12}>
+        <GridItem colSpan={12} mt={{base: '19px'}}>
           <Grid templateColumns={gridLayout} gap={6}>
             <GridItem colSpan={{base: 12, lg: 7}}>
               <Grid templateColumns={gridLayout}>
@@ -123,11 +121,10 @@ export default function PropertyDetailsMain() {
                   ))}
                 </GridItem>
                 <GridItem colSpan={12}>
-                  <Skeleton isLoaded={dataReady} w={{base: '200px'}} h={{base: '40px'}} mt={{ base: '30px' }} endColor='brand.javaHover'>
+                  <Skeleton isLoaded={dataReady} w={{base: '200px'}} h={{base: '40px'}} mt={{ base: '20px' }} endColor='brand.javaHover'>
                     <Button
                       variant="Header"
                       rightIcon={<RealStateAgentIcon w={{ base: '25px' }} />}
-                      mt={{ base: '30px' }}
                       onClick={showSellModal}
                       _hover={{
                         background: 'brand.javaHover',
