@@ -1,11 +1,14 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Button, Divider, Heading, HStack, Input, Text, Textarea, VStack } from '@chakra-ui/react';
+import { Box, Button, Divider, Heading, HStack, Input, Link, Text, Textarea, VStack } from '@chakra-ui/react';
 import Revision from './Revision';
 import AddRevisionModal from './AddRevisionModal';
 import { useState } from 'react';
+import { ArrowBackIcon } from '@chakra-ui/icons';
+import { useRouter } from 'next/router';
 
 const CreateProposal: NextPage = () => {
+  const router = useRouter();
   const [openRevisionModal, setOpenRevisionModal] = useState(false);
 
   return (
@@ -13,6 +16,10 @@ const CreateProposal: NextPage = () => {
       <Head>
         <title>Create a Proposal</title>
       </Head>
+      <Link onClick={() => router.back()} display="flex" fontWeight="bold">
+        <ArrowBackIcon marginRight="10px" marginTop="5px" />
+        <Text>Back to Dashboard</Text>
+      </Link>
       <Heading whiteSpace="pre-line" my={4} variant="80" marginBottom="48px">
         Create Proposal
       </Heading>
