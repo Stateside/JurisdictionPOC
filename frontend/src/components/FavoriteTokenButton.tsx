@@ -4,6 +4,7 @@ import { useLikes, LikeAction } from '@/store/useLikes';
 
 const iconProps = {
   w: { base: '25px' },
+  h: {base: '25px'},
   style: { position: 'relative', bottom: '0.3em'}
 }
 
