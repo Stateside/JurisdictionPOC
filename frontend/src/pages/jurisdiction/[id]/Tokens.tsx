@@ -9,29 +9,32 @@ import Paginator from '../Paginator';
 type BlockchainProposal = { id: string; state: ProposalState };
 type BlockchainProposalMap = { [hash: string]: BlockchainProposal };
 
-const Properties = () => {
+const Tokens = () => {
+
+  const [tokens, setTokens] = useState([
+    '001 - 456 - 87654 - E',
+    '001 - 456 - 87654 - E',
+    '001 - 456 - 87654 - E',
+    '001 - 456 - 87654 - E',
+    '001 - 456 - 87654 - E'
+  ]);
 
   return (
     <Box marginTop="20px" marginBottom="20px" width="80%">
-      <Paginator />
-      <Tag>
-        <Text variant={'15/20'}>001 - 456 - 87654 - E</Text>
-      </Tag>
-      <Tag>
-        <Text variant={'15/20'}>001 - 456 - 87654 - E</Text>
-      </Tag>
-      <Tag>
-        <Text variant={'15/20'}>001 - 456 - 87654 - E</Text>
-      </Tag>
-      <Tag>
-        <Text variant={'15/20'}>001 - 456 - 87654 - E</Text>
-      </Tag>
-      <Tag>
-        <Text variant={'15/20'}>001 - 456 - 87654 - E</Text>
-      </Tag>
-      <Paginator />
+      {tokens.length > 12 && <Paginator />}
+
+      {tokens.map((t, i) => {
+        return (
+          <Tag>
+            <Text variant={'15/20'} key={i}>{t}</Text>
+          </Tag>
+        );
+      })}
+      
+
+      {tokens.length > 12 && <Paginator />}
     </Box>
   );
 };
 
-export default Properties;
+export default Tokens;

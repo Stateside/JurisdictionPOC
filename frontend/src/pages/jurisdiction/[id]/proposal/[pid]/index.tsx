@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
+import RevisionModal from './RevisionModal';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number) => {
@@ -48,6 +49,7 @@ const Proposal: NextPage = () => {
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
   const [ blockNumber, setBlockNumber ] = useState(0)
+  const [openRevisionModal, setOpenRevisionModal] = useState(false);
   const jurisdictionAddress = router.query.id as string;
   const proposalId = router.query.pid as string;
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
@@ -87,8 +89,13 @@ const Proposal: NextPage = () => {
         <ArrowBackIcon marginRight="10px" marginTop="5px" />
         <Text>Back to Dashboard / Jurisdiction</Text>
       </Link>
-      <Heading whiteSpace="pre-line" my={4} marginBottom="48px">
-        Proposal <FavoriteProposalButton jurisdiction={jurisdictionAddress} itemId={proposalId as string} name={proposal?.description || proposal?.id || ""} />
+      <Heading whiteSpace="pre-line" variant={'80'} my={4} marginBottom="48px">
+        Proposal{' '}
+        <FavoriteProposalButton
+          jurisdiction={jurisdictionAddress}
+          itemId={proposalId as string}
+          name={proposal?.description || proposal?.id || ''}
+        />
       </Heading>
       <Box>
         <VStack width="100%" alignItems="flex-start">
@@ -98,7 +105,11 @@ const Proposal: NextPage = () => {
           </HStack>
           <HStack alignItems="flex-start" width="100%">
             <Text width="20%">Expiry date:</Text>
-            <Text>{(proposal?.deadline && blockNumber) ? blocksToDate((proposal?.deadline||0) - blockNumber) : ""}</Text>
+            <Text>
+              {proposal?.deadline && blockNumber
+                ? blocksToDate((proposal?.deadline || 0) - blockNumber)
+                : ''}
+            </Text>
           </HStack>
           <HStack
             alignItems="flex-start"
@@ -106,23 +117,30 @@ const Proposal: NextPage = () => {
             style={{ marginBottom: '20px' }}
           >
             <Text width="20%">Description:</Text>
-            <Text>{proposal?.description || proposal?.id || ""}</Text>
+            <Text>{proposal?.description || proposal?.id || ''}</Text>
           </HStack>
           <Divider />
-          <HStack alignItems="flex-start" width="100%" paddingBottom="20px">
+          <HStack
+            alignItems="flex-start"
+            width="100%"
+            paddingBottom="20px"
+            paddingTop="20px"
+          >
             <Text width="20%">Revisions:</Text>
             <VStack alignItems="flex-start" width="80%">
-              {
-                proposal?.revisions
-                ? proposal?.revisions.map(r => (
-                  <Link href={`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId}/revision/${r.id}`} variant={'15/20'} key={r.id} width="100%">
+              {proposal?.revisions ? (
+                proposal?.revisions.map(r => (
+                  <Box onClick={() => setOpenRevisionModal(true)}>
                     <Tag>
                       <Text>{r.name}</Text>
                     </Tag>
-                  </Link>))
-                : <Tag><LoadingIcon /></Tag>
-              } 
-              <Divider />
+                  </Box>
+                ))
+              ) : (
+                <Tag>
+                  <LoadingIcon />
+                </Tag>
+              )}
             </VStack>
           </HStack>
           <Divider />
@@ -147,6 +165,10 @@ const Proposal: NextPage = () => {
           </HStack>
         </VStack>
       </Box>
+      <RevisionModal
+        isOpen={openRevisionModal}
+        onClose={() => setOpenRevisionModal(true)}
+      />
     </Box>
   );
 };

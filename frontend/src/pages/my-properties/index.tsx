@@ -19,10 +19,10 @@ const MyProperties: NextPage = () => {
         <ArrowBackIcon marginRight="10px" marginTop="5px" />
         <Text>Back to Dashboard</Text>
       </Link>
-      <Heading whiteSpace="pre-line" marginBottom="48px">
+      <Heading whiteSpace="pre-line" marginBottom="48px" variant="80">
         My properties
       </Heading>
-      <Box width="80%">
+      <Box width="70%">
         <Property />
         <Property />
         <Property />
