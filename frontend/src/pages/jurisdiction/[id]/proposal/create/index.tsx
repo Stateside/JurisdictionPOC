@@ -11,11 +11,12 @@ const CreateProposal: NextPage = () => {
   return (
     <Box width="100%">
       <Head>
-        <title>Create Proposal</title>
+        <title>Create a Proposal</title>
       </Head>
       <Heading whiteSpace="pre-line" my={4} variant="80" marginBottom="48px">
         Create Proposal
       </Heading>
+      <Divider marginBottom="10px" borderColor="#D3D3D3" />
       <Box>
         <VStack width="100%" alignItems="flex-start">
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
@@ -25,18 +26,22 @@ const CreateProposal: NextPage = () => {
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Proposal Name:</Text>
-            <Input width="60%" />
+            <Input width="40%" backgroundColor="#ffffff" />
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Description:</Text>
-            <Textarea width="60%" />
+            <Textarea width="40%" backgroundColor="#ffffff" />
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Revisions:</Text>
             <VStack alignItems="flex-start" width="80%" gap="20px">
-              <Button variant="Header" onClick={() => setOpenRevisionModal(true)}>
+              <Revision />
+              <Button
+                variant="Header"
+                onClick={() => setOpenRevisionModal(true)}
+              >
                 Add new revision
               </Button>
             </VStack>
@@ -47,7 +52,10 @@ const CreateProposal: NextPage = () => {
           </HStack>
         </VStack>
       </Box>
-      <AddRevisionModal isOpen={openRevisionModal} onClose={() => setOpenRevisionModal(false)} />
+      <AddRevisionModal
+        isOpen={openRevisionModal}
+        onClose={() => setOpenRevisionModal(false)}
+      />
     </Box>
   );
 };

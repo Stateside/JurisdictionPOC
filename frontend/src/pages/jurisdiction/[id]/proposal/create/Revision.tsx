@@ -3,8 +3,8 @@ import { Button, HStack, Input } from "@chakra-ui/react"
 
 const Revision = () => {
   return (
-    <HStack width="100%" gap="20px">
-      <Input />
+    <HStack width="80%" gap="20px">
+      <Input backgroundColor="#ffffff" />
       <Button rightIcon={<DeleteIcon height={7} width={7} />}>Remove</Button>
     </HStack>
   );

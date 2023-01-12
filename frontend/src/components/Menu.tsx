@@ -47,7 +47,7 @@ const Menu = (props: Props) => {
           })}
           <Box
             position="absolute"
-            top="-12px"
+            top="-14px"
             right="12px"
             width="30px"
             height="30px"
