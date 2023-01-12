@@ -92,7 +92,12 @@ const saveLikeToDatabase = async (like:ILike) => {
       },
       body: JSON.stringify(like),
     })
-  return await response.json() as ILike
+  const newLike = await response.json() as ILike
+  return {
+    ...newLike,
+    createdAt: new Date(newLike.createdAt),
+    updatedAt: new Date(newLike.updatedAt)
+  }
 }  
 
 const removeLikeFromDatabase = async (id:number) => {
