@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
+import RevisionModal from './RevisionModal';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number) => {
@@ -48,6 +49,7 @@ const Proposal: NextPage = () => {
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
   const [ blockNumber, setBlockNumber ] = useState(0)
+  const [openRevisionModal, setOpenRevisionModal] = useState(false);
   const jurisdictionAddress = router.query.id as string;
   const proposalId = router.query.pid as string;
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
@@ -128,17 +130,11 @@ const Proposal: NextPage = () => {
             <VStack alignItems="flex-start" width="80%">
               {proposal?.revisions ? (
                 proposal?.revisions.map(r => (
-                  <Link
-                    href={`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId}/revision/${r.id}`}
-                    variant={'15/20'}
-                    key={r.id}
-                    width="100%"
-                    style={{paddingBottom: "20px"}}
-                  >
+                  <Box onClick={() => setOpenRevisionModal(true)}>
                     <Tag>
                       <Text>{r.name}</Text>
                     </Tag>
-                  </Link>
+                  </Box>
                 ))
               ) : (
                 <Tag>
@@ -169,6 +165,10 @@ const Proposal: NextPage = () => {
           </HStack>
         </VStack>
       </Box>
+      <RevisionModal
+        isOpen={openRevisionModal}
+        onClose={() => setOpenRevisionModal(true)}
+      />
     </Box>
   );
 };
