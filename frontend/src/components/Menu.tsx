@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Menu as MenuChakra, MenuButton, MenuList, MenuItem, IconButton, Text, Box } from '@chakra-ui/react'
 import MenuIcon from '@/components/icons/menuIcon'
 import { MenuItemInterface} from '@/interfaces/index';
@@ -23,7 +23,13 @@ const Menu = (props: Props) => {
           icon={<MenuIcon width="24px" height="24px" />}
           variant="outline"
         />
-        <MenuList borderWidth="0" position="absolute" left="-170px" top="15px">
+        <MenuList
+          borderWidth="0"
+          position="absolute"
+          left="-170px"
+          top="15px"
+          boxShadow="-5px -5px 5px -5px rgb(0 0 0 / 10%)"
+        >
           {items.map((item, key) => {
             return (
               <MenuItem key={key}>
