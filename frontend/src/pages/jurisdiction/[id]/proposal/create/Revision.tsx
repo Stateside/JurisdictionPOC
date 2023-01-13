@@ -5,7 +5,13 @@ const Revision = () => {
   return (
     <HStack width="80%" gap="20px">
       <Input backgroundColor="#ffffff" />
-      <Button rightIcon={<DeleteIcon height={7} width={7} />}>Remove</Button>
+      <Button
+        backgroundColor="#D3D3D3"
+        padding="0 30px 0 30px"
+        rightIcon={<DeleteIcon height={7} width={7} />}
+      >
+        Remove
+      </Button>
     </HStack>
   );
 }

@@ -28,7 +28,7 @@ const Menu = (props: Props) => {
           position="absolute"
           left="-170px"
           top="15px"
-          boxShadow="-5px -5px 5px -5px rgb(0 0 0 / 10%)"
+          boxShadow="0px -5px 10px -15px rgb(0 0 0 / 10%), 0px 5px 10px 5px rgb(0 0 0 / 10%)"
         >
           {items.map((item, key) => {
             return (
@@ -59,7 +59,7 @@ const Menu = (props: Props) => {
             height="30px"
             backgroundColor="#fff"
             transform="rotate(45deg)"
-            boxShadow="-5px -5px 5px -5px rgb(0 0 0 / 10%)"
+            boxShadow="-5px -5px 10px -5px rgb(0 0 0 / 10%)"
           />
         </MenuList>
       </MenuChakra>

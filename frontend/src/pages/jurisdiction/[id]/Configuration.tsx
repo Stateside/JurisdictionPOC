@@ -13,7 +13,7 @@ const Configuration = () => {
         <Text width="20%">Jurisdiction name:</Text>
         <Text width="70%">Costa Rica</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -26,7 +26,7 @@ const Configuration = () => {
         <Text width="20%">Jurisdiction contract:</Text>
         <Text width="70%">0x12908120187239183</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -39,7 +39,7 @@ const Configuration = () => {
         <Text width="20%">Title Token Name:</Text>
         <Text width="70%">CR Properties</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -52,7 +52,7 @@ const Configuration = () => {
         <Text width="20%">Title Token Symbol:</Text>
         <Text width="70%">CRP</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -67,7 +67,7 @@ const Configuration = () => {
           https://jurisdictions.stateside.agency/api/tokens/
         </Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -80,7 +80,7 @@ const Configuration = () => {
         <Text width="20%">Registry Account:</Text>
         <Text width="70%">George 0x201201091820371928</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -93,7 +93,7 @@ const Configuration = () => {
         <Text width="20%">Maintenance Account: </Text>
         <Text width="70%">Ana 0x102091209127198279128</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -106,7 +106,7 @@ const Configuration = () => {
         <Text width="20%">Registry Fee:</Text>
         <Text width="70%">$15</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -119,7 +119,7 @@ const Configuration = () => {
         <Text width="20%">Maintenance Fee:</Text>
         <Text width="70%">$10</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
@@ -132,7 +132,7 @@ const Configuration = () => {
         <Text width="20%">Enable NFT Support:</Text>
         <Text width="70%">Enabled</Text>
         <Button rightIcon={<EditIcon width={6} height={6} />} variant="Clear">
-          Change
+          <Text pr={3}>Change</Text>
         </Button>
       </HStack>
       <Divider />
