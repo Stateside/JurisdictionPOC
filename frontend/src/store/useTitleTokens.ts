@@ -1,32 +1,37 @@
 import { Provider } from '@ethersproject/providers';
-import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
 import { ethers } from 'ethers';
 import create from 'zustand'
-import { IJSCGovernor, IJSCGovernor__factory, IJSCJurisdiction__factory, IJSCTitleToken, IJSCTitleToken__factory } from '../../typechain-types';
+import { IJSCJurisdiction__factory, IJSCTitleToken, IJSCTitleToken__factory } from '../../typechain-types';
+
+export type Offer = {
+  buyer: string;
+  amount: ethers.BigNumber;
+  offeredOn: ethers.BigNumber;
+};
 
 /**
  * Details of the token from the URI...to be defined...
  */
-export interface ITokenDetails {
+export type TokenJSON = {
   id: number
   location: string
   description: string
   images: []
 }
 
-/** 
- * Details of a proposal for a governor contract. All of these wil be loaded from our database where all proposal details are stored except for the IRevision objects
- * which cme from the target contracts
- */
-export interface ITokenInfo {
-  id: string
-  titleId: string
-  owner: number
-  uri: string
-  json?: ITokenDetails
-}
+export type Token = {
+  tokenId: string;
+  titleId: string;
+  owner?: string;
+  frozen?: boolean;
+  offersToBuy?: Offer[];
+  offersToSell?: Offer[];
+  url?: string;
+  json?: TokenJSON
+  loading: boolean
+};
 
-export type TokenIdMap = { [tokenId: string]: ITokenInfo }
+export type TokenIdMap = { [tokenId: string]: Token }
 
 export type TokenIdPage = string[]
 
@@ -122,8 +127,92 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
         maintainerAccount,
         tokens: { pages: {}, tokensById: {} },
         tokensLoading: false,
+
         loadToken: async (tokenId:string) => {},
-        loadPage: async (page:number) => {},
+
+        loadPage: async (page:number) => {
+          if (get().tokenContracts[jurisdictionAddress].tokensLoading || get().tokenContracts[jurisdictionAddress].tokens.pages[page])
+            return
+
+          // Set the loading flag
+          set((state) => ({ 
+            tokenContracts: { ...state.tokenContracts, 
+              [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+                tokensLoading: true 
+              } 
+            }
+          }))
+
+          try {
+            const newIds: string[] = []
+            const tokensById = { ...get().tokenContracts[jurisdictionAddress].tokens.tokensById }
+            const newTokensById = { } as TokenIdMap
+
+            // First just load the tokenIds
+            const startIndex = get().pageSize*(page-1)
+            const endIndex = Math.min(startIndex + get().pageSize, get().tokenContracts[jurisdictionAddress].tokenCount)
+            for (let ti = startIndex; ti < endIndex; ti++) {
+                const tokenId = await (await instance.tokenAtIndex(ti)).toHexString()
+                const titleId = await instance.tokenToTitleId(tokenId)
+                newIds.push(tokenId)
+                if (!tokensById[tokenId])
+                  newTokensById[tokenId] = { tokenId, titleId, loading: true } as Token
+            }
+
+            // Add tokenIds and new incomplete Token objects but leave loading flag in true
+            set((state) => ({ 
+              tokenContracts: { ...state.tokenContracts, 
+                [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+                  tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
+                    pages: { ...state.tokenContracts[jurisdictionAddress].tokens.pages, 
+                      [page]: newIds 
+                    },
+                    tokensById: { ...state.tokenContracts[jurisdictionAddress].tokens.tokensById, 
+                      ...newTokensById
+                    }
+                  } 
+                } 
+              }
+            }))
+
+            // Now load the details for these tokens
+            newIds.forEach(async (tokenId) => {
+              const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenId)
+              set((state) => ({ 
+                tokenContracts: { ...state.tokenContracts, 
+                  [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+                    tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
+                      tokensById: {
+                        ...state.tokenContracts[jurisdictionAddress].tokens.tokensById,
+                        [tokenId]: {
+                          ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[tokenId],
+                          tokenId,
+                          owner,
+                          offersToBuy,
+                          offersToSell,
+                          frozen,
+                          url,
+                          loading: false
+                        }
+                      }
+                    } 
+                  } 
+                } 
+              }))
+            })
+          }
+          catch (err) {
+            console.log(err)
+          }
+          set((state) => ({ 
+            tokenContracts: { ...state.tokenContracts, 
+              [jurisdictionAddress]: { 
+                ...state.tokenContracts[jurisdictionAddress], 
+                tokensLoading: false 
+              } 
+            }
+          }))
+      },
       }
       set({ tokenContracts: { ...get().tokenContracts, [jurisdictionAddress]: details } })
 
@@ -146,3 +235,39 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
     return details
   },
 }))
+
+const getTokenData = async (jscTitleToken: IJSCTitleToken, token: string) => {
+  const owner = await jscTitleToken.ownerOf(token)
+  const url = await jscTitleToken.tokenURI(token)
+  const offersToBuy = await getOffersToBuy(jscTitleToken, token)
+  const offersToSell = await getOffersToSell(jscTitleToken, token)
+  const frozen  = await jscTitleToken.isFrozenToken(token)
+  return {
+      owner: owner,
+      url: url,
+      offersToBuy: offersToBuy,
+      offersToSell: offersToSell,
+      frozen: frozen
+  }
+}
+
+const getOffersToBuy = async (jscTitleToken: IJSCTitleToken, token: string) => {
+  const offersToBuy: Offer[] = []
+  const offersToBuyCount = (await jscTitleToken.countOffersToBuy(token)).toNumber()
+  for (let obi = 0; obi < offersToBuyCount; obi++) {
+      const ob = await jscTitleToken.offerToBuyAtIndex(token, obi);
+      offersToBuy.push(ob)
+  }
+  return offersToBuy;
+}
+
+const getOffersToSell = async (jscTitleToken: IJSCTitleToken, token: string) => {
+  const offersToSell: Offer[] = []
+  const osCount = (await jscTitleToken.countOffersToSell(token)).toNumber()
+  for (let osi = 0; osi < osCount; osi++) {
+      const os = await jscTitleToken.offerToSellAtIndex(token, osi);
+      offersToSell.push(os)
+  }
+  return offersToSell;
+}
+

@@ -42,7 +42,7 @@ export function Layout(props: Props) {
 
   // Initialize the useRevisions hook, then reload when chainId changes
   const tokens = useTitleTokens();
-  useEffect(() => { chainId && tokens.init(chainId, 10) }, [chainId])
+  useEffect(() => { chainId && tokens.init(chainId, 12) }, [chainId])
 
   return (
     <Box

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Button, Divider, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';
@@ -25,17 +25,17 @@ const Contracts = () => {
     <VStack alignItems="flex-start" width="100%">
       {contracts?.list?.length > 0 && contracts.list.map(contract => {
         return (
-          <>
-            <HStack width="100%" height="60px" key={contract.address}>
-              <Text width="20%">{contract.name}</Text>
-              <Text width="55%">{contract.address}</Text>
-              <Button
+          <Box key={contract.name} width="100%">
+            <HStack width="100%" m="1em 0">
+              <Text width="25%">{contract.name}</Text>
+              <Text width="45%">{contract.address}</Text>
+              <Button width="15%"
                 variant="Transparent"
                 rightIcon={<ReloadIcon height={6} width={6} />}
               >
                 Replace
               </Button>
-              <Button
+              <Button width="15%"
                 variant="Transparent"
                 rightIcon={<LockIcon height={6} width={6} />}
               >
@@ -43,7 +43,7 @@ const Contracts = () => {
               </Button>
             </HStack>
             <Divider />
-          </>
+          </Box>
         );
       })}
       {!contracts?.list?.length && <Text>No information available</Text>}
