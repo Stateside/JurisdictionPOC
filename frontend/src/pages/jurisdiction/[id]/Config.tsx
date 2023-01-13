@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
@@ -8,10 +8,22 @@ import { ITokenContractDetails, useTitleTokens } from '@/store/useTitleTokens';
 import { useAliases } from '@/store/useAliases';
 import { BigNumber, ethers } from 'ethers';
 
-const ChangeButton = (props:{onClick?: () => void}) => (
-  <Button width="15%" rightIcon={<EditIcon height={6} width={6} />} variant="Transparent" onClick={props.onClick}>
-    <Text pr={3}>Change</Text>
-  </Button>)
+const ChangeButton = (props: { onClick?: () => void }) => (
+  <Button
+    width="120px"
+    fontSize="15px"
+    variant="Transparent"
+    onClick={props.onClick}
+    p="0"
+  >
+    <Box display="flex" flexDirection="row" alignItems="center">
+      <Text mr="15px">Change</Text>
+      <Box mt="5px">
+        <EditIcon height={6} width={6} />
+      </Box>
+    </Box>
+  </Button>
+);
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1em" color='brand.java'/>
 type AccountGetter = (details:ITokenContractDetails) => string|undefined
