@@ -23,7 +23,7 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   await jscTitleToken.init(
     "Development Tokens",
     "DEV",
-    "http://localhost:3000/tokens/",
+    "http://localhost:3000/api/token/",
     jscJurisdictionContract.address,
     zeroAddress,
     0,

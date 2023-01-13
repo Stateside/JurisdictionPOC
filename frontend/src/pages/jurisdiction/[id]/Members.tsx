@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Button, CircularProgress, Divider, HStack, Input, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, Divider, HStack, Input, Text, VStack } from '@chakra-ui/react';
 import DeleteIcon from '@/components/icons/deleteIcon';
 
 import * as tc from '../../../../typechain-types';
@@ -127,12 +127,12 @@ const Members = () => {
         members.length > 0 &&
         members.map((member: MemberInfo) => {
           return (
-            <>
-              <HStack width="100%" key={member.account} height="60px">
-                <Text width="15%">{member.name}</Text>
+            <Box key={member.account} width="100%">
+              <HStack width="100%" m="1em 0">
+                <Text width="20%">{member.name}</Text>
                 <Text width="45%">{member.account}</Text>
-                <Text width="30%">{bcRoles[member.role.name]}</Text>
-                <Button
+                <Text width="20%">{bcRoles[member.role.name]}</Text>
+                <Button width="15%"
                   variant="Transparent"
                   rightIcon={<DeleteIcon height={7} width={7} />}
                 >
@@ -140,12 +140,12 @@ const Members = () => {
                 </Button>
               </HStack>
               <Divider />
-            </>
+            </Box>
           );
         })}
       {members && members.length === 0 && <Text>No information available</Text>}
       {!members && <LoadingIcon />}
-      <HStack style={{marginTop: "30px"}}>
+      <HStack style={{marginTop: "30px"}} width="100%">
         <Button
           rightIcon={<PersonAddIcon height={5} width={5} />}
           variant="Heading"
