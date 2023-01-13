@@ -17,7 +17,7 @@ import Configuration from './Configuration';
 import Contracts from './Contracts';
 import Members from './Members';
 import Proposals from './Proposals';
-import Tokens from './Tokens';
+import Properties from './Properties';
 
 
 const Jurisdiction: NextPage = () => {
@@ -55,7 +55,7 @@ const Jurisdiction: NextPage = () => {
             Proposals
           </Tab>
           <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
-            Tokens
+            Properties
           </Tab>
         </TabList>
         <TabPanels>
@@ -72,7 +72,7 @@ const Jurisdiction: NextPage = () => {
             <Proposals />
           </TabPanel>
           <TabPanel pr={0} pl={0} pb={0} pt={5}>
-            <Tokens />
+            <Properties />
           </TabPanel>
         </TabPanels>
       </Tabs>
