@@ -36,6 +36,7 @@ export interface TagInterface {
   type?: string;
   justify?: string;
   caret?: JSX.Element|null;
+  information?: string;
   children: JSX.Element | JSX.Element[];
 }
 

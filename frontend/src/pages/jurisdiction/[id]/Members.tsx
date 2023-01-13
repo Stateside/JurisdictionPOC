@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Button, CircularProgress, HStack, Input, Text, VStack } from '@chakra-ui/react';
+import { Button, CircularProgress, Divider, HStack, Input, Text, VStack } from '@chakra-ui/react';
 import DeleteIcon from '@/components/icons/deleteIcon';
 
 import * as tc from '../../../../typechain-types';
@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import { useAliases } from '@/store/useAliases';
 import { ethers } from 'ethers';
 import { useJurisdictions } from '@/store/useJurisdictions';
+import PersonAddIcon from '@/components/icons/personAddIcon';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 
@@ -25,7 +26,14 @@ type MemberInfo = {
 
 const roles = buildRoles(ethers);
 
+
+
 const Members = () => {
+  const bcRoles : {[key: string]: string} = {
+    JUDICIAL_ROLE: 'Judicial',
+    LEGISLATIVE_ROLE: 'Legislative',
+    EXECUTIVE_ROLE: 'Executive',
+  }
   const [localError, setLocalError] = useState<string>('');
   const { library } = useWeb3React();
   const [members, setMembers] = useState<MemberInfo[]|undefined>();
@@ -114,28 +122,37 @@ const Members = () => {
   }, [members, aliasesByAddress])
 
   return (
-    <VStack
-      alignItems="flex-start"
-      gap="20px"
-      marginTop="20px"
-      marginBottom="20px"
-    >
-      {members && members.length > 0 &&
+    <VStack alignItems="flex-start" width="100%">
+      {members &&
+        members.length > 0 &&
         members.map((member: MemberInfo) => {
           return (
-            <HStack width="100%" key={member.account}>
-              <Input width="20%" value={member.name} onChange={() => {}} />
-              <Input width="40%" value={member.account} onChange={() => {}} />
-              <Input width="20%" value={member.role.name} onChange={() => {}} />
-              <Button width="20%" rightIcon={<DeleteIcon height={7} width={7} />}>
-                Remove
-              </Button>
-            </HStack>
+            <>
+              <HStack width="100%" key={member.account} height="60px">
+                <Text width="15%">{member.name}</Text>
+                <Text width="45%">{member.account}</Text>
+                <Text width="30%">{bcRoles[member.role.name]}</Text>
+                <Button
+                  variant="Clear"
+                  rightIcon={<DeleteIcon height={7} width={7} />}
+                >
+                  Remove
+                </Button>
+              </HStack>
+              <Divider />
+            </>
           );
-        })
-      }
+        })}
       {members && members.length === 0 && <Text>No information available</Text>}
-      {!members && <LoadingIcon/>}
+      {!members && <LoadingIcon />}
+      <HStack style={{marginTop: "30px"}}>
+        <Button
+          rightIcon={<PersonAddIcon height={5} width={5} />}
+          variant="Heading"
+        >
+          Add new member
+        </Button>
+      </HStack>
     </VStack>
   );
 };

@@ -13,10 +13,11 @@ import {
   Text
 } from '@chakra-ui/react';
 
+import Configuration from './Configuration';
 import Contracts from './Contracts';
 import Members from './Members';
 import Proposals from './Proposals';
-import Tokens from './Tokens';
+import Properties from './Properties';
 
 
 const Jurisdiction: NextPage = () => {
@@ -42,6 +43,9 @@ const Jurisdiction: NextPage = () => {
       <Tabs variant="enclosed" borderColor="#D3D3D3">
         <TabList>
           <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
+            Configuration
+          </Tab>
+          <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
             Members
           </Tab>
           <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
@@ -51,21 +55,24 @@ const Jurisdiction: NextPage = () => {
             Proposals
           </Tab>
           <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
-            Tokens
+            Properties
           </Tab>
         </TabList>
         <TabPanels>
-          <TabPanel>
+          <TabPanel pr={0} pl={0} pb={0} pt={5}>
+            <Configuration />
+          </TabPanel>
+          <TabPanel pr={0} pl={0} pb={0} pt={5}>
             <Members />
           </TabPanel>
-          <TabPanel>
+          <TabPanel pr={0} pl={0} pb={0} pt={5}>
             <Contracts />
           </TabPanel>
-          <TabPanel>
+          <TabPanel pr={0} pl={0} pb={0} pt={5}>
             <Proposals />
           </TabPanel>
-          <TabPanel>
-            <Tokens />
+          <TabPanel pr={0} pl={0} pb={0} pt={5}>
+            <Properties />
           </TabPanel>
         </TabPanels>
       </Tabs>

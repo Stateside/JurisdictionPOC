@@ -90,6 +90,14 @@ const components = {
           background: "brand.javaHover",
         },
       },
+      "Clear": {
+          fontWeight:'700',
+          fontSize:'15px',
+          lineHeight:'20px',
+          color:'brand.black',
+          background:'transparent',
+          border: '1px solid #A8A8A8'
+        },
       "white-link": {
         justifyContent: "left",
         padding: "5px 0",
