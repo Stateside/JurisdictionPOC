@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Button, HStack, Text, VStack } from '@chakra-ui/react';
+import { Button, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';
@@ -22,20 +22,29 @@ const Contracts = () => {
     [jurisdictionAddress, loaded, library]);
 
   return (
-    <VStack alignItems="flex-start">
+    <VStack alignItems="flex-start" width="100%">
       {contracts?.list?.length > 0 && contracts.list.map(contract => {
         return (
-          <HStack width="100%" key={contract.address}>
-            <p style={{ width: '20%' }}>{contract.name}</p>
-            <Text>{contract.address}</Text>
-            <Button width="20%" rightIcon={<ReloadIcon height={7} width={7} />}>
-              Replace
-            </Button>
-            <Button width="20%" rightIcon={<LockIcon height={7} width={7} />}>
-              Freeze
-            </Button>
-          </HStack>
-        )
+          <>
+            <HStack width="100%" height="60px" key={contract.address}>
+              <Text width="20%">{contract.name}</Text>
+              <Text width="55%">{contract.address}</Text>
+              <Button
+                variant="Clear"
+                rightIcon={<ReloadIcon height={6} width={6} />}
+              >
+                Replace
+              </Button>
+              <Button
+                variant="Clear"
+                rightIcon={<LockIcon height={6} width={6} />}
+              >
+                Freeze
+              </Button>
+            </HStack>
+            <Divider />
+          </>
+        );
       })}
       {!contracts?.list?.length && <Text>No information available</Text>}
     </VStack>
