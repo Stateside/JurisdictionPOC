@@ -94,9 +94,9 @@ const components = {
           fontWeight:'700',
           fontSize:'15px',
           lineHeight:'20px',
-          color:'brand.black',
+          color:'brand.grey.grey04',
           background:'transparent',
-          border: '1px solid #A8A8A8'
+          border: '1px solid #D3D3D3',
         },
       "white-link": {
         justifyContent: "left",
