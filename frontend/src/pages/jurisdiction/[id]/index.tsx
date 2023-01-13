@@ -13,14 +13,18 @@ import {
   Text
 } from '@chakra-ui/react';
 
-import Configuration from './Configuration';
 import Contracts from './Contracts';
 import Members from './Members';
 import Proposals from './Proposals';
 import Properties from './Properties';
-
+import Config from './Config';
+import { useRouter } from 'next/router';
+import { useJurisdictions } from '@/store/useJurisdictions';
 
 const Jurisdiction: NextPage = () => {
+  const router = useRouter();
+  const jurisdictionAddress = router.query.id as string;
+  const name = useJurisdictions(state => state.infos[jurisdictionAddress]?.name)
 
   const tabSelectedStyles = {
     color: '#000',
@@ -31,14 +35,14 @@ const Jurisdiction: NextPage = () => {
   return (
     <Box width="100%">
       <Head>
-        <title>Jurisdiction Name</title>
+        <title>{name} Details</title>
       </Head>
       <Link href="/" display="flex" fontWeight="bold">
         <ArrowBackIcon marginRight="10px" marginTop="5px" />
         <Text>Back to Dashboard / Jurisdiction</Text>
       </Link>
       <Heading whiteSpace="pre-line" variant="80" my={4} marginBottom="48px">
-        Jurisdiction Name
+        {name}
       </Heading>
       <Tabs variant="enclosed" borderColor="#D3D3D3">
         <TabList>
@@ -59,10 +63,10 @@ const Jurisdiction: NextPage = () => {
           </Tab>
         </TabList>
         <TabPanels>
-          <TabPanel pr={0} pl={0} pb={0} pt={5}>
-            <Configuration />
+          <TabPanel>
+            <Config />
           </TabPanel>
-          <TabPanel pr={0} pl={0} pb={0} pt={5}>
+          <TabPanel>
             <Members />
           </TabPanel>
           <TabPanel pr={0} pl={0} pb={0} pt={5}>

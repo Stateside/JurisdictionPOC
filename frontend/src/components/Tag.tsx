@@ -62,7 +62,7 @@ export default function Tag({
         </Box>
       )}
       <Flex position="absolute" right="2">
-        {caret === null || <ChevronRightIcon />}
+        {caret || <ChevronRightIcon />}
       </Flex>
     </Flex>
   );

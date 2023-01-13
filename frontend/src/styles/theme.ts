@@ -90,14 +90,25 @@ const components = {
           background: "brand.javaHover",
         },
       },
-      "Clear": {
-          fontWeight:'700',
-          fontSize:'15px',
-          lineHeight:'20px',
-          color:'brand.grey.grey04',
-          background:'transparent',
-          border: '1px solid #D3D3D3',
+      "Transparent":{
+        border: "1px solid #A8A8A8",
+        borderRadius: "8px",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "8px 15px",
+        gap: "10px",
+        background:'white',
+        type:"button",
+        _hover:{
+          background: "brand.javaHover",
         },
+        _active:{
+          background: "brand.java",
+        },
+      },
       "white-link": {
         justifyContent: "left",
         padding: "5px 0",
@@ -164,7 +175,16 @@ const components = {
         textAlign: 'left',
       }
     }
-  }
+  },
+  Switch: {
+    variants: {
+      "java":{
+        track: {
+          background:'brand.java',
+        }
+      },
+    },
+  },
 };
 
 export const theme = extendTheme({
@@ -174,5 +194,3 @@ export const theme = extendTheme({
   fonts,
   sizes,
 });
-
-

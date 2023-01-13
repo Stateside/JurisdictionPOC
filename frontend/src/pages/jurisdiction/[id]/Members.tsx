@@ -105,7 +105,7 @@ const Members = () => {
 
   // Display aliases for known addresses in cabinet
   useEffect(() => {
-    if (members && members.length>0) {
+    if (members && members.length>0 && aliasesLoaded) {
         const _members = [...members]
         let changed = false
         for (let i = 0; i < _members.length; i++) {
@@ -119,7 +119,7 @@ const Members = () => {
         if (changed)
           setMembers(_members)
       }
-  }, [members, aliasesByAddress])
+  }, [members, aliasesByAddress, aliasesLoaded])
 
   return (
     <VStack alignItems="flex-start" width="100%">
@@ -133,7 +133,7 @@ const Members = () => {
                 <Text width="45%">{member.account}</Text>
                 <Text width="30%">{bcRoles[member.role.name]}</Text>
                 <Button
-                  variant="Clear"
+                  variant="Transparent"
                   rightIcon={<DeleteIcon height={7} width={7} />}
                 >
                   Remove

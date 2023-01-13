@@ -45,7 +45,12 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
    * @dev Returns the amount of title tokens in existence.
    */
   function totalSupply() external view returns (uint256);
-  
+
+  /**
+   * @dev Returns the base URI for all tokens. This is the URI that is prepended to the token ID to form the full URI.
+   */
+  function baseTokenURI() external view returns (string memory);
+
   /**
    * @dev returns the tokenId at the given index. The index must be between 0 and totalSupply(). Note that the supply
    * of tokens (and the assigned indexes) may change if iterating the list spans multiple blocks.

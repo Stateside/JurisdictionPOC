@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
-import { useWeb3React } from "@web3-react/core";
-import { connectors } from "@/connectors/index";
 import { getAccountShortName } from '@/utils/util';
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, useDisclosure } from '@chakra-ui/react';
+import { Button, useDisclosure } from '@chakra-ui/react';
 import WalletIcon from '@/components/icons/walletIcon';
 import SelectWalletModal from "@/components/Modal";
 import useBlockchain from "hooks/useBlockchain";
