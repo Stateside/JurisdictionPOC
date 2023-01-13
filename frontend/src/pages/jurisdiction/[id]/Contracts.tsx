@@ -30,13 +30,13 @@ const Contracts = () => {
               <Text width="20%">{contract.name}</Text>
               <Text width="55%">{contract.address}</Text>
               <Button
-                variant="Clear"
+                variant="Transparent"
                 rightIcon={<ReloadIcon height={6} width={6} />}
               >
                 Replace
               </Button>
               <Button
-                variant="Clear"
+                variant="Transparent"
                 rightIcon={<LockIcon height={6} width={6} />}
               >
                 Freeze

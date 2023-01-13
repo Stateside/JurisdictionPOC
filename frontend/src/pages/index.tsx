@@ -4,7 +4,7 @@ import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { CircularProgress, Text } from '@chakra-ui/react'
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button, CircularProgress, ListItem, Text, UnorderedList, useDisclosure } from '@chakra-ui/react'
 import { SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
@@ -31,6 +31,10 @@ const Home: NextPage = () => {
   const { active, chainId, library: web3Provider } = useWeb3React();
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const { loaded: likesReady, likedProposals, likedTokens } = useLikes()
+  const { isOpen: isOpenConfirmDeleteJurisdiction, onOpen: onOpenConfirmDeleteJurisdiction, onClose: onCloseConfirmDeleteJurisdiction } = useDisclosure()
+  const cancelDeleteJurisdictionRef = React.useRef<HTMLButtonElement|null>(null)
+  const [deletingJurisdictionName, setDeletingJurisdictionName] = React.useState("")
+  const [deletingJurisdictionAddress, setDeletingJurisdictionAddress] = React.useState("")
   
   const { 
     loaded: jurisdictionsLoaded, 
@@ -41,6 +45,17 @@ const Home: NextPage = () => {
 
   const sortedJurisdictions:JurisdictionInfo[] = useMemo(() => 
     Object.values(jurisdictionInfos).sort(sortDescending), [jurisdictionInfos])
+
+  const confirmRemoveJurisdiction = useCallback((address:string, name:string) => {
+    setDeletingJurisdictionName(name)
+    setDeletingJurisdictionAddress(address)
+    onOpenConfirmDeleteJurisdiction()
+  }, [removeJurisdiction, setDeletingJurisdictionName, onOpenConfirmDeleteJurisdiction])
+
+  const onConfirmRemoveJurisdiction = useCallback((address:string) => {
+    onCloseConfirmDeleteJurisdiction()
+    removeJurisdiction(address)
+  }, [removeJurisdiction, onCloseConfirmDeleteJurisdiction])
 
   useEffect(() => {
     confirmJurisdictionsExist(web3Provider)
@@ -56,7 +71,7 @@ const Home: NextPage = () => {
         </Link>)
     if (jurisdiction.status === JurisdictionStatus.NotFound)
       return (
-        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => removeJurisdiction(jurisdiction.address)}>
+        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => confirmRemoveJurisdiction(jurisdiction.address, `${jurisdiction.name} v${jurisdiction.version}`)}>
           <Tag caret={<MissingCaret/>}>
             <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
           </Tag>
@@ -67,7 +82,7 @@ const Home: NextPage = () => {
       </Tag>)
   }, [])
   
-  //To-do: Connect this to real Smart COntracts and BC
+  //To-do: Connect this to real Smart Contracts and BC
   const fakeRecentActivity = [
     { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
     { tokenId: '001-456-87654-E', price: '130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
@@ -169,6 +184,46 @@ const Home: NextPage = () => {
           </VStack>
         }
       </></Flex>
+
+      <AlertDialog
+        isOpen={isOpenConfirmDeleteJurisdiction}
+        leastDestructiveRef={cancelDeleteJurisdictionRef}
+        onClose={onCloseConfirmDeleteJurisdiction}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+              Delete Jurisdiction
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              <Text marginBottom="1em">
+                There is no Jurisdiction responding at the given address on the current blockchain. There are multiple possible reasons for this: 
+              </Text>
+              <UnorderedList marginBottom="1em">
+                <ListItem>This may be a temporary communication issue and you can try again later</ListItem>
+                <ListItem>You are connected to a development blockchain and the jurisdiction was removed</ListItem>
+                <ListItem>The given Jurisdiction has not yet been confirmed. Please try again later</ListItem>
+              </UnorderedList>
+              <Text marginBottom="1em">
+                Do you want to delete the Jurisdiction called "{deletingJurisdictionName}" at address {deletingJurisdictionAddress} from your list of saved Jurisdictions?
+              </Text>
+              <Text marginBottom="1em">
+                Note: This will NOT remove the Jurisdiciton from the blockchain if it exists.
+              </Text>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelDeleteJurisdictionRef} onClick={onCloseConfirmDeleteJurisdiction}>
+                Cancel
+              </Button>
+              <Button colorScheme='red' onClick={() => onConfirmRemoveJurisdiction(deletingJurisdictionAddress)} ml={3}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   )
 }

@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { Role } from "@/utils/roles"
 import * as tc from "../../typechain-types"
 import { ContractDefinition, contractDefinitionsById, supportedContracts } from '@/utils/standard-contracts'
+import { accountsByName } from '@/utils/accounts'
 
 export type DeploymentResult = {
   contract: ethers.Contract
@@ -44,6 +45,11 @@ export interface IJurisdiction {
   titleTokenName: string
   titleTokenSymbol: string
   titleTokenURI: string
+  registryAddress: string
+  registryFee: ethers.BigNumber
+  maintainerAddress: string
+  maintainerFee: ethers.BigNumber
+  nftSupport: boolean
   contractId: string
   members: IMember[]
   contracts: ContractDefinition[]
@@ -66,9 +72,15 @@ export class Jurisdiction implements IJurisdiction {
   titleTokenName: string
   titleTokenSymbol: string
   titleTokenURI: string
+  registryAddress: string
+  registryFee: ethers.BigNumber
+  maintainerAddress: string
+  maintainerFee: ethers.BigNumber
+  nftSupport: boolean
   continueDeployment: boolean = false
 
-  constructor(name:string, contractId:string, members:IMember[], contracts:ContractDefinition[], titleTokenName:string, titleTokenSymbol:string, titleTokenURI:string) {
+  constructor(name:string, contractId:string, members:IMember[], contracts:ContractDefinition[], titleTokenName:string, titleTokenSymbol:string, titleTokenURI:string,
+    registryAddress: string, registryFee: ethers.BigNumber, maintainerAddress: string, maintainerFee: ethers.BigNumber, nftSupport: boolean) {
     this.jurisdictionName = name
     this.contractId = contractId
     this.members = members
@@ -76,10 +88,16 @@ export class Jurisdiction implements IJurisdiction {
     this.titleTokenName = titleTokenName
     this.titleTokenSymbol = titleTokenSymbol
     this.titleTokenURI = titleTokenURI
+    this.registryAddress = registryAddress
+    this.registryFee = registryFee
+    this.maintainerAddress = maintainerAddress
+    this.maintainerFee = maintainerFee
+    this.nftSupport = nftSupport
   }
 
   static copy(other:IJurisdiction) {
-    return new Jurisdiction(other.jurisdictionName, other.contractId, other.members, other.contracts, other.titleTokenName, other.titleTokenSymbol, other.titleTokenURI)
+    return new Jurisdiction(other.jurisdictionName, other.contractId, other.members, other.contracts, other.titleTokenName, other.titleTokenSymbol, other.titleTokenURI,
+      other.registryAddress, other.registryFee, other.maintainerAddress, other.maintainerFee, other.nftSupport)
   }
 
   setName(name:string) {
@@ -149,7 +167,12 @@ export class Jurisdiction implements IJurisdiction {
       supportedContracts.filter((c:ContractDefinition) => c.key !== undefined),
       "Our Title Token",
       "OTT",
-      "https://jurisdictions.stateside.agency/api/tokens/"
+      "https://jurisdictions.stateside.agency/api/token/",
+      accountsByName["Mary"].address,
+      ethers.utils.parseUnits("0.1", "gwei"),
+      accountsByName["Sophia"].address,
+      ethers.utils.parseUnits("0.2", "gwei"),
+      false
     )
   }
     
@@ -200,17 +223,16 @@ export class Jurisdiction implements IJurisdiction {
     const instance = await tc.IJSCTitleToken__factory.connect(contract.address, signer)
 
     await instance.init(
-      "JSCTitleToken",
-      "JSCT",
-      "https://jurisdictions.stateside.agency/title-token",
+      this.titleTokenName,
+      this.titleTokenSymbol,
+      this.titleTokenURI,
       deployments["IJSCJurisdiction"].contract.address,
-      ethers.constants.AddressZero,
-      0,
-      ethers.constants.AddressZero,
-      0,
-      true,
-      deployments["IJSCGovernor"].contract.address
-    )
+      this.registryAddress || ethers.constants.AddressZero,
+      this.registryFee,
+      this.maintainerAddress || ethers.constants.AddressZero,
+      this.maintainerFee,
+      this.nftSupport,
+      deployments["IJSCGovernor"].contract.address)
   
     return {
       contract, 

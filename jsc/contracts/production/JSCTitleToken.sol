@@ -142,6 +142,13 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
     return _storage.tokenURI(tokenId);
   }
 
+  /**
+   * @dev See {IJSCTitleToken-tokenURI}.
+   */
+  function baseTokenURI() public view override returns (string memory) {
+    return _storage.baseURI;
+  }
+
   function requireNFTSupport() internal view {
     require(
       getBoolParameter("jsc.nft.enabled"),

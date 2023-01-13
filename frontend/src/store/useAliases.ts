@@ -27,6 +27,11 @@ interface IAliasesState {
   /** Loads existing aliases from the database. Must be called at least once when React app loads */
   init: () => void,
 
+  /**
+   * Returns an alias for the given address or returne just the given address if no alias exists 
+   */
+  getAlias: (address:string) => string
+
   /** Adds a new alias to the set of aliases */
   addAlias: (alias:IAlias) => void,
 
@@ -40,7 +45,7 @@ const saveAliasesToDatabase = async (aliases:IAlias[]) => {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(aliases)
+    body: JSON.stringify({ aliases })
   }
   await fetch("/api/aliases/save", request)
     .then((r) => {
@@ -74,7 +79,7 @@ export const useAliases = create<IAliasesState>((set, get) => ({
     const aliasesByName:AliasMap = {}
     aliases.forEach(a => {
       aliasesByAddress[a.address.toLowerCase()] = a
-      aliasesByName[a.alias] = a
+      aliasesByName[a.alias.toLowerCase()] = a
     })
 
     // Include aliases from utils/accounts file
@@ -83,7 +88,7 @@ export const useAliases = create<IAliasesState>((set, get) => ({
         const alias = {address:a.address, alias:a.name}
         aliases.push(alias)
         aliasesByAddress[a.address.toLowerCase()] = alias
-        aliasesByName[a.name] = alias
+        aliasesByName[a.name.toLowerCase()] = alias
       }
     })  
 
@@ -98,6 +103,10 @@ export const useAliases = create<IAliasesState>((set, get) => ({
     })
   },
 
+  getAlias: (address:string) => {
+    return get().aliasesByAddress[address.toLowerCase()]?.alias || address    
+  },
+
   addAlias: async (alias:IAlias) => {
     await get().addAliases([alias])
   },
@@ -108,9 +117,18 @@ export const useAliases = create<IAliasesState>((set, get) => ({
     const aliasesByAddress = {...get().aliasesByAddress}
     const aliasesByName = {...get().aliasesByName}
     newAliases.forEach(alias => {
-      aliasesByAddress[alias.address.toLowerCase()] = alias
-      aliasesByName[alias.alias] = alias
-    })
+      // Ignore aliases with empty name or address
+      if (alias.alias) {
+        const newAlias = alias.alias ? alias.alias.trim().toLowerCase() : ""
+        if (newAlias !== "" && alias.address) {
+            const newAddress = alias.address ? alias.address.trim().toLowerCase() : ""
+            if (newAddress !== "") {
+              aliasesByName[newAlias] = alias
+              aliasesByAddress[newAddress.toLowerCase()] = alias
+            }
+          }
+        }
+      })
 
     const aliases = Object.values(aliasesByAddress)
     aliases.sort((a,b) => a.alias.localeCompare(b.alias))

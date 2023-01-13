@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, CircularProgress, CircularProgressLabel, Divider, HStack, Input, Select, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure, VStack } from '@chakra-ui/react';
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, Checkbox, CircularProgress, CircularProgressLabel, Divider, Heading, HStack, Input, Select, Switch, Text, useDisclosure, VStack } from '@chakra-ui/react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Role, buildRoles } from "../../utils/roles"
 import DeleteIcon from '@/components/icons/deleteIcon';
@@ -24,6 +24,11 @@ interface IJurisdictionState {
   setTitleTokenName: (name:string) => void,
   setTitleTokenSymbol: (symbol:string) => void,
   setTitleTokenURI: (uri:string) => void,
+  setRegistryAddress: (address:string) => void,
+  setRegistryFee: (fee:ethers.BigNumber) => void,
+  setMaintainerAddress: (address:string) => void,
+  setMaintainerFee: (fee:ethers.BigNumber) => void,
+  setNFTSupport: (support:boolean) => void,
   addMember: (member:IMember) => void,
   removeMember: (index:number) => void,
   replaceMember: (index:number, member:IMember) => void,
@@ -41,6 +46,11 @@ const useNewJurisdiction = create<IJurisdictionState>((set) => ({
   setTitleTokenName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenName: name}), modified: true})),
   setTitleTokenSymbol: (symbol:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenSymbol: symbol}), modified: true})),
   setTitleTokenURI: (uri:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenURI: uri}), modified: true})),
+  setRegistryAddress: (address:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, registryAddress: address}), modified: true})),
+  setRegistryFee: (fee:ethers.BigNumber) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, registryFee: fee}), modified: true})),
+  setMaintainerAddress: (address:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, maintainerAddress: address}), modified: true})),
+  setMaintainerFee: (fee:ethers.BigNumber) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, maintainerFee: fee}), modified: true})),
+  setNFTSupport: (enabled:boolean) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, nftSupport: enabled}), modified: true})),
   addMember: (member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: [...state.jurisdiction.members, member]}), modified: true})),
   removeMember: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.filter((_:IMember, i:number) => i !== index)}), modified: true})),
   replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m)}), modified: true})),
@@ -50,7 +60,7 @@ const useNewJurisdiction = create<IJurisdictionState>((set) => ({
 }))
 
 const greenButtonProps = {_hover: { background: "brand.javaHover" }, variant: 'Header'}
-const invalidMemberAddressProps = { borderColor:"red", color:"red" }
+const invalidAddressProps = { borderColor:"red", color:"red" }
 
 /** Props for RoleSelector component */
 type RoleSelectorProps = {
@@ -68,7 +78,7 @@ const RoleSelector = (props:RoleSelectorProps) =>
   <Select
     placeholder="Role?"
     bg="white"
-    {...(props.isValid ? {} : invalidMemberAddressProps)}
+    {...(props.isValid ? {} : invalidAddressProps)}
     borderWidth={1}
     required={props.required}
     value={props.value}
@@ -89,6 +99,15 @@ const CreateJurisdiction: NextPage = () => {
   const setTitleTokenName = useNewJurisdiction(state => state.setTitleTokenName)
   const setTitleTokenSymbol = useNewJurisdiction(state => state.setTitleTokenSymbol)
   const setTitleTokenURI = useNewJurisdiction(state => state.setTitleTokenURI)
+  const [registryAccountName, setRegistryAccountName] = useState("")
+  const setRegistryAddress = useNewJurisdiction(state => state.setRegistryAddress)
+  const [registryFeeUI, setRegistryFeeUI] = useState("0")
+  const setRegistryFee = useNewJurisdiction(state => state.setRegistryFee)
+  const [maintainerAccountName, setMaintainerAccountName] = useState("")
+  const setMaintainerAddress = useNewJurisdiction(state => state.setMaintainerAddress)
+  const [maintainerFeeUI, setMaintainerFeeUI] = useState("0")
+  const setMaintainerFee = useNewJurisdiction(state => state.setMaintainerFee)
+  const setNFTSupport = useNewJurisdiction(state => state.setNFTSupport)
   const addMember = useNewJurisdiction(state => state.addMember)
   const removeMember = useNewJurisdiction(state => state.removeMember)
   const replaceMember = useNewJurisdiction(state => state.replaceMember)
@@ -106,10 +125,9 @@ const CreateJurisdiction: NextPage = () => {
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<Role>()
 
-  const { aliases, aliasesByAddress, loaded:aliasesLoaded } = useAliases()
+  const { aliases, aliasesByAddress, aliasesByName, addAliases, loaded:aliasesLoaded } = useAliases()
   const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()
 
-  const [ selectedTab, setSelectedTab ] = useState(0)
   const cacheJurisdiction = useJurisdictions(state => state.add)
 
   useEffect(() => {
@@ -129,8 +147,27 @@ const CreateJurisdiction: NextPage = () => {
     const acc = aliasesByAddress[address_lc]?.alias
     return acc ? acc : ""
   }, [aliasesByAddress])
-  
+
+  const getAddressForName = useCallback((name:string) => {
+    const name_lc = name.toLowerCase()
+    const acc = aliasesByName[name_lc]?.address
+    return acc ? acc : ""
+  }, [aliasesByName])
+
+  // Get default values for the jurisdiction
+  useEffect(() => {
+    if (maintainerAccountName === "" && jurisdiction.maintainerAddress !== "")
+      setMaintainerAccountName(getNameForAddress(jurisdiction.maintainerAddress))
+    if (registryAccountName === "" && jurisdiction.registryAddress !== "")
+      setRegistryAccountName(getNameForAddress(jurisdiction.registryAddress))
+    if (registryFeeUI === "0" && !jurisdiction.registryFee.eq(ethers.constants.Zero))
+      setRegistryFeeUI(ethers.utils.formatUnits(jurisdiction.registryFee, "gwei"))
+    if (maintainerFeeUI === "0" && !jurisdiction.maintainerFee.eq(ethers.constants.Zero))
+      setMaintainerFeeUI(ethers.utils.formatUnits(jurisdiction.maintainerFee, "gwei"))
+  }, [jurisdiction, getNameForAddress, maintainerAccountName, registryAccountName, registryFeeUI, maintainerFeeUI])
+
   const updateMemberAddress = useCallback((index: number, m:IMember, value: string): void => {
+    // Update name if it is the default name, if it is a new name then leave it as is
     let expectedName:string = getNameForAddress(m.address)
     let newName:string = getNameForAddress(value)
     if (m.name !== "" && m.name !== expectedName)
@@ -139,6 +176,7 @@ const CreateJurisdiction: NextPage = () => {
   }, [replaceMember, getNameForAddress])
 
   const updateNewMemberAddress = useCallback((value: string): void => {
+    // Update name if it is the default name, if it is a new name then leave it as is
     let expectedName:string = getNameForAddress(newMemberAddress)
     let newName:string = getNameForAddress(value)
     if (newMemberName !== "" && newMemberName !== expectedName)
@@ -146,6 +184,107 @@ const CreateJurisdiction: NextPage = () => {
     setNewMemberName(newName)
     setNewMemberAddress(value)
   }, [newMemberAddress, newMemberName, getNameForAddress])
+
+  const updateRegistryAddress = useCallback((value: string): void => {
+    // Update name if it is the default name, if it is a new name then leave it as is
+    let expectedName:string = getNameForAddress(jurisdiction.registryAddress)
+    let newName:string = getNameForAddress(value)
+    if (registryAccountName !== "" && registryAccountName !== expectedName)
+      newName = registryAccountName
+    setRegistryAccountName(newName)
+    setRegistryAddress(value)
+  }, [jurisdiction.registryAddress, registryAccountName, getNameForAddress])
+
+  const updateRegistryAccountName = useCallback((value: string): void => {
+    // Update address if it is empty or if it matches the address for the previous value of the name
+    let expectedAddress:string = getAddressForName(registryAccountName)
+    let newAddress:string = getAddressForName(value)
+    if (jurisdiction.registryAddress !== "" && jurisdiction.registryAddress !== expectedAddress)
+      newAddress = jurisdiction.registryAddress
+    setRegistryAccountName(value)
+    setRegistryAddress(newAddress)
+  }, [jurisdiction.registryAddress, getAddressForName])
+
+  // This is a function to ensure that the value has no spaces and contains at least a 0 
+  const cleanNumber = useCallback((value: string) => {
+    value = value === undefined ? "" : value.trim()
+    value = value === "" ? "0" : value
+    return value
+  }, [])
+
+  const isValidGwei = useCallback((value: string) => {
+    try {
+      value = cleanNumber(value)
+      ethers.utils.parseUnits(value, "gwei")
+      return true
+    } catch (e) {
+      return false
+    }
+  }, [])
+
+  const updateRegistryFee = useCallback((value: string) => {
+    // The UI displays the fee in gwei and the contract stores the fee in wei
+    // Set the value in the contract only if it is a valid number in the UI
+    value = cleanNumber(value)
+    try {
+      const fee = ethers.utils.parseUnits(value, "gwei")
+      setRegistryFee(fee)
+    } catch (e) {
+      console.log("Invalid fee value")
+    }
+    setRegistryFeeUI(value)
+  }, [])
+
+  const updateMaintainerAddress = useCallback((value: string): void => {
+    // Update name if it is the default name, if it is a new name then leave it as is
+    let expectedName:string = getNameForAddress(jurisdiction.maintainerAddress)
+    let newName:string = getNameForAddress(value)
+    if (maintainerAccountName !== "" && maintainerAccountName !== expectedName)
+      newName = maintainerAccountName
+    setMaintainerAccountName(newName)
+    setMaintainerAddress(value)
+  }, [jurisdiction.maintainerAddress, maintainerAccountName, getNameForAddress])
+
+  const updateMaintainerAccountName = useCallback((value: string): void => {
+    // Update address if it is empty or if it matches the address for the previous value of the name
+    let expectedAddress:string = getAddressForName(maintainerAccountName)
+    let newAddress:string = getAddressForName(value)
+    if (jurisdiction.maintainerAddress !== "" && jurisdiction.maintainerAddress !== expectedAddress)
+      newAddress = jurisdiction.maintainerAddress
+    setMaintainerAccountName(value)
+    setMaintainerAddress(newAddress)
+  }, [jurisdiction.maintainerAddress, getAddressForName])
+
+  const updateMaintainerFee = useCallback((value: string) => {
+    // The UI displays the fee in gwei and the contract stores the fee in wei
+    // Set the value in the contract only if it is a valid number in the UI
+    value = cleanNumber(value)
+    try {
+      const fee = ethers.utils.parseUnits(value, "gwei")
+      setMaintainerFee(fee)
+    } catch (e) {
+      console.log("Invalid fee value")
+    }
+    setMaintainerFeeUI(value)
+  }, [])
+
+  const isEmptyRegistryAddress = useCallback(():boolean => {
+    return registryAccountName === "" && jurisdiction.registryAddress === ""
+  }, [registryAccountName, jurisdiction.registryAddress])
+
+  const isValidRegistryAddress = useCallback(():boolean => {
+    return jurisdiction.registryAddress !== "" && 
+      jurisdiction.isValidAddress(jurisdiction.registryAddress)
+  }, [jurisdiction.registryAddress, jurisdiction.isValidAddress])
+
+  const isEmptyMaintainerAddress = useCallback(():boolean => {
+    return maintainerAccountName === "" && jurisdiction.maintainerAddress === ""
+  }, [maintainerAccountName, jurisdiction.maintainerAddress])
+
+  const isValidMaintainerAddress = useCallback(():boolean => {
+    return jurisdiction.maintainerAddress !== "" && 
+      jurisdiction.isValidAddress(jurisdiction.maintainerAddress)
+  }, [jurisdiction.maintainerAddress, jurisdiction.isValidAddress])
 
   const isEmptyNewMember = useCallback(():boolean => {
     return newMemberName === "" && newMemberAddress === "" && newMemberRole === undefined
@@ -168,7 +307,15 @@ const CreateJurisdiction: NextPage = () => {
   }, [addMember, newMemberName, newMemberAddress, newMemberRole, isValidNewMember])
 
   const isValidForm = useCallback(():boolean => {
-    return jurisdiction.isValid() && (isValidNewMember() || isEmptyNewMember()) && web3Provider
+    return (
+      jurisdiction.isValid() 
+      && (isValidNewMember() || isEmptyNewMember()) 
+      && (isValidMaintainerAddress() || isEmptyMaintainerAddress()) 
+      && (isValidRegistryAddress() || isEmptyRegistryAddress())
+      && isValidGwei(registryFeeUI)
+      && isValidGwei(maintainerFeeUI) 
+      && web3Provider
+    )
   }, [jurisdiction, isValidNewMember, isEmptyNewMember, web3Provider])
 
   const onClickCancelDeployment = useCallback(() => {
@@ -221,7 +368,17 @@ const CreateJurisdiction: NextPage = () => {
       status: JurisdictionStatus.Exists,
       createdAt: new Date()
     })
-  }, [])
+    
+    addAliases([
+      {
+        address: jurisdiction.registryAddress,
+        alias: registryAccountName  
+      },
+      {
+        address: jurisdiction.maintainerAddress,
+        alias: maintainerAccountName
+      }])
+    }, [jurisdiction.registryAddress, jurisdiction.maintainerAddress, registryAccountName, maintainerAccountName])
 
   const deploy = useCallback(async () => {
     setProgressValue(0)
@@ -327,31 +484,57 @@ const CreateJurisdiction: NextPage = () => {
     </HStack>
   ), [JurisdictionId])
 
-  const titleTokenNameRow = useMemo(() => (
-    <HStack width="100%">
-      <Text width="20%" fontSize='md'>Title Token Name:</Text>
-      <Input width="80%" value={jurisdiction.titleTokenName} onChange={(e) => setTitleTokenName(e.target.value)} />
-    </HStack>
-  ), [jurisdiction.titleTokenName])
+  const titleTokenRows = useMemo(() => (
+    <VStack width="100%">
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Title Token Name:</Text>
+        <Input width="80%" value={jurisdiction.titleTokenName} onChange={(e) => setTitleTokenName(e.target.value)} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Title Token Symbol:</Text>
+        <Input width="80%" value={jurisdiction.titleTokenSymbol} onChange={(e) => setTitleTokenSymbol(e.target.value)} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Title Token URI:</Text>
+        <Input width="80%" value={jurisdiction.titleTokenURI} onChange={(e) => setTitleTokenURI(e.target.value)} />
+      </HStack>
+    </VStack>
+  ), [jurisdiction.titleTokenName, jurisdiction.titleTokenSymbol, jurisdiction.titleTokenURI])
 
-  const titleTokenSymbolRow = useMemo(() => (
-    <HStack width="100%">
-      <Text width="20%" fontSize='md'>Title Token Symbol:</Text>
-      <Input width="80%" value={jurisdiction.titleTokenSymbol} onChange={(e) => setTitleTokenSymbol(e.target.value)} />
-    </HStack>
-  ), [jurisdiction.titleTokenSymbol])
+  const titleFeesRows = useMemo(() => (
+    <VStack width="100%">
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Registry Account:</Text>
+        <Input width="15%" value={registryAccountName} onChange={(e) => updateRegistryAccountName(e.target.value)}/>
+        <Input width="55%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress()||isEmptyRegistryAddress())?{}:invalidAddressProps} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Registry Fee:</Text>
+        <Input width="80%" value={registryFeeUI} onChange={(e) => updateRegistryFee(e.target.value)} {...(isValidGwei(registryFeeUI)?{}:invalidAddressProps)}/>
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Maintainer Account:</Text>
+        <Input width="15%" value={maintainerAccountName} onChange={(e) => updateMaintainerAccountName(e.target.value)}/>
+        <Input width="55%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress()||isValidMaintainerAddress())?{}:invalidAddressProps} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Maintainer Fee:</Text>
+        <Input width="80%" value={maintainerFeeUI} onChange={(e) => updateMaintainerFee(e.target.value)} {...(isValidGwei(maintainerFeeUI)?{}:invalidAddressProps)}/>
+      </HStack>
+    </VStack>
+  ), [jurisdiction.registryAddress, jurisdiction.registryFee, jurisdiction.maintainerAddress, jurisdiction.maintainerFee, registryAccountName, maintainerAccountName, registryFeeUI, maintainerFeeUI])
 
-  const titleTokenURIRow = useMemo(() => (
+  const nftSupporRow = useMemo(() => (
     <HStack width="100%">
-      <Text width="20%" fontSize='md'>Title Token URI:</Text>
-      <Input width="80%" value={jurisdiction.titleTokenURI} onChange={(e) => setTitleTokenURI(e.target.value)} />
+        <Text width="20%" fontSize='md'>Enable NFT Support:</Text>
+        <Switch size='lg' isChecked={jurisdiction.nftSupport} onChange={(e) => setNFTSupport(e.target.checked)} variant={jurisdiction.nftSupport?"java":""} />
     </HStack>
-  ), [jurisdiction.titleTokenURI])
+  ), [jurisdiction.nftSupport])
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
       <Input width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)}/>
-      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember()||isEmptyNewMember())?{}:invalidMemberAddressProps} />
+      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember()||isEmptyNewMember())?{}:invalidAddressProps} />
       <RoleSelector isValid={newMemberRole!==undefined||isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName||""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
       <Button width="15%" {...isValidNewMember()?greenButtonProps:""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
@@ -362,7 +545,7 @@ const CreateJurisdiction: NextPage = () => {
       {jurisdiction.members.map((m:IMember, i:number) => (
         <HStack width="100%" key={i}>
           <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
-          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidMemberAddressProps} />
+          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidAddressProps} />
           <RoleSelector width="15%" isValid={m.role!==undefined} required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
           <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
         </HStack>
@@ -394,63 +577,59 @@ const CreateJurisdiction: NextPage = () => {
     </VStack>
   ), [jurisdiction.contracts, deploy])
 
-  const configTab = useMemo(() => (
+  const configSection = useMemo(() => (
     <VStack alignItems="flex-start" spacing={4}>        
       {jurisdictionNameRow}
       {jurisdictionContractRow}
-      {titleTokenNameRow}
-      {titleTokenSymbolRow}
-      {titleTokenURIRow}
+      {titleTokenRows}
+      {titleFeesRows}
+      {nftSupporRow}
     </VStack>
-  ), [jurisdictionNameRow, jurisdictionContractRow, titleTokenNameRow, titleTokenSymbolRow, titleTokenURIRow])
+  ), [jurisdictionNameRow, jurisdictionContractRow, titleTokenRows, titleFeesRows, nftSupporRow])
 
-  const membersTab = useMemo(() => membersRows, [membersRows])
+  const membersSection = useMemo(() => membersRows, [membersRows])
 
-  const contractsTab = useMemo(() => contractsRows, [contractsRows])
+  const contractsSection = useMemo(() => contractsRows, [contractsRows])
 
-  const tabs = [
-    { name: "Configuration", content: configTab },
-    { name: "Members", content: membersTab },
-    { name: "Contracts", content: contractsTab },
+  const sections = [
+    { name: "Configuration", content: configSection },
+    { name: "Members", content: membersSection },
+    { name: "Contracts", content: contractsSection },
   ]
 
   const submitButtons = useMemo(() => {
-    const isFirstTab = selectedTab===0
-    const isLastTab = selectedTab===tabs.length-1
     return (
       <HStack width="100%" justifyContent="flex-end">
         <Button {...greenButtonProps} onClick={() => reset()}>Reset All</Button>
-        <Button {...(!isFirstTab?greenButtonProps:"")} onClick={() => setSelectedTab(selectedTab-1)} disabled={isFirstTab}>Previous</Button>
-        <Button {...(!isLastTab?greenButtonProps:"")} onClick={() => setSelectedTab(selectedTab+1)} disabled={isLastTab}>Next</Button>
-        <Button {...(isLastTab&&isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()} disabled={!isLastTab}>Create Jurisdiction</Button>
+        <Button {...(isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()} >Create Jurisdiction</Button>
       </HStack>)
-  }, [isValidForm, deploy, selectedTab])
+  }, [isValidForm, deploy, reset])
 
   const page = useMemo(() => (
     <Box width="100%">
       <Head>
         <title>Create a Jurisdiction</title>
       </Head>
-      <Tabs variant="enclosed" onChange={i => setSelectedTab(i)} index={selectedTab}>
-        <TabList>
-          {tabs.map((tab, index) => (
-            <Tab key={tab.name}>{tab.name}</Tab>
-          ))}
-        </TabList>
 
-        <TabPanels>
-          { //  css={{"&::-webkit-scrollbar":{display: "none"}} as any} (removes scrollbars on Windows)
-          tabs.map((tab) => (
-            <TabPanel height="48vh" overflow="scroll" key={tab.name}>{tab.content}</TabPanel>
-          ))}
-        </TabPanels>
-      </Tabs>
       <Divider width="100%" marginBottom="1em"/>
+      <VStack>
+        {
+          sections.map((section, i) => {
+            return (
+              <Box key={section.name} width="100%">
+                {i>0 && <Divider width="100%" margin="2em 0" border="1px" />}
+                <Heading as='h2' size='md' marginBottom="1em">{i+1}. {section.name}</Heading>
+                <Box width="100%">{section.content}</Box>
+              </Box>
+            )})
+        }
+      </VStack>
+      <Divider width="100%" margin="2em 0" />
       {submitButtons}
       {errorDialog}
       {progressDialog}
     </Box>
-  ), [tabs, submitButtons, errorDialog, progressDialog, selectedTab])
+  ), [sections, submitButtons, errorDialog, progressDialog])
 
   return page
 }
