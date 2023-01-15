@@ -1,3 +1,4 @@
+import { ProposalState } from '@/utils/types';
 import { Provider } from '@ethersproject/providers';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
 import create from 'zustand'
@@ -23,6 +24,7 @@ export interface IProposalDetails {
   proposer?: string
   version?: number
   description?: string
+  status?: ProposalState
   revisions?: IRevisionDetails[]
   detailsLoading: boolean
 
@@ -95,7 +97,7 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
   updateProposalDetails(get, set, instance, proposalId, { detailsLoading: true })
 
   // Load the proposal details from the database
-  fetch(`/api/proposals/get?governor=${instance.address}&chainId=${get().chainId}&id=${proposalId}`).then(r => r.json()).then(p => {
+  fetch(`/api/proposals/get?governor=${instance.address}&chainId=${get().chainId}&id=${proposalId}`).then(r => r.json()).then(async p => {
     if (p && p.length === 1) {
       const newProposal:Partial<IProposalDetails> = p[0]
       const newProposalDetails = { 
@@ -104,6 +106,7 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
         deadline: newProposal.deadline,
         proposer: newProposal.proposer,
         version: newProposal.version,
+        status: await instance.state(proposalId),
         description: newProposal.description,
         revisions: newProposal.revisions?.map(r => ({
           id:r.id,
@@ -164,6 +167,7 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
       proposer: 'Not Found',
       version: 0,
       description: 'Not Found',
+      status: ProposalState.Expired,
       revisions: [],
       detailsLoading: false,
       loadDetails: async () => {}
@@ -203,6 +207,37 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
         proposals[hex] = createProposalDetails(hex)
       }
     }
+
+    // Add a sample expired proposal
+    const hex = '0x0000000000000000000000000000000000000000000000000000000000000000'
+    if (!proposalIds.includes(hex)) {
+      proposalIds.push(hex)
+      proposals[hex] = { 
+        id: hex,
+        detailsLoading: false,
+        startBlock: 0,
+        deadline: 0,
+        proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        version: 0,
+        status: ProposalState.Expired,
+        description: "Sample expired proposal",
+        revisions: [{
+          id:0,
+          target: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          description: "Sample revision",
+          name: "SampleRevision",
+          pdata: "",
+          parameters: [{
+            name: "SampleParameter",
+            type: ParamType.t_string,
+            hint: "Sample parameter",
+            value: "Sample value",
+          }],
+        }],
+        loadDetails: async () => {}
+      }
+    }
+
     updateGovernorDetails(get, set, instance, { proposalIds, proposals, proposalsLoading: false, allProposalsLoaded: true })
   }
   else
@@ -223,7 +258,7 @@ export const useGovernors = create<IGovernorsState>((set, get) => ({
 
   get: (address:string, provider:Provider) => {
     if (get().chainId === 0)
-      throw new Error('useGovernors() state not initialized')
+      return {} as IGovernorDetails
 
     let details:IGovernorDetails = get().governors[address]
     if (!details) {

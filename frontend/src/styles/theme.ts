@@ -173,7 +173,10 @@ const components = {
         lineHeight: '20px',
         letterSpacing: '0px',
         textAlign: 'left',
-      }
+      },
+      "break-word": {
+        wordBreak: "break-word",
+      },
     }
   },
   Switch: {

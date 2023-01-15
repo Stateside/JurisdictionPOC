@@ -26,7 +26,13 @@ const LoadingIcon = () => (
 const RevisionModal = ({
   isOpen,
   onClose,
+  jurisdictionAddress,
+  proposalId,
+  revisionId
 }: {
+  jurisdictionAddress: string;
+  proposalId: string;
+  revisionId: number;
   isOpen: boolean;
   onClose: any;
 }) => {
@@ -36,9 +42,6 @@ const RevisionModal = ({
   // First load jurisdiction, then Governor, then proposal, then revision...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
-  const jurisdictionAddress = router.query.id as string;
-  const proposalId = router.query.pid as string;
-  const revisionId = router.query.rid as string;
   const { loaded: jurisdictionsLoaded, loadContracts } = useJurisdictions();
 
   const jurisdictionName = useJurisdictions(
@@ -56,7 +59,7 @@ const RevisionModal = ({
   const proposal =
     jscGovernorDetails?.proposals && jscGovernorDetails?.proposals[proposalId];
   const revision = proposal?.revisions?.find(
-    revision => revision.id.toString() === revisionId
+    revision => revision.id === revisionId
   );
   const unknownRevision = proposal?.revisions && !revision;
 
@@ -85,77 +88,64 @@ const RevisionModal = ({
   }, [proposal]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Revision</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Box>
+          <Box marginBottom="1em">
             <VStack width="100%" alignItems="flex-start">
-              <HStack alignItems="flex-start" width="100%">
-                <Text width="20%">Jurisdiction:</Text>
+              <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
+                <Text width="10%">Jurisdiction:</Text>
                 <Text>{jurisdictionName || <LoadingIcon />}</Text>
               </HStack>
-              <Divider paddingTop="20px" paddingBottom="20px" />
-              <HStack alignItems="flex-start" width="100%">
-                <Text width="20%">Proposal:</Text>
+              <Divider/>
+              <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
+                <Text width="10%">Proposal:</Text>
                 <Text>{proposal?.description || <LoadingIcon />}</Text>
               </HStack>
-              <Divider paddingTop="20px" paddingBottom="20px" />
-              <HStack alignItems="flex-start" width="100%">
-                <Text width="20%">Revision:</Text>
+              <Divider/>
+              <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
+                <Text width="10%">Revision:</Text>
                 <Text>
                   {unknownRevision
                     ? 'Not Found'
                     : revision?.name || <LoadingIcon />}
                 </Text>
               </HStack>
-              <Divider paddingTop="20px" paddingBottom="20px" />
-              <HStack alignItems="flex-start" width="100%">
-                <Text width="20%">Description:</Text>
+              <Divider/>
+              <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
+                <Text width="10%">Description:</Text>
                 <Text>
                   {unknownRevision
                     ? 'Not Found'
                     : simplifyDescription(revision) || <LoadingIcon />}
                 </Text>
               </HStack>
-              <Divider paddingTop="20px" paddingBottom="20px" />
-              <HStack alignItems="flex-start" width="100%">
-                <Text width="20%">Parameters:</Text>
-                <VStack alignItems="flex-start" width="25%">
-                  <Text>Name</Text>
+              <Divider/>
+              <HStack width="100%" alignItems={'flex-start'} p="1rem 0rem">
+                <Text width="10%">Parameters</Text>
+                <VStack width="90%">
+                  <HStack width="100%">
+                    <Text width="20%">Name</Text>
+                    <Text width="40%">Description</Text>
+                    <Text width="40%">Value</Text>
+                  </HStack>
+                  <HStack width="100%" style={{marginTop: "1px"}}>
+                    <Text width="20%"><Divider/></Text>
+                    <Text width="40%"><Divider/></Text>
+                    <Text width="40%"><Divider/></Text>
+                  </HStack>
                   {unknownRevision ? (
                     <Text>Not Found</Text>
                   ) : revision ? (
                     revision.parameters?.map(parameter => (
-                      <Text key={parameter.name}>{parameter.name}</Text>
-                    ))
-                  ) : (
-                    <LoadingIcon />
-                  )}
-                </VStack>
-                <VStack alignItems="flex-start" width="25%">
-                  <Text>Description</Text>
-                  {unknownRevision ? (
-                    <Text>Not Found</Text>
-                  ) : revision ? (
-                    revision.parameters?.map(parameter => (
-                      <Text key={parameter.name}>{parameter.hint}</Text>
-                    ))
-                  ) : (
-                    <LoadingIcon />
-                  )}
-                </VStack>
-                <VStack alignItems="flex-start" width="25%">
-                  <Text>Value</Text>
-                  {unknownRevision ? (
-                    <Text>Not Found</Text>
-                  ) : revision ? (
-                    revision.parameters?.map(parameter => (
-                      <Text key={parameter.name}>
-                        {simplifyValue(parameter)}
-                      </Text>
+                      <HStack key={parameter.name} width="100%" alignItems={'flex-start'}>
+                        <Text width="20%">{parameter.name}</Text>
+                        <Text width="40%" variant="break-word">{parameter.hint}</Text>
+                        <Text width="40%" variant="break-word">{simplifyValue(parameter)}</Text>
+                      </HStack>
                     ))
                   ) : (
                     <LoadingIcon />

@@ -32,12 +32,14 @@ const Contracts = () => {
               <Button width="15%"
                 variant="Transparent"
                 rightIcon={<ReloadIcon height={6} width={6} />}
+                onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/Upgrade`)}
               >
                 Replace
               </Button>
               <Button width="15%"
                 variant="Transparent"
                 rightIcon={<LockIcon height={6} width={6} />}
+                onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/Freeze`)}
               >
                 Freeze
               </Button>

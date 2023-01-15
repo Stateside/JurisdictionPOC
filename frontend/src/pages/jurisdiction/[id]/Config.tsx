@@ -8,23 +8,6 @@ import { ITokenContractDetails, useTitleTokens } from '@/store/useTitleTokens';
 import { useAliases } from '@/store/useAliases';
 import { BigNumber, ethers } from 'ethers';
 
-const ChangeButton = (props: { onClick?: () => void }) => (
-  <Button
-    width="120px"
-    fontSize="15px"
-    variant="Transparent"
-    onClick={props.onClick}
-    p="0"
-  >
-    <Box display="flex" flexDirection="row" alignItems="center">
-      <Text mr="15px">Change</Text>
-      <Box mt="5px">
-        <EditIcon height={6} width={6} />
-      </Box>
-    </Box>
-  </Button>
-);
-
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1em" color='brand.java'/>
 type AccountGetter = (details:ITokenContractDetails) => string|undefined
 type FeeGetter = (details:ITokenContractDetails) => BigNumber|undefined
@@ -65,12 +48,25 @@ const Config = () => {
     return !fee || fee == ethers.constants.Zero ? 'None' : ethers.utils.formatUnits(fee, "gwei") + " gwei"
   }, [tokensContractDetails, aliasesByAddress])
 
+  const ChangeButton = useCallback((props: { proposal?: string }) => (
+    <Button width="8rem" fontSize="1rem" variant="Transparent" p="0" 
+      onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${props.proposal}`)}
+    >
+      <Box display="flex" flexDirection="row" alignItems="center">
+        <Text mr="1rem">Change</Text>
+        <Box mt=".4rem">
+          <EditIcon height={6} width={6} />
+        </Box>
+      </Box>
+    </Button>
+  ),[jurisdictionAddress]);
+    
   return (
     <VStack alignItems="flex-start">
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Jurisdiction name:</Text>
         <Text width="65%">{name||<LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.jurisdiction/ChangeName'/>
       </HStack>
  
       <Divider width="100%" marginTop="1em" marginBottom="1em" />
@@ -78,7 +74,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Contract address:</Text>
         <Text width="65%">{jurisdictionAddress}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.jurisdiction/Upgrade'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -86,7 +82,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Title Token Name:</Text>
         <Text width="65%">{tokensContractDetails?.tokenName||<LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeName'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -94,7 +90,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Title Token Symbol:</Text>
         <Text width="65%">{tokensContractDetails?.tokenSymbol||<LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeSymbol'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -102,7 +98,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Base Token URI:</Text>
         <Text width="65%">{tokensContractDetails?.tokenBaseURI||<LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeURI'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -110,7 +106,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Account:</Text>
         <Text width="65%">{getAccount(d => d?.registryAccount) || <LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.accounts.registry'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -118,7 +114,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Fee:</Text>
         <Text width="65%">{getFee(d => d?.registryFee) || <LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.fees.registry'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -126,7 +122,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Account:</Text>
         <Text width="65%">{getAccount(d => d?.maintainerAccount) || <LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.accounts.maintainer'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -134,7 +130,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Fee:</Text>
         <Text width="65%">{getFee(d => d?.maintainerFee) || <LoadingIcon/>}</Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.fees.maintainer'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
@@ -146,7 +142,7 @@ const Config = () => {
           ? (tokensContractDetails.nftSupport === true ? 'Enabled' : 'Disabled')
           : <LoadingIcon/>}
         </Text>
-        <ChangeButton/>
+        <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.nft.enabled'/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />
