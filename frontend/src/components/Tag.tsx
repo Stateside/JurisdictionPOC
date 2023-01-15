@@ -58,7 +58,7 @@ export default function Tag({
           borderRadius={10}
           backgroundColor="#D3D3D3"
         >
-          Status
+          {information}
         </Box>
       )}
       <Flex position="absolute" right="2">

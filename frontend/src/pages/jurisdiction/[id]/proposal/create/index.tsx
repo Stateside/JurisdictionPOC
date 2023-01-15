@@ -10,6 +10,14 @@ import { useRouter } from 'next/router';
 const CreateProposal: NextPage = () => {
   const router = useRouter();
   const [openRevisionModal, setOpenRevisionModal] = useState(false);
+  const [autoOpenedRevisionModel, setAutoOpenedRevisionModel] = useState(false);
+  const p = router.query.p as string // Default proposal
+  const [ defaultContract, defaultRevision ] = p ? p.split('/') : [null, null]
+
+  if (defaultContract && !openRevisionModal && !autoOpenedRevisionModel) {
+    setAutoOpenedRevisionModel(true)
+    setOpenRevisionModal(true)
+  }
 
   return (
     <Box width="100%">

@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Box, Button, CircularProgress, Divider, HStack, Select, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
-import { useGovernors } from '@/store/useGovernors';
+import { IProposalDetails, useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import { ChevronRightIcon } from '@chakra-ui/icons';
+import { ProposalState } from '@/utils/types';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java' />
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
@@ -53,7 +54,7 @@ const Proposals = () => {
       })
     }
   }, [proposalIds])
-  
+
   const getTag = (id:string, name:string, status?:string) => (
     <Link href={jurisdictionAddress+"/proposal/"+id} variant={'15/20'} key={id}>
       <Tag information={status}>
@@ -61,14 +62,10 @@ const Proposals = () => {
       </Tag>
     </Link>)
   
+  const activeOrLoading = (p:IProposalDetails) => p.status===ProposalState.Active || p.status === undefined
+
   return (
     <>
-      <Box>
-        <Button mb="20px" mt="10px" variant="Heading">
-          Create New Proposal
-        </Button>
-        <Divider />
-      </Box>
       {proposals && proposalIds && proposalIds.length > 0 && (
         <VStack width="100%" mt="30px" alignItems="flex-start">
           <Box width="100%">
@@ -76,7 +73,7 @@ const Proposals = () => {
               Active proposals
             </Text>
             <Box>
-              {proposalIds.map(id => {
+              {proposalIds.filter(id => activeOrLoading(proposals[id])).map(id => {
                 const p = proposals[id];
                 if (jscGovernorDetails?.allProposalsLoaded && !p.description)
                   return getTag(id, `(${id})`);
@@ -102,12 +99,12 @@ const Proposals = () => {
               </Link>
             </HStack>
             <Box>
-              {proposalIds.map(id => {
+              {proposalIds.filter(id => !activeOrLoading(proposals[id])).map(id => {
                 const p = proposals[id];
                 return p.description ? (
-                  getTag(id, p.description, "Status")
+                  getTag(id, p.description, p.status!==undefined?ProposalState[p.status]:'checking...')
                 ) : (
-                  <Tag key={id} caret={<LoadingCaret />} information="Status">
+                  <Tag key={id} caret={<LoadingCaret />} information='checking...'>
                     <Text variant={'15/20'}>{id}</Text>
                   </Tag>
                 );
@@ -116,14 +113,12 @@ const Proposals = () => {
           </Box>
         </VStack>
       )}
-      {(jscGovernorDetails?.proposalsLoading || !proposalIds) && (
-        <Tag justify="center" caret={null}>
-          <LoadingIcon />
-        </Tag>
-      )}
-      {!jscGovernorDetails?.proposalsLoading &&
-        proposalIds &&
-        proposalIds.length == 0 && <Text>No information available</Text>}
+      {jscGovernorDetails?.proposalsLoading && <Tag justify="center" caret={null}><LoadingIcon /></Tag>}
+      {!jscGovernorDetails?.proposalsLoading && (!proposalIds || proposalIds.length===0) && <Text>No proposals found</Text>}
+      <Box>
+        <Divider m="1rem 0rem"/>
+        <Button variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create`)}>Create New Proposal</Button>
+      </Box>
     </>
   );
 };

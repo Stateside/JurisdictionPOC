@@ -52,11 +52,7 @@ const Properties = () => {
 
   return (
     <>
-      <Box mt="10px" mb="20px">
-        <Button variant="Header">Add New Property Tokens</Button>
-      </Box>
-      <Divider />
-      <Box marginTop={`${tokenIds.length > 12 ? '20px' : '40px'}`} marginBottom="20px" width="70%">
+      <Box marginBottom="20px" width="70%">
         {tokenCount > 12 && paginator}
 
         {tokenIds.map(tokenId => {
@@ -71,6 +67,10 @@ const Properties = () => {
         {tokenCount > 12 && paginator}
       </Box>
       {(!tokenIds || tokenIds.length === 0) && <Text>No properties found</Text>}
+      <Box>
+        <Divider m="1rem 0rem"/>
+        <Button variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.tokens/AddToken`)}>Add New Property Tokens</Button>
+      </Box>
     </>
   );
 };

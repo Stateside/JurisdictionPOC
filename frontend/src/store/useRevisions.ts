@@ -41,11 +41,14 @@ export interface IRevisionsState {
   isInitialized: () => boolean,
 
   /** Returns details of the IJSCRevisioned contract stored at the given address */
-  get: (address:string, provider:Provider) => Promise<IRevisionedDetails>,
+  get: (address:string, provider:Provider) => IRevisionedDetails,
 }
 
 /** Asynchronously loads revisions for the given instance */
 const loadRevisions = async (address:string, instance:IJSCRevisioned, get:() => IRevisionsState, set: (state:Partial<IRevisionsState>) => void) => {
+  if (get().revisions[address]?.revisionsLoading || get().revisions[address]?.revisions.length > 0) 
+    return
+
   set({ revisions: { ...get().revisions, [address]: { ...get().revisions[address], revisionsLoading:true } } })
   const revs:IRevision[] = []
   let rIter = await instance.iterateRevisions()
@@ -85,13 +88,13 @@ export const useRevisions = create<IRevisionsState>((set, get) => ({
 
   isInitialized: () => get().chainId !== 0,
 
-  get: async (address:string, provider:Provider) => {
+  get: (address:string, provider:Provider) => {
     if (get().chainId === 0)
       throw new Error('useRevisions() state not initialized')
 
     let details:IRevisionedDetails = get().revisions[address]
     if (!details) {
-      const instance = await IJSCRevisioned__factory.connect(address, provider)
+      const instance = IJSCRevisioned__factory.connect(address, provider)
       details = {
         address,
         instance,

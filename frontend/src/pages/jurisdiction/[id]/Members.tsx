@@ -26,8 +26,6 @@ type MemberInfo = {
 
 const roles = buildRoles(ethers);
 
-
-
 const Members = () => {
   const bcRoles : {[key: string]: string} = {
     JUDICIAL_ROLE: 'Judicial',
@@ -135,6 +133,7 @@ const Members = () => {
                 <Button width="15%"
                   variant="Transparent"
                   rightIcon={<DeleteIcon height={7} width={7} />}
+                  onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.cabinet/RemoveMemberRole/${member.account}`)}
                 >
                   Remove
                 </Button>
@@ -149,10 +148,11 @@ const Members = () => {
         <Button
           rightIcon={<PersonAddIcon height={5} width={5} />}
           variant="Heading"
+          onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.cabinet/AddMember`)}
         >
           Add new member
         </Button>
-      </HStack>
+\      </HStack>
     </VStack>
   );
 };

@@ -50,6 +50,7 @@ const Proposal: NextPage = () => {
 
   const [ blockNumber, setBlockNumber ] = useState(0)
   const [openRevisionModal, setOpenRevisionModal] = useState(false);
+  const [selectedRevsionId, setSelectedRevisionId] = useState(0)
   const jurisdictionAddress = router.query.id as string;
   const proposalId = router.query.pid as string;
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
@@ -130,11 +131,17 @@ const Proposal: NextPage = () => {
             <VStack alignItems="flex-start" width="80%">
               {proposal?.revisions ? (
                 proposal?.revisions.map(r => (
-                  <Box onClick={() => setOpenRevisionModal(true)}>
+                  <Link
+                    onClick={() => {setSelectedRevisionId(r.id); setOpenRevisionModal(true)}}
+                    variant={'15/20'}
+                    key={r.id}
+                    width="100%"
+                    style={{paddingBottom: "20px"}}
+                  >
                     <Tag>
                       <Text>{r.name}</Text>
                     </Tag>
-                  </Box>
+                  </Link>
                 ))
               ) : (
                 <Tag>
@@ -166,8 +173,11 @@ const Proposal: NextPage = () => {
         </VStack>
       </Box>
       <RevisionModal
+        jurisdictionAddress={jurisdictionAddress}
+        proposalId={proposalId}
+        revisionId={selectedRevsionId}
         isOpen={openRevisionModal}
-        onClose={() => setOpenRevisionModal(true)}
+        onClose={() => setOpenRevisionModal(false)}
       />
     </Box>
   );
