@@ -89,8 +89,6 @@ const RevisionModal = ({
     proposal && proposal.loadDetails();
   }, [proposal]);
 
-  console.log("Here: ", revision?.parameters)
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
       <ModalOverlay />
