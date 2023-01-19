@@ -1,6 +1,6 @@
 import { createContext, useState, ReactNode, ChangeEvent, useEffect } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
-import { deepCopy, getAccountShortName } from 'utils/util';
+import { deepCopy, getAccountShortName } from '@/utils/util';
 import { ObjectHashInterface } from '@/interfaces/index';
 import { useRouter } from 'next/router';
 import {
@@ -15,7 +15,7 @@ import {
   ActionNames,
   OfferInfo,
   PropertyMapInfo,
-} from '../../../utils/property-types';
+} from '@/utils/property-types';
 import {
   buildTokenInfoByTitleId,
   buildActiveOffersInfoByTitleId,
