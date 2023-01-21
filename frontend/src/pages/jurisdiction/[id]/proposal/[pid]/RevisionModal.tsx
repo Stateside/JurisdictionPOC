@@ -11,6 +11,7 @@ import {
   ModalCloseButton,
   Text,
   VStack,
+  Heading,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
@@ -18,6 +19,7 @@ import { useGovernors } from '@/store/useGovernors';
 import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { useParameterSimplifier } from '@/store/useParameterSimplifier';
+import { capitalizeString } from '@/utils/util';
 
 const LoadingIcon = () => (
   <CircularProgress isIndeterminate size="1em" color="brand.java" />
@@ -65,7 +67,7 @@ const RevisionModal = ({
 
   const { simplifyDescription, simplifyValue } = useParameterSimplifier();
 
-  // Load contracts from jurisdiciton
+  // Load contracts from jurisdiction
   useEffect(() => {
     jurisdictionsLoaded && loadContracts(jurisdictionAddress, library);
   }, [jurisdictionAddress, jurisdictionsLoaded, library]);
@@ -90,31 +92,23 @@ const RevisionModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Revision</ModalHeader>
+      <ModalContent p="10px">
+        <ModalHeader>
+          <Heading variant="60">
+            {unknownRevision ? 'Not Found' : revision?.name || <LoadingIcon />}
+          </Heading>
+        </ModalHeader>
         <ModalCloseButton />
+
         <ModalBody>
+          <Divider />
           <Box marginBottom="1em">
             <VStack width="100%" alignItems="flex-start">
               <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
                 <Text width="10%">Jurisdiction:</Text>
                 <Text>{jurisdictionName || <LoadingIcon />}</Text>
               </HStack>
-              <Divider/>
-              <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
-                <Text width="10%">Proposal:</Text>
-                <Text>{proposal?.description || <LoadingIcon />}</Text>
-              </HStack>
-              <Divider/>
-              <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
-                <Text width="10%">Revision:</Text>
-                <Text>
-                  {unknownRevision
-                    ? 'Not Found'
-                    : revision?.name || <LoadingIcon />}
-                </Text>
-              </HStack>
-              <Divider/>
+              <Divider />
               <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
                 <Text width="10%">Description:</Text>
                 <Text>
@@ -123,35 +117,36 @@ const RevisionModal = ({
                     : simplifyDescription(revision) || <LoadingIcon />}
                 </Text>
               </HStack>
-              <Divider/>
+              <Divider />
+              {/*Parameters*/}
               <HStack width="100%" alignItems={'flex-start'} p="1rem 0rem">
                 <Text width="10%">Parameters</Text>
                 <VStack width="90%">
-                  <HStack width="100%">
-                    <Text width="20%">Name</Text>
-                    <Text width="40%">Description</Text>
-                    <Text width="40%">Value</Text>
-                  </HStack>
-                  <HStack width="100%" style={{marginTop: "1px"}}>
-                    <Text width="20%"><Divider/></Text>
-                    <Text width="40%"><Divider/></Text>
-                    <Text width="40%"><Divider/></Text>
-                  </HStack>
                   {unknownRevision ? (
                     <Text>Not Found</Text>
                   ) : revision ? (
                     revision.parameters?.map(parameter => (
-                      <HStack key={parameter.name} width="100%" alignItems={'flex-start'}>
-                        <Text width="20%">{parameter.name}</Text>
-                        <Text width="40%" variant="break-word">{parameter.hint}</Text>
-                        <Text width="40%" variant="break-word">{simplifyValue(parameter)}</Text>
-                      </HStack>
+                      <VStack
+                        key={parameter.name}
+                        width="100%"
+                        alignItems={'flex-start'}
+                      >
+                        <HStack width="100%" mb="30px">
+                          <Text width="10%">
+                            {capitalizeString(parameter.name)}
+                          </Text>
+                          <Text width="40%" variant="break-word">
+                            {simplifyValue(parameter)}
+                          </Text>
+                        </HStack>
+                      </VStack>
                     ))
                   ) : (
                     <LoadingIcon />
                   )}
                 </VStack>
               </HStack>
+              <Divider />
             </VStack>
           </Box>
         </ModalBody>

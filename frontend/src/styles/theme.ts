@@ -134,6 +134,13 @@ const components = {
         letterSpacing: '0px',
         textAlign: 'left',
       },
+      "60": {
+        fontSize: '60px',
+        fontWeight: '400',
+        lineHeight: '60px',
+        letterSpacing: '0px',
+        textAlign: 'left',
+      },
     }
   },
   Text: {
