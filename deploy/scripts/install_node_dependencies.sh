@@ -15,8 +15,3 @@ nvm use 16
 
 echo "Installing global required packages"
 npm install -g yarn pm2
-
-echo "Building frontend"
-cd /opt/jurisdictions/frontend
-yarn update-all
-yarn build

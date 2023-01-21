@@ -3,7 +3,9 @@ import "@nomiclabs/hardhat-ethers"
 import "@typechain/hardhat"
 import "@nomicfoundation/hardhat-chai-matchers"
 import { HardhatUserConfig } from "hardhat/config"
+import { accountsByName } from "./utils/accounts"
 import "./tasks/save-proposals"
+import "./tasks/save-contracts"
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -13,6 +15,11 @@ const config: HardhatUserConfig = {
     },
     localhost: {
       chainId: 31337,
+    },
+    staging: {
+      chainId: 41506,
+      url: "https://jurisdictions-geth.stateside.agency",
+      accounts: [accountsByName["Oscar"].privateKey]
     },
   },
   solidity: {

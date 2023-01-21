@@ -27,3 +27,8 @@ A CI/CD pipeline needs the following:
 3. Create a certificate in AWS Certificate Manager for use by CloudFront to enable SSL
 4. Go to AWS -> Pipelines -> Settings -> Connections and create a connection to GitHub
 5. Go to AWS Cloud Formation and create a new stack using the [provided CloudFormation](./jurisdictions.cfn.yaml) template
+
+Sample commands to test Geth server
+
+curl --data '{"jsonrpc":"2.0","method":"eth_chainId", "id":2}' -H "Content-Type: application/json" https://jurisdictions-geth.stateside.agency
+curl --data '{"jsonrpc":"2.0","method":"eth_getBalance", "params": ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", "latest"], "id":2}' -H "Content-Type: application/json" https://jurisdictions-geth.stateside.agency

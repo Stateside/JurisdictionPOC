@@ -45,9 +45,9 @@ phases:
     commands:
       - |+
         cat << END > frontend/.env
-        NEXT_PUBLIC_CHAIN_ID=40506
-        NEXT_PUBLIC_CHAIN_NAME=Staging
-        NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-hh.stateside.agency
+        NEXT_PUBLIC_CHAIN_ID=41506
+        NEXT_PUBLIC_CHAIN_NAME=Jurisdictions Testnet
+        NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-geth.stateside.agency
         NEXT_PUBLIC_CHAIN_BLOCK_EXPLORER_URL=
         NEXT_PUBLIC_CHAIN_SYMBOL=ETH
         NEXT_PUBLIC_CHAIN_DECIMALS=18        

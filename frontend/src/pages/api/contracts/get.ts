@@ -51,7 +51,11 @@ const get = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error("Error getting jurisdictions", err)
   }
 
-  res.send(await mergeArtifacts(jurisdictions));
+  // In staging only show contracts that are recorded in the database
+  if (req.query.frontend === "staging")
+    res.send(jurisdictions);
+  else
+    res.send(await mergeArtifacts(jurisdictions));
 }
 
 export default get
