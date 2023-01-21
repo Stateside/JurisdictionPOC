@@ -12,14 +12,16 @@ import {
   Text,
   VStack,
   Heading,
+  Switch,
 } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
 import { useGovernors } from '@/store/useGovernors';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { useParameterSimplifier } from '@/store/useParameterSimplifier';
 import { capitalizeString } from '@/utils/util';
+import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
+import { useAliases } from '@/store/useAliases';
 
 const LoadingIcon = () => (
   <CircularProgress isIndeterminate size="1em" color="brand.java" />
@@ -38,8 +40,8 @@ const RevisionModal = ({
   isOpen: boolean;
   onClose: any;
 }) => {
-  const router = useRouter();
   const { library } = useWeb3React();
+  const { aliasesByAddress } = useAliases()
 
   // First load jurisdiction, then Governor, then proposal, then revision...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
@@ -89,6 +91,30 @@ const RevisionModal = ({
     proposal && proposal.loadDetails();
   }, [proposal]);
 
+  const getValue = useCallback((p: IRevisionParameter, w:string) => {
+    switch(p.type) {
+      case ParamType.t_address:
+        return (
+          <HStack width={w}>
+            <Text variant="break-word">
+              {aliasesByAddress[p.value.toLowerCase()]?.alias || p.value}
+            </Text>
+            <Text pl="3rem" variant="break-word">
+              {p.value}
+            </Text>
+          </HStack>)
+      case ParamType.t_bool:
+        return (
+          <Switch width={w} isChecked={p.value === '1'} disabled={true}/>
+        )
+      default:
+        return (
+          <Text width={w} variant="break-word">
+            {simplifyValue(p)}
+          </Text>)
+    }
+  },[])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
       <ModalOverlay />
@@ -132,12 +158,10 @@ const RevisionModal = ({
                         alignItems={'flex-start'}
                       >
                         <HStack width="100%" mb="30px">
-                          <Text width="10%">
-                            {capitalizeString(parameter.name)}
+                          <Text width="20%">
+                            {capitalizeString(parameter.name)}:
                           </Text>
-                          <Text width="40%" variant="break-word">
-                            {simplifyValue(parameter)}
-                          </Text>
+                          {getValue({...parameter, type: ParamType.t_number}, "80%")}
                         </HStack>
                       </VStack>
                     ))
