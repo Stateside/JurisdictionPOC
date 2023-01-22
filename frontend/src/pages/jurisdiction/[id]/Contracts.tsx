@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';
 import ReloadIcon from '@/components/icons/reloadIcon';
 import { useJurisdictions } from '@/store/useJurisdictions';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 const Contracts = () => {
   const router = useRouter();
@@ -29,20 +30,20 @@ const Contracts = () => {
             <HStack width="100%" m="1em 0">
               <Text width="25%">{contract.name}</Text>
               <Text width="45%">{contract.address}</Text>
-              <Button width="15%"
+              <MemberOnlyButton width="15%"
                 variant="Transparent"
                 rightIcon={<ReloadIcon height={6} width={6} />}
                 onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/UpgradeContract`)}
               >
                 Replace
-              </Button>
-              <Button width="15%"
+              </MemberOnlyButton>
+              <MemberOnlyButton width="15%"
                 variant="Transparent"
                 rightIcon={<LockIcon height={6} width={6} />}
                 onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/FreezeContract`)}
               >
                 Freeze
-              </Button>
+              </MemberOnlyButton>
             </HStack>
             <Divider />
           </Box>

@@ -126,12 +126,16 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
 
     const info:JurisdictionInfo = get().infos[address]
     if (!info && provider) {
-      const instance = await get().getInstance(address, provider)
-      const name = await instance.getJurisdictionName()
-      const version = "unknown"
-      const description = "External Jurisdiction"
-      const status = JurisdictionStatus.Exists
-      get().add({address, name, version, description, status})
+      try {
+        const instance = await get().getInstance(address, provider)
+        const name = await instance.getJurisdictionName()
+        const version = "unknown"
+        const description = "External Jurisdiction"
+        const status = JurisdictionStatus.Exists
+        get().add({address, name, version, description, status})
+      } catch(e) {
+        console.log("Error loading jurisdiction", address, e)
+      }
     }
     return info
   },
@@ -173,17 +177,21 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
       list: [],
       byName: {}
     }
-    const instance = await get().getInstance(address, provider)
-    let i = await instance.iterateParameters()
-    while(await instance.isValidParameterIterator(i)){
-      const p = await instance.parameterIteratorGet(i);
-      if (p.ptype == ParamType.t_address) {
-        const a = await instance.getAddressParameter(p.name);
-        const c = {name:p.name, address:a, description:p.description}
-        newContracts.list.push(c)
-        newContracts.byName[p.name] = c
-        i = await instance.nextParameter(i)
+    try {
+      const instance = await get().getInstance(address, provider)
+      let i = await instance.iterateParameters()
+      while(await instance.isValidParameterIterator(i)){
+        const p = await instance.parameterIteratorGet(i);
+        if (p.ptype == ParamType.t_address) {
+          const a = await instance.getAddressParameter(p.name);
+          const c = {name:p.name, address:a, description:p.description}
+          newContracts.list.push(c)
+          newContracts.byName[p.name] = c
+          i = await instance.nextParameter(i)
+        }
       }
+    } catch(e) {
+      console.log("Error loading contracts for jurisdiction", address, e)
     }
 
     set({contracts: {...contracts, [address]: newContracts}})

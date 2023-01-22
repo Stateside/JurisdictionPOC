@@ -12,6 +12,7 @@ import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
 import RevisionModal from './RevisionModal';
 import { ProposalState } from '@/utils/types';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number) => {
@@ -98,6 +99,31 @@ const Proposal: NextPage = () => {
     return proposal?.status === ProposalState.Succeeded
   }, [proposal?.status])
 
+  let voteToolTip = undefined
+  if (hasVoted) 
+    voteToolTip = 'You have already voted on this proposal'
+  if (proposal?.status !== ProposalState.Active) 
+    voteToolTip = 'Voting is not currently open for this proposal'
+
+  let executeTooltip = undefined
+  switch(proposal?.status) {
+    case ProposalState.Defeated:
+      executeTooltip = 'This proposal was defeated'
+      break
+    case ProposalState.Executed:
+      executeTooltip = 'This proposal was already executed'
+      break
+    case ProposalState.Expired:
+      executeTooltip = 'This proposal has expired'
+      break
+    case ProposalState.Active:
+      executeTooltip = 'This proposal is still active'
+      break
+    case ProposalState.Canceled:
+      executeTooltip = 'This proposal was cancelled'
+      break
+  }
+ 
   return (
     <Box width="100%">
       <Head>
@@ -171,20 +197,20 @@ const Proposal: NextPage = () => {
           <HStack width="100%" paddingTop="20px" alignItems="flex-start">
             <HStack gap="20px" width="80%">
               <VStack>
-                <Button variant="Header" disabled={!canVote}>Vote YES</Button>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Vote YES</MemberOnlyButton>
                 <Text>{(proposal?.votes?.forVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <Button variant="Header" disabled={!canVote}>Vote NO</Button>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Vote NO</MemberOnlyButton>
                 <Text>{(proposal?.votes?.againstVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <Button variant="Header" disabled={!canVote}>Abstain</Button>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Abstain</MemberOnlyButton>
                 <Text>{(proposal?.votes?.abstainVotes || 0) + " Votes"}</Text>
               </VStack>
             </HStack>
             <HStack flexDirection="row-reverse" width="20%">
-              <Button variant="Header" disabled={!canExecute}>Execute</Button>
+              <MemberOnlyButton variant="Header" disabled={!canExecute} tooltip={executeTooltip}>Execute</MemberOnlyButton>
             </HStack>
           </HStack>
         </VStack>

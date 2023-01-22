@@ -119,31 +119,35 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
   fetch(`/api/proposals/get?governor=${instance.address}&chainId=${get().chainId}&id=${proposalId}`).then(r => r.json()).then(async p => {
     if (p && p.length === 1) {
       const newProposal:Partial<IProposalDetails> = p[0]
-      const votes = await getVotes(instance, proposalId)
-      const newProposalDetails = { 
-        detailsLoading: false,
-        startBlock: newProposal.startBlock,
-        deadline: newProposal.deadline,
-        proposer: newProposal.proposer,
-        version: newProposal.version,
-        status: await instance.state(proposalId),
-        description: newProposal.description,
-        votes,
-        revisions: newProposal.revisions?.map(r => ({
-          id:r.id,
-          target: r.target,
-          description: r.description,
-          name: r.name,
-          pdata: r.pdata,
-          parameters: r.parameters.map((p:any) => ({
-            name: p.name,
-            type: p.type,
-            hint: p.hint,
-            value: p.value,
-          })),
-        }))
+      try {
+        const votes = await getVotes(instance, proposalId)
+        const newProposalDetails = { 
+          detailsLoading: false,
+          startBlock: newProposal.startBlock,
+          deadline: newProposal.deadline,
+          proposer: newProposal.proposer,
+          version: newProposal.version,
+          status: await instance.state(proposalId),
+          description: newProposal.description,
+          votes,
+          revisions: newProposal.revisions?.map(r => ({
+            id:r.id,
+            target: r.target,
+            description: r.description,
+            name: r.name,
+            pdata: r.pdata,
+            parameters: r.parameters.map((p:any) => ({
+              name: p.name,
+              type: p.type,
+              hint: p.hint,
+              value: p.value,
+            })),
+          }))
+        }
+        updateProposalDetails(get, set, instance, proposalId, newProposalDetails)
+      } catch (e) {
+        console.log("Error loading proposal details", e)
       }
-      updateProposalDetails(get, set, instance, proposalId, newProposalDetails)
     }
   })
 }
@@ -168,9 +172,13 @@ const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernor
   // If we don't know the answer return undefined immediately but start querying the contract for the answer so it is available the next time this method is called
   let hasVoted = get().governors[instance.address].proposals?.[proposalId]?.whoHasVoted[account]
   if (hasVoted === undefined)
-    instance.hasVoted(proposalId, account).then(hasVoted => {
-      updateProposalDetails(get, set, instance, proposalId, { whoHasVoted: { [account]: hasVoted } })
-    })
+    try {
+      instance.hasVoted(proposalId, account).then(hasVoted => {
+        updateProposalDetails(get, set, instance, proposalId, { whoHasVoted: { [account]: hasVoted } })
+      })
+    } catch (e) {
+      console.log("Error checking if has voted", e)
+    }
 
   return hasVoted
 }
@@ -186,15 +194,20 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
   }
 
   let proposalDetails:IProposalDetails|undefined
-  if (await instance.existsProposal(proposalId))
-    proposalDetails = {
-      id: proposalId,
-      detailsLoading: false,
-      whoHasVoted: {},
-      loadDetails: async () => loadProposalDetails(get, set, instance, proposalId),
-      hasVoted: async (account:string) => hasVoted(get, set, instance, proposalId, account)
-    }
-  else
+  try {
+    if (await instance.existsProposal(proposalId))
+      proposalDetails = {
+        id: proposalId,
+        detailsLoading: false,
+        whoHasVoted: {},
+        loadDetails: async () => loadProposalDetails(get, set, instance, proposalId),
+        hasVoted: async (account:string) => hasVoted(get, set, instance, proposalId, account)
+      }
+  } catch (e) {
+    console.log("Error checking if proposal exists", e)
+  }
+
+  if (!proposalDetails)
     proposalDetails = {
       id: proposalId,
       startBlock: 0,
@@ -213,7 +226,6 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
       whoHasVoted: {},
       loadDetails: async () => {},
       hasVoted: async (account:string) => false,
-      
     }
 
   const proposalIds:string[] = [...(governorDetails.proposalIds||[]), proposalId]
@@ -233,67 +245,71 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
   // Load the proposal IDs from the governor contract
   const proposalIds:string[] = [...(governorDetails.proposalIds||[]) ]
   const proposals:ProposalMap = { ...(governorDetails.proposals||{}) }
-  const cnt = (await instance.proposalCount()).toNumber()
-  if (cnt > proposalIds.length) {
-    const createProposalDetails = (hex:string):IProposalDetails => {
-      return {
-        id: hex,
-        detailsLoading: false,
-        whoHasVoted: {},
-        loadDetails: async () => loadProposalDetails(get, set, instance, hex),
-        hasVoted: async (account:string) => hasVoted(get, set, instance, hex, account)
+  try {
+    const cnt = (await instance.proposalCount()).toNumber()
+    if (cnt > proposalIds.length) {
+      const createProposalDetails = (hex:string):IProposalDetails => {
+        return {
+          id: hex,
+          detailsLoading: false,
+          whoHasVoted: {},
+          loadDetails: async () => loadProposalDetails(get, set, instance, hex),
+          hasVoted: async (account:string) => hasVoted(get, set, instance, hex, account)
+        }
       }
-    }
-    for (let pi = 0; pi < cnt; pi++) {
-      const p = await instance.proposalAtIndex(pi)
-      const hex = p.toHexString()
+      for (let pi = 0; pi < cnt; pi++) {
+        const p = await instance.proposalAtIndex(pi)
+        const hex = p.toHexString()
+        if (!proposalIds.includes(hex)) {
+          proposalIds.push(hex)
+          proposals[hex] = createProposalDetails(hex)
+        }
+      }
+
+      // Add a sample expired proposal
+      const hex = '0x0000000000000000000000000000000000000000000000000000000000000000'
       if (!proposalIds.includes(hex)) {
         proposalIds.push(hex)
-        proposals[hex] = createProposalDetails(hex)
-      }
-    }
-
-    // Add a sample expired proposal
-    const hex = '0x0000000000000000000000000000000000000000000000000000000000000000'
-    if (!proposalIds.includes(hex)) {
-      proposalIds.push(hex)
-      proposals[hex] = { 
-        id: hex,
-        detailsLoading: false,
-        startBlock: 0,
-        deadline: 0,
-        proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        version: 0,
-        status: ProposalState.Expired,
-        description: "Sample expired proposal",
-        whoHasVoted: {},
-        votes: {
-          againstVotes: ethers.constants.Zero,
-          forVotes: ethers.constants.Zero,
-          abstainVotes: ethers.constants.Zero,
-        },
-        revisions: [{
-          id:0,
-          target: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          description: "Sample revision",
-          name: "SampleRevision",
-          pdata: "",
-          parameters: [{
-            name: "SampleParameter",
-            type: ParamType.t_string,
-            hint: "Sample parameter",
-            value: "Sample value",
+        proposals[hex] = { 
+          id: hex,
+          detailsLoading: false,
+          startBlock: 0,
+          deadline: 0,
+          proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          version: 0,
+          status: ProposalState.Expired,
+          description: "Sample expired proposal",
+          whoHasVoted: {},
+          votes: {
+            againstVotes: ethers.constants.Zero,
+            forVotes: ethers.constants.Zero,
+            abstainVotes: ethers.constants.Zero,
+          },
+          revisions: [{
+            id:0,
+            target: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            description: "Sample revision",
+            name: "SampleRevision",
+            pdata: "",
+            parameters: [{
+              name: "SampleParameter",
+              type: ParamType.t_string,
+              hint: "Sample parameter",
+              value: "Sample value",
+            }],
           }],
-        }],
-        loadDetails: async () => {},
-        hasVoted: async (account:string) => false
+          loadDetails: async () => {},
+          hasVoted: async (account:string) => false
+        }
       }
+      updateGovernorDetails(get, set, instance, { proposalIds, proposals, proposalsLoading: false, allProposalsLoaded: true })
     }
-
-    updateGovernorDetails(get, set, instance, { proposalIds, proposals, proposalsLoading: false, allProposalsLoaded: true })
-  }
-  else
+    else
+      updateGovernorDetails(get, set, instance, { proposalsLoading: false, allProposalsLoaded: true })
+  } catch (e) {
+    console.log("Error loading proposals", e)
     updateGovernorDetails(get, set, instance, { proposalsLoading: false, allProposalsLoaded: true })
+  }
 }
 
 /** Create Zustand state with collection of all likes for current user */
