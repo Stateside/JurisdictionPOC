@@ -1,6 +1,7 @@
 import { ProposalState } from '@/utils/types';
 import { Provider } from '@ethersproject/providers';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
+import { BigNumber, ethers } from 'ethers';
 import create from 'zustand'
 import { IJSCGovernor, IJSCGovernor__factory } from '../../typechain-types';
 
@@ -12,6 +13,14 @@ export interface IRevisionDetails {
   pdata: string
   parameters: IRevisionParameter[]
 }
+
+export interface IVotes {
+  againstVotes: BigNumber
+  forVotes: BigNumber
+  abstainVotes: BigNumber
+}
+
+export type WhoHasVotedMap = { [account: string]: boolean }
 
 /** 
  * Details of a proposal for a governor contract. All of these wil be loaded from our database where all proposal details are stored except for the IRevision objects
@@ -27,9 +36,14 @@ export interface IProposalDetails {
   status?: ProposalState
   revisions?: IRevisionDetails[]
   detailsLoading: boolean
+  votes?: IVotes
+  whoHasVoted: WhoHasVotedMap
 
-  /** Loads the list of revisions asynchronously. We do this as a separate step because the revisions need to be loaded one by one from the database and the target contract*/
+  /** Loads the list of revisions asynchronously. We do this as a separate step because the revisions need to be loaded one by one from the database and the target contract */
   loadDetails: () => Promise<void>
+
+  /** Returns true if the given address has voted on this proposal. Returns undefined if that information is still loading */
+  hasVoted: (account:string) => Promise<boolean|undefined>
 }
 
 export type ProposalMap = { [id: string]: IProposalDetails }
@@ -88,6 +102,11 @@ const updateProposalDetails = (get:() => IGovernorsState, set: (state:Partial<IG
   set(newState)
 }
 
+const getVotes = async (instance:IJSCGovernor, proposalId:string) => {
+  const [againstVotes, forVotes, abstainVotes ] = await instance.proposalVotes(proposalId)
+  return { againstVotes, forVotes, abstainVotes }
+}
+
 const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string) => {
   if (get().governors[instance.address].proposals?.[proposalId]?.startBlock)
     return; // Don't load again if we already have the details
@@ -100,6 +119,7 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
   fetch(`/api/proposals/get?governor=${instance.address}&chainId=${get().chainId}&id=${proposalId}`).then(r => r.json()).then(async p => {
     if (p && p.length === 1) {
       const newProposal:Partial<IProposalDetails> = p[0]
+      const votes = await getVotes(instance, proposalId)
       const newProposalDetails = { 
         detailsLoading: false,
         startBlock: newProposal.startBlock,
@@ -108,6 +128,7 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
         version: newProposal.version,
         status: await instance.state(proposalId),
         description: newProposal.description,
+        votes,
         revisions: newProposal.revisions?.map(r => ({
           id:r.id,
           target: r.target,
@@ -142,6 +163,18 @@ const updateGovernorDetails = (get:() => IGovernorsState, set: (state:Partial<IG
   set(newState)
 }
 
+const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string, account:string) => {
+  // If we know the answer return it immediately.
+  // If we don't know the answer return undefined immediately but start querying the contract for the answer so it is available the next time this method is called
+  let hasVoted = get().governors[instance.address].proposals?.[proposalId]?.whoHasVoted[account]
+  if (hasVoted === undefined)
+    instance.hasVoted(proposalId, account).then(hasVoted => {
+      updateProposalDetails(get, set, instance, proposalId, { whoHasVoted: { [account]: hasVoted } })
+    })
+
+  return hasVoted
+}
+
 /** Loads the given proposal for the given governor unless the proposals are already loading */
 const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string) => {
   const governorDetails = get().governors[instance.address]
@@ -157,7 +190,9 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
     proposalDetails = {
       id: proposalId,
       detailsLoading: false,
-      loadDetails: async () => loadProposalDetails(get, set, instance, proposalId)
+      whoHasVoted: {},
+      loadDetails: async () => loadProposalDetails(get, set, instance, proposalId),
+      hasVoted: async (account:string) => hasVoted(get, set, instance, proposalId, account)
     }
   else
     proposalDetails = {
@@ -170,7 +205,15 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
       status: ProposalState.Expired,
       revisions: [],
       detailsLoading: false,
-      loadDetails: async () => {}
+      votes: {
+        againstVotes: ethers.constants.Zero,
+        forVotes: ethers.constants.Zero,
+        abstainVotes: ethers.constants.Zero,
+      },
+      whoHasVoted: {},
+      loadDetails: async () => {},
+      hasVoted: async (account:string) => false,
+      
     }
 
   const proposalIds:string[] = [...(governorDetails.proposalIds||[]), proposalId]
@@ -192,11 +235,13 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
   const proposals:ProposalMap = { ...(governorDetails.proposals||{}) }
   const cnt = (await instance.proposalCount()).toNumber()
   if (cnt > proposalIds.length) {
-    const createProposalDetails = (hex:string) => {
+    const createProposalDetails = (hex:string):IProposalDetails => {
       return {
         id: hex,
         detailsLoading: false,
-        loadDetails: async () => loadProposalDetails(get, set, instance, hex)
+        whoHasVoted: {},
+        loadDetails: async () => loadProposalDetails(get, set, instance, hex),
+        hasVoted: async (account:string) => hasVoted(get, set, instance, hex, account)
       }
     }
     for (let pi = 0; pi < cnt; pi++) {
@@ -221,6 +266,12 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
         version: 0,
         status: ProposalState.Expired,
         description: "Sample expired proposal",
+        whoHasVoted: {},
+        votes: {
+          againstVotes: ethers.constants.Zero,
+          forVotes: ethers.constants.Zero,
+          abstainVotes: ethers.constants.Zero,
+        },
         revisions: [{
           id:0,
           target: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -234,7 +285,8 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
             value: "Sample value",
           }],
         }],
-        loadDetails: async () => {}
+        loadDetails: async () => {},
+        hasVoted: async (account:string) => false
       }
     }
 

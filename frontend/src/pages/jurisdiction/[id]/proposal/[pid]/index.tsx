@@ -6,11 +6,12 @@ import FavoriteProposalButton from '@/components/FavoriteProposalButton';
 import { ArrowBackIcon } from '@chakra-ui/icons';
 import { useWeb3React } from '@web3-react/core';
 import { useJurisdictions } from '@/store/useJurisdictions';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
 import RevisionModal from './RevisionModal';
+import { ProposalState } from '@/utils/types';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number) => {
@@ -43,7 +44,7 @@ const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='
 
 const Proposal: NextPage = () => {
   const router = useRouter();
-  const { library } = useWeb3React();
+  const { account, library } = useWeb3React();
 
   // First load jurisdiction, then contracts, then Governor, then proposal...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
@@ -60,6 +61,14 @@ const Proposal: NextPage = () => {
   const loadGovernorDetails = useGovernors(state => state.get)
   const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
   const proposal = jscGovernorDetails?.proposals && jscGovernorDetails?.proposals[proposalId]
+
+  const [hasVoted, setHasVoted] = useState(true)
+
+  useEffect(() => {
+    if (account && proposal) {
+      proposal.hasVoted(account).then(v => v!==undefined && setHasVoted(v))
+    }
+  }, [account, proposal])
 
   // Determine current block number
   useEffect(() => { 
@@ -80,6 +89,14 @@ const Proposal: NextPage = () => {
 
   // Load proposal details
   useEffect(() => { proposal && proposal.loadDetails() }, [proposal]);
+
+  const canVote = useMemo(() => {
+    return proposal?.status === ProposalState.Active && !hasVoted
+  }, [proposal?.status, hasVoted])
+
+  const canExecute = useMemo(() => {
+    return proposal?.status === ProposalState.Succeeded
+  }, [proposal?.status])
 
   return (
     <Box width="100%">
@@ -154,20 +171,20 @@ const Proposal: NextPage = () => {
           <HStack width="100%" paddingTop="20px" alignItems="flex-start">
             <HStack gap="20px" width="80%">
               <VStack>
-                <Button variant="Header">Vote YES</Button>
-                <Text>1 Votes</Text>
+                <Button variant="Header" disabled={!canVote}>Vote YES</Button>
+                <Text>{(proposal?.votes?.forVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <Button variant="Header">Vote NO</Button>
-                <Text>2 Votes</Text>
+                <Button variant="Header" disabled={!canVote}>Vote NO</Button>
+                <Text>{(proposal?.votes?.againstVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <Button variant="Header">Abstain</Button>
-                <Text>3 Votes</Text>
+                <Button variant="Header" disabled={!canVote}>Abstain</Button>
+                <Text>{(proposal?.votes?.abstainVotes || 0) + " Votes"}</Text>
               </VStack>
             </HStack>
             <HStack flexDirection="row-reverse" width="20%">
-              <Button variant="Header">Execute</Button>
+              <Button variant="Header" disabled={!canExecute}>Execute</Button>
             </HStack>
           </HStack>
         </VStack>

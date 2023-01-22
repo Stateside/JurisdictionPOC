@@ -161,7 +161,7 @@ const RevisionModal = ({
                           <Text width="20%">
                             {capitalizeString(parameter.name)}:
                           </Text>
-                          {getValue({...parameter, type: ParamType.t_number}, "80%")}
+                          {getValue(parameter, "80%")}
                         </HStack>
                       </VStack>
                     ))

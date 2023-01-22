@@ -28,6 +28,12 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
     const p = sampleProposals[i];
     await jscGovernor.propose(p.revs, p.description, p.version)
     proposalMap[p.proposalHash.toHexString().toLowerCase()] = p
+    
+    const voters = Object.keys(p.whoHasVoted)
+    for (let j = 0; j < voters.length; j++) {
+      const voter = voters[j]
+      await jscGovernor.connect(ethers.provider.getSigner(voter)).castVote(p.proposalHash, p.whoHasVoted[voter])
+    }
   }
 
   log(`development_JSCGovernor Initialized with the following tokens:`)
