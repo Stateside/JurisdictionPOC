@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    NODE_ENV: production
+    NODE_ENV: development
   parameter-store:
     DB_HOST: DB_HOST
     DB_PORT: DB_PORT
@@ -25,13 +25,8 @@ phases:
   pre_build:
     on-failure: ABORT
     commands:
-      - cd jsc
-      - yarn install --pure-lockfile --silent
-      - cd ..
-      - cd frontend
-      - yarn install --pure-lockfile --silent
       - |+
-        cat << END > .env
+        cat << END > frontend/.env
         NEXT_PUBLIC_CHAIN_ID=41506
         NEXT_PUBLIC_CHAIN_NAME=Jurisdictions Testnet
         NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-geth.stateside.agency
@@ -47,6 +42,11 @@ phases:
         DB_PASSWORD = ${DB_PASSWORD}
         DB_DATABASE = ${DB_DATABASE}
         END
+      - cd jsc
+      - yarn install --pure-lockfile --silent
+      - cd ..
+      - cd frontend
+      - yarn install --pure-lockfile --silent
       - cd ..
   build:
     on-failure: ABORT
@@ -58,6 +58,8 @@ phases:
       - yarn update-all
       - yarn build
       - cd ..
+  post_build:
+    commands:
 artifacts:
   files:
     - "**/*"
