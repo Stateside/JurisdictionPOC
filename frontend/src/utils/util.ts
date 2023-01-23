@@ -5,8 +5,8 @@ export const getProvider = () => { return window.localStorage.getItem("provider"
 
 export const refreshState = () => { window.localStorage.setItem("provider", 'undefined')};
 
-export const getAccountShortName = (account:any): string => {
-    return account !== '' ? `${account.slice(0, 6)}...${account.slice(-2)}` : '';
+export const getAccountShortName = (account:any, pre:number=6, post:number = 2): string => {
+    return account !== '' ? `${account.slice(0, pre)}...${account.slice(-post)}` : '';
 }
 
 export const env = (varName:string, val:string|undefined) =>{

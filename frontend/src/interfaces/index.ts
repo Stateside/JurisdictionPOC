@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 export interface MenuItemInterface {
   label: string;
   url: string;
@@ -37,6 +36,7 @@ export interface TagInterface {
   justify?: string;
   caret?: JSX.Element|null;
   information?: string;
+  disableHover?: boolean;
   children: JSX.Element | JSX.Element[];
 }
 

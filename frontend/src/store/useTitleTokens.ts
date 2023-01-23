@@ -107,130 +107,135 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
       
     let details:ITokenContractDetails = get().tokenContracts[jurisdictionAddress]
     if (!details) {
-      const jscJurisdiction = IJSCJurisdiction__factory.connect(jurisdictionAddress, provider);
-      const titleTokenContractAddress = await jscJurisdiction.getAddressParameter("jsc.contracts.tokens")
-      const instance = IJSCTitleToken__factory.connect(titleTokenContractAddress, provider)
-      const tokenCount = (await instance.totalSupply()).toNumber()
-      const tokenName = await instance.name()
-      const tokenSymbol = await instance.symbol()
-      const tokenBaseURI = (await instance.baseTokenURI()) + "<titleId>"
-      const registryAccount = await instance.getAddressParameter("jsc.accounts.registry")
-      const maintainerAccount = await instance.getAddressParameter("jsc.accounts.maintainer")
-      details = {
-        address: titleTokenContractAddress, 
-        instance, 
-        tokenCount,
-        tokenName,
-        tokenSymbol,
-        tokenBaseURI,
-        registryAccount,
-        maintainerAccount,
-        tokens: { pages: {}, tokensById: {} },
-        tokensLoading: false,
+      try {
+        const jscJurisdiction = IJSCJurisdiction__factory.connect(jurisdictionAddress, provider);
+        const titleTokenContractAddress = await jscJurisdiction.getAddressParameter("jsc.contracts.tokens")
+        const instance = IJSCTitleToken__factory.connect(titleTokenContractAddress, provider)
+        const tokenCount = (await instance.totalSupply()).toNumber()
+        const tokenName = await instance.name()
+        const tokenSymbol = await instance.symbol()
+        const tokenBaseURI = (await instance.baseTokenURI()) + "<titleId>"
+        const registryAccount = await instance.getAddressParameter("jsc.accounts.registry")
+        const maintainerAccount = await instance.getAddressParameter("jsc.accounts.maintainer")
+        details = {
+          address: titleTokenContractAddress, 
+          instance, 
+          tokenCount,
+          tokenName,
+          tokenSymbol,
+          tokenBaseURI,
+          registryAccount,
+          maintainerAccount,
+          tokens: { pages: {}, tokensById: {} },
+          tokensLoading: false,
 
-        loadToken: async (tokenId:string) => {},
+          loadToken: async (tokenId:string) => {},
 
-        loadPage: async (page:number) => {
-          if (get().tokenContracts[jurisdictionAddress].tokensLoading || get().tokenContracts[jurisdictionAddress].tokens.pages[page])
-            return
+          loadPage: async (page:number) => {
+            if (get().tokenContracts[jurisdictionAddress].tokensLoading || get().tokenContracts[jurisdictionAddress].tokens.pages[page])
+              return
 
-          // Set the loading flag
-          set((state) => ({ 
-            tokenContracts: { ...state.tokenContracts, 
-              [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
-                tokensLoading: true 
-              } 
-            }
-          }))
-
-          try {
-            const newIds: string[] = []
-            const tokensById = { ...get().tokenContracts[jurisdictionAddress].tokens.tokensById }
-            const newTokensById = { } as TokenIdMap
-
-            // First just load the tokenIds
-            const startIndex = get().pageSize*(page-1)
-            const endIndex = Math.min(startIndex + get().pageSize, get().tokenContracts[jurisdictionAddress].tokenCount)
-            for (let ti = startIndex; ti < endIndex; ti++) {
-                const tokenId = await (await instance.tokenAtIndex(ti)).toHexString()
-                const titleId = await instance.tokenToTitleId(tokenId)
-                newIds.push(tokenId)
-                if (!tokensById[tokenId])
-                  newTokensById[tokenId] = { tokenId, titleId, loading: true } as Token
-            }
-
-            // Add tokenIds and new incomplete Token objects but leave loading flag in true
+            // Set the loading flag
             set((state) => ({ 
               tokenContracts: { ...state.tokenContracts, 
                 [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
-                  tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
-                    pages: { ...state.tokenContracts[jurisdictionAddress].tokens.pages, 
-                      [page]: newIds 
-                    },
-                    tokensById: { ...state.tokenContracts[jurisdictionAddress].tokens.tokensById, 
-                      ...newTokensById
-                    }
-                  } 
+                  tokensLoading: true 
                 } 
               }
             }))
 
-            // Now load the details for these tokens
-            newIds.forEach(async (tokenId) => {
-              const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenId)
+            try {
+              const newIds: string[] = []
+              const tokensById = { ...get().tokenContracts[jurisdictionAddress].tokens.tokensById }
+              const newTokensById = { } as TokenIdMap
+
+              // First just load the tokenIds
+              const startIndex = get().pageSize*(page-1)
+              const endIndex = Math.min(startIndex + get().pageSize, get().tokenContracts[jurisdictionAddress].tokenCount)
+              for (let ti = startIndex; ti < endIndex; ti++) {
+                  const tokenId = await (await instance.tokenAtIndex(ti)).toHexString()
+                  const titleId = await instance.tokenToTitleId(tokenId)
+                  newIds.push(tokenId)
+                  if (!tokensById[tokenId])
+                    newTokensById[tokenId] = { tokenId, titleId, loading: true } as Token
+              }
+
+              // Add tokenIds and new incomplete Token objects but leave loading flag in true
               set((state) => ({ 
                 tokenContracts: { ...state.tokenContracts, 
                   [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
                     tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
-                      tokensById: {
-                        ...state.tokenContracts[jurisdictionAddress].tokens.tokensById,
-                        [tokenId]: {
-                          ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[tokenId],
-                          tokenId,
-                          owner,
-                          offersToBuy,
-                          offersToSell,
-                          frozen,
-                          url,
-                          loading: false
-                        }
+                      pages: { ...state.tokenContracts[jurisdictionAddress].tokens.pages, 
+                        [page]: newIds 
+                      },
+                      tokensById: { ...state.tokenContracts[jurisdictionAddress].tokens.tokensById, 
+                        ...newTokensById
                       }
                     } 
                   } 
-                } 
+                }
               }))
-            })
-          }
-          catch (err) {
-            console.log(err)
-          }
-          set((state) => ({ 
-            tokenContracts: { ...state.tokenContracts, 
-              [jurisdictionAddress]: { 
-                ...state.tokenContracts[jurisdictionAddress], 
-                tokensLoading: false 
-              } 
-            }
-          }))
-      },
-      }
-      set({ tokenContracts: { ...get().tokenContracts, [jurisdictionAddress]: details } })
 
-      instance.getBoolParameter("jsc.nft.enabled").then((enabled) => {
-        set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], nftSupport: enabled } } }))
-      })
-      instance.getNumberParameter("jsc.fees.registry").then((fee) => {
-        set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], registryFee: fee } } }))
-      })
-      instance.getNumberParameter("jsc.fees.maintainer").then((fee) => {
-        set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], maintainerFee: fee } } }))
-      })
-      instance.getAddressParameter("jsc.accounts.registry").then((acc) => {
-        set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], registryAccount: acc } } }))
-      })
-      instance.getAddressParameter("jsc.accounts.maintainer").then((acc) => {
-        set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], maintainerAccount: acc } } }))
-      })
+              // Now load the details for these tokens
+              newIds.forEach(async (tokenId) => {
+                const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenId)
+                set((state) => ({ 
+                  tokenContracts: { ...state.tokenContracts, 
+                    [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+                      tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
+                        tokensById: {
+                          ...state.tokenContracts[jurisdictionAddress].tokens.tokensById,
+                          [tokenId]: {
+                            ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[tokenId],
+                            tokenId,
+                            owner,
+                            offersToBuy,
+                            offersToSell,
+                            frozen,
+                            url,
+                            loading: false
+                          }
+                        }
+                      } 
+                    } 
+                  } 
+                }))
+              })
+            }
+            catch (err) {
+              console.log(err)
+            }
+            set((state) => ({ 
+              tokenContracts: { ...state.tokenContracts, 
+                [jurisdictionAddress]: { 
+                  ...state.tokenContracts[jurisdictionAddress], 
+                  tokensLoading: false 
+                } 
+              }
+            }))
+        },
+        }
+        set({ tokenContracts: { ...get().tokenContracts, [jurisdictionAddress]: details } })
+
+        instance.getBoolParameter("jsc.nft.enabled").then((enabled) => {
+          set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], nftSupport: enabled } } }))
+        })
+        instance.getNumberParameter("jsc.fees.registry").then((fee) => {
+          set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], registryFee: fee } } }))
+        })
+        instance.getNumberParameter("jsc.fees.maintainer").then((fee) => {
+          set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], maintainerFee: fee } } }))
+        })
+        instance.getAddressParameter("jsc.accounts.registry").then((acc) => {
+          set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], registryAccount: acc } } }))
+        })
+        instance.getAddressParameter("jsc.accounts.maintainer").then((acc) => {
+          set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], maintainerAccount: acc } } }))
+        })
+      }
+      catch (err) {
+        console.log("Error loading token contract", err)
+      }
     }
     return details
   },

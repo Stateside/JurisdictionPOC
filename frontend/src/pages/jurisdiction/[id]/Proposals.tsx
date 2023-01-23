@@ -8,6 +8,7 @@ import { IProposalDetails, useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { ProposalState } from '@/utils/types';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java' />
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
@@ -117,7 +118,7 @@ const Proposals = () => {
       {!jscGovernorDetails?.proposalsLoading && (!proposalIds || proposalIds.length===0) && <Text>No proposals found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
-        <Button variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create`)}>Create New Proposal</Button>
+        <MemberOnlyButton variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create`)}>Create New Proposal</MemberOnlyButton>
       </Box>
     </>
   );
