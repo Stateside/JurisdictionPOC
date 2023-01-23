@@ -80,6 +80,21 @@ You can change the webserver and the prefix for the contracts that are used to c
 yarn hardhat save-proposals --website https://jurisdictions.stateside.agency --prefix development --network localhost
 ```
 
+# How to prepopulate the staging Blockchain network (a n instance of Geth running in dev mode) with the develpment contracts and sample data
+
+1. Deploy the contracts to Geth using the following command. This will deploy new instances of the contrats and initialize them with a sample jurisdiction and data:
+```bash
+yarn hardhat deploy --network staging --tags development
+```
+2. Save the deployed contracts to the database using the following command:
+```bash
+yarn hardhat save-contracts --network staging
+```
+3. Save the sample proposals to the database using the following command:
+```bash
+yarn hardhat save-proposals --network staging --prefix development
+```
+
 # Tasks
 
 - Create UUPSUpgradeable

@@ -51,17 +51,21 @@ const loadRevisions = async (address:string, instance:IJSCRevisioned, get:() => 
 
   set({ revisions: { ...get().revisions, [address]: { ...get().revisions[address], revisionsLoading:true } } })
   const revs:IRevision[] = []
-  let rIter = await instance.iterateRevisions()
-  while(await instance.isValidRevisionIterator(rIter)){
-    const r = await instance.revisionIteratorGet(rIter)
-    revs.push({
-      name: r.name,
-      description: r.description,
-      paramNames: r.paramNames,
-      paramTypes: r.paramTypes,
-      paramHints: r.paramHints
-    })
-    rIter = await instance.nextRevision(rIter)
+  try {
+    let rIter = await instance.iterateRevisions()
+    while(await instance.isValidRevisionIterator(rIter)){
+      const r = await instance.revisionIteratorGet(rIter)
+      revs.push({
+        name: r.name,
+        description: r.description,
+        paramNames: r.paramNames,
+        paramTypes: r.paramTypes,
+        paramHints: r.paramHints
+      })
+      rIter = await instance.nextRevision(rIter)
+    }
+  } catch (e) {
+    console.error(`Error loading revisions for ${address}`, e)
   }
   set({ revisions: { 
       ...get().revisions, 

@@ -6,6 +6,7 @@ import Paginator from '../Paginator';
 import { useRouter } from 'next/router';
 import { useTitleTokens } from '@/store/useTitleTokens';
 import { Link } from '@/components/Link';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 const Properties = () => {
   const { library } = useWeb3React();
@@ -69,7 +70,7 @@ const Properties = () => {
       {(!tokenIds || tokenIds.length === 0) && <Text>No properties found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
-        <Button variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.tokens/AddToken`)}>Add New Property Tokens</Button>
+        <MemberOnlyButton variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.tokens/AddToken`)}>Add New Property Tokens</MemberOnlyButton>
       </Box>
     </>
   );

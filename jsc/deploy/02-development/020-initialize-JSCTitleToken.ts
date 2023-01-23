@@ -11,7 +11,8 @@ const payETH = (eth:number):ethers.PayableOverrides => ({ value: eth2WEI(eth) })
 
 const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
-  const { deployments } = hre
+  const { deployments, network } = hre
+  const chainId = network.config.chainId || 0;
   const { log, get } = deployments
   const jscJurisdictionContract = await get("development_JSCJurisdiction")
   const jscGovernorContract = await get("development_JSCGovernor")
@@ -21,14 +22,14 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   log("Initializing development_JSCTitleTokenTest...")
   const jscTitleToken:tc.JSCTitleTokenTest = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
   await jscTitleToken.init(
-    "Development Tokens",
-    "DEV",
-    "http://localhost:3000/api/token/",
+    "Our Title Token",
+    "OTT",
+    chainId === 41506 ? "https://jurisdictions.stateside.agency/api/token/" : "http://localhost:3000/api/token/",
     jscJurisdictionContract.address,
-    zeroAddress,
-    0,
-    zeroAddress,
-    0,
+    accountsByName["Mary"].address,
+    ethers.utils.parseUnits("0.1", "gwei"),
+    accountsByName["Sophia"].address,
+    ethers.utils.parseUnits("0.2", "gwei"),
     true,
     zeroAddress
   )

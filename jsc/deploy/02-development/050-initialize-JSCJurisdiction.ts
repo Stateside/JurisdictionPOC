@@ -18,7 +18,7 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
   log("Initializing development_JSCJurisdiction...")
   const jscJurisdiction:tc.IJSCJurisdiction = await ethers.getContractAt("JSCJurisdiction", jscJurisdictionContract.address)
   await jscJurisdiction.init(
-    "DevJurisdiction",
+    "Our Jurisdiction",
     ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
     [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address],
     [

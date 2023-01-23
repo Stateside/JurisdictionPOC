@@ -27,6 +27,7 @@
       "@/connectors/*": ["connectors/*"],
       "@/hooks/*": ["hooks/*"],
       "@/model/*": ["model/*"],
+      "@/typechain-types/*": ["typechain-types/*"],      
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

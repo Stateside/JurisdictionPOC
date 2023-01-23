@@ -20,6 +20,7 @@ import Properties from './Properties';
 import Config from './Config';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
+import { useMemo } from 'react';
 
 const Jurisdiction: NextPage = () => {
   const router = useRouter();
@@ -31,6 +32,19 @@ const Jurisdiction: NextPage = () => {
     borderColor: 'inherit',
     borderBottomColor: '#fff',
   };
+
+  // Store the selected tab number in the URL to keep it in the history
+  const tabNumber = useMemo(() => {
+    try {
+      if (router.query.tab)
+        return parseInt(router.query.tab as string);
+    } catch (e) {}
+    return 1
+  }, [router.query.tab])
+
+  const setTabNumber = (tab: number) => {
+    router.push(`/jurisdiction/${jurisdictionAddress}?tab=${tab}`);
+  } 
 
   return (
     <Box width="100%">
@@ -44,7 +58,7 @@ const Jurisdiction: NextPage = () => {
       <Heading whiteSpace="pre-line" variant="80" my={4} marginBottom="48px">
         {name}
       </Heading>
-      <Tabs variant="enclosed" borderColor="#D3D3D3">
+      <Tabs variant="enclosed" borderColor="#D3D3D3" isManual={true} index={tabNumber-1} onChange={t => setTabNumber(t+1)}>
         <TabList>
           <Tab fontWeight="bold" color="#A8A8A8" _selected={tabSelectedStyles}>
             Configuration

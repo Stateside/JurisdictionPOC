@@ -7,6 +7,7 @@ export default function Tag({
   caret,
   justify,
   information,
+  disableHover,
   ...props
 }: TagInterface) {
   const tags: ObjectHashInterface = {
@@ -18,7 +19,7 @@ export default function Tag({
 
   return (
     <Flex
-      _hover={{
+      _hover={disableHover ? {} : {
         // padding: '6px 8px 8px 8px',
         // border: '3px solid',
         boxShadow:
@@ -62,7 +63,7 @@ export default function Tag({
         </Box>
       )}
       <Flex position="absolute" right="2">
-        {caret || <ChevronRightIcon />}
+        {caret===undefined ? <ChevronRightIcon /> : caret}
       </Flex>
     </Flex>
   );

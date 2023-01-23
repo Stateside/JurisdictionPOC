@@ -6,11 +6,13 @@ import FavoriteProposalButton from '@/components/FavoriteProposalButton';
 import { ArrowBackIcon } from '@chakra-ui/icons';
 import { useWeb3React } from '@web3-react/core';
 import { useJurisdictions } from '@/store/useJurisdictions';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
 import RevisionModal from './RevisionModal';
+import { ProposalState } from '@/utils/types';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number) => {
@@ -43,7 +45,7 @@ const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='
 
 const Proposal: NextPage = () => {
   const router = useRouter();
-  const { library } = useWeb3React();
+  const { account, library } = useWeb3React();
 
   // First load jurisdiction, then contracts, then Governor, then proposal...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
@@ -60,6 +62,14 @@ const Proposal: NextPage = () => {
   const loadGovernorDetails = useGovernors(state => state.get)
   const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
   const proposal = jscGovernorDetails?.proposals && jscGovernorDetails?.proposals[proposalId]
+
+  const [hasVoted, setHasVoted] = useState(true)
+
+  useEffect(() => {
+    if (account && proposal) {
+      proposal.hasVoted(account).then(v => v!==undefined && setHasVoted(v))
+    }
+  }, [account, proposal])
 
   // Determine current block number
   useEffect(() => { 
@@ -81,6 +91,39 @@ const Proposal: NextPage = () => {
   // Load proposal details
   useEffect(() => { proposal && proposal.loadDetails() }, [proposal]);
 
+  const canVote = useMemo(() => {
+    return proposal?.status === ProposalState.Active && !hasVoted
+  }, [proposal?.status, hasVoted])
+
+  const canExecute = useMemo(() => {
+    return proposal?.status === ProposalState.Succeeded
+  }, [proposal?.status])
+
+  let voteToolTip = undefined
+  if (hasVoted) 
+    voteToolTip = 'You have already voted on this proposal'
+  if (proposal?.status !== ProposalState.Active) 
+    voteToolTip = 'Voting is not currently open for this proposal'
+
+  let executeTooltip = undefined
+  switch(proposal?.status) {
+    case ProposalState.Defeated:
+      executeTooltip = 'This proposal was defeated'
+      break
+    case ProposalState.Executed:
+      executeTooltip = 'This proposal was already executed'
+      break
+    case ProposalState.Expired:
+      executeTooltip = 'This proposal has expired'
+      break
+    case ProposalState.Active:
+      executeTooltip = 'This proposal is still active'
+      break
+    case ProposalState.Canceled:
+      executeTooltip = 'This proposal was cancelled'
+      break
+  }
+ 
   return (
     <Box width="100%">
       <Head>
@@ -154,20 +197,20 @@ const Proposal: NextPage = () => {
           <HStack width="100%" paddingTop="20px" alignItems="flex-start">
             <HStack gap="20px" width="80%">
               <VStack>
-                <Button variant="Header">Vote YES</Button>
-                <Text>1 Votes</Text>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Vote YES</MemberOnlyButton>
+                <Text>{(proposal?.votes?.forVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <Button variant="Header">Vote NO</Button>
-                <Text>2 Votes</Text>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Vote NO</MemberOnlyButton>
+                <Text>{(proposal?.votes?.againstVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <Button variant="Header">Abstain</Button>
-                <Text>3 Votes</Text>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Abstain</MemberOnlyButton>
+                <Text>{(proposal?.votes?.abstainVotes || 0) + " Votes"}</Text>
               </VStack>
             </HStack>
             <HStack flexDirection="row-reverse" width="20%">
-              <Button variant="Header">Execute</Button>
+              <MemberOnlyButton variant="Header" disabled={!canExecute} tooltip={executeTooltip}>Execute</MemberOnlyButton>
             </HStack>
           </HStack>
         </VStack>

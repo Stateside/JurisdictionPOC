@@ -7,6 +7,7 @@ import EditIcon from '@/components/icons/editIcon';
 import { ITokenContractDetails, useTitleTokens } from '@/store/useTitleTokens';
 import { useAliases } from '@/store/useAliases';
 import { BigNumber, ethers } from 'ethers';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1em" color='brand.java'/>
 type AccountGetter = (details:ITokenContractDetails) => string|undefined
@@ -49,7 +50,7 @@ const Config = () => {
   }, [tokensContractDetails, aliasesByAddress])
 
   const ChangeButton = useCallback((props: { proposal?: string }) => (
-    <Button width="8rem" fontSize="1rem" variant="Transparent" p="0" 
+    <MemberOnlyButton width="8rem" fontSize="1rem" variant="Transparent" p="0" 
       onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${props.proposal}`)}
     >
       <Box display="flex" flexDirection="row" alignItems="center">
@@ -58,7 +59,7 @@ const Config = () => {
           <EditIcon height={6} width={6} />
         </Box>
       </Box>
-    </Button>
+    </MemberOnlyButton>
   ),[jurisdictionAddress]);
     
   return (

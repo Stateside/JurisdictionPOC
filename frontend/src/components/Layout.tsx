@@ -11,6 +11,7 @@ import { useJurisdictions } from '@/store/useJurisdictions'
 import { useGovernors } from '@/store/useGovernors'
 import { useRevisions } from '@/store/useRevisions'
 import { useTitleTokens } from '@/store/useTitleTokens'
+import { useCabinets } from '@/store/useCabinets'
 
 type Props = {
   children: ReactNode
@@ -43,6 +44,10 @@ export function Layout(props: Props) {
   // Initialize the useRevisions hook, then reload when chainId changes
   const tokens = useTitleTokens();
   useEffect(() => { chainId && tokens.init(chainId, 12) }, [chainId])
+
+  // Initialize the useCabinets hook, then reload when chainId changes
+  const cabinets = useCabinets();
+  useEffect(() => { chainId && cabinets.init(chainId) }, [chainId])
 
   return (
     <Box

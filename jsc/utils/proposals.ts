@@ -1,6 +1,6 @@
 import * as tc from "../typechain-types"
 import { BigNumber } from "ethers";
-import { ParamType, ParamType2SolidyType } from "./types";
+import { ParamType, ParamType2SolidyType, VoteType } from "./types";
 
 /*
    These are some utilities to make working with proposals easier in unit tests and development. Since
@@ -34,17 +34,20 @@ export type PreparedRevision = {
     parameters: IPreparedParameter[]
 }
 
+export type WhoHasVotedMap = { [account: string]: VoteType }
+
 export type PreparedProposal = {
     revs: PreparedRevision[],
     description: string,
     descriptionHash: string,
     proposalHash: BigNumber,
     version: number,
+    whoHasVoted: WhoHasVotedMap,
     incrementVersion: () => void
 }
 
 /** Calculates the description and proposal hashes */
-export const prepareProposal = async (ethers:any, governor:tc.IJSCGovernor, revs: PreparedRevision[], description: string, version:number):Promise<PreparedProposal> => {
+export const prepareProposal = async (ethers:any, governor:tc.IJSCGovernor, revs: PreparedRevision[], description: string, version:number, whoHasVoted: WhoHasVotedMap):Promise<PreparedProposal> => {
     const descriptionHash:string = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description))
     revs.forEach(r => {
         r.pdata = ethers.utils.defaultAbiCoder.encode(
@@ -58,6 +61,7 @@ export const prepareProposal = async (ethers:any, governor:tc.IJSCGovernor, revs
         descriptionHash,
         proposalHash: BigNumber.from(0),
         version:-1,
+        whoHasVoted,
         incrementVersion: async function() {
             this.version = this.version === -1 ? version : this.version+1
             this.proposalHash = await governor.hashProposal(revs, descriptionHash, this.version)

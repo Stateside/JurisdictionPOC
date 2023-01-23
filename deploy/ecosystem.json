@@ -1,9 +1,5 @@
 {
   "apps" : [{
-    "name": "jsc",
-    "cwd": "/opt/jurisdictions/jsc",
-    "script": "yarn staging"
-  }, {
     "name": "frontend",
     "cwd": "/opt/jurisdictions/frontend",
     "script": "yarn start"
