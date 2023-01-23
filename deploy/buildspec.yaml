@@ -18,7 +18,7 @@ phases:
   install:
     on-failure: ABORT
     runtime-versions:
-      nodejs: 16.19.0
+      nodejs: 16
     commands:
       - npm install -g yarn
       - yarn -v
@@ -30,19 +30,6 @@ phases:
       - cd ..
       - cd frontend
       - yarn install --pure-lockfile --silent
-      - cd ..
-  build:
-    on-failure: ABORT
-    commands:
-      - cd jsc
-      - yarn hardhat compile
-      - cd ..
-      - cd frontend
-      - yarn update-all
-      - yarn build
-      - cd ..
-  post_build:
-    commands:
       - |+
         cat << END > frontend/.env
         NEXT_PUBLIC_CHAIN_ID=41506
@@ -60,6 +47,17 @@ phases:
         DB_PASSWORD = ${DB_PASSWORD}
         DB_DATABASE = ${DB_DATABASE}
         END
+      - cd ..
+  build:
+    on-failure: ABORT
+    commands:
+      - cd jsc
+      - yarn hardhat compile
+      - cd ..
+      - cd frontend
+      - yarn update-all
+      - yarn build
+      - cd ..
 artifacts:
   files:
     - "**/*"
