@@ -31,7 +31,7 @@ phases:
       - cd frontend
       - yarn install --pure-lockfile --silent
       - |+
-        cat << END > frontend/.env
+        cat << END > .env
         NEXT_PUBLIC_CHAIN_ID=41506
         NEXT_PUBLIC_CHAIN_NAME=Jurisdictions Testnet
         NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-geth.stateside.agency
