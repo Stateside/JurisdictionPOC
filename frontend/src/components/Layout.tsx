@@ -54,17 +54,21 @@ export function Layout(props: Props) {
       minHeight="100vh"
       backgroundImage='url("/imgs/jurisdictionBackgroundShapes.svg")'
       backgroundPosition={{
-        base: 'bottom',
-        sm: 'bottom',
-        md: 'right',
-        lg: 'right',
+        base: 'bottom right',
+
       }}
-      backgroundSize={{ base: '100%', sm: '100%', md: '80%', lg: '65%' }}
+      backgroundSize={
+        { 
+          base: 'auto', 
+
+      }}
+      maxW="1140px"
       backgroundRepeat="no-repeat"
       margin="0 auto"
       padding={{ base: '0 20px', sm: '0 20px', md: '0 30px', lg: '0 45px' }}
     >
       <Container
+        
         display="flex"
         flexDirection="column"
         position="relative"
