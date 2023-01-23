@@ -10,8 +10,8 @@ fi
 
 echo "Installing Node LTS 16"
 . ~/.nvm/nvm.sh
-nvm install 16.19.0
-nvm use 16.19.0
+nvm install 16.15.1
+nvm use 16.15.1
 
 echo "Installing global required packages"
 npm install -g yarn pm2
