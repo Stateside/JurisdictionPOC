@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    NODE_ENV: development
+    NODE_ENV: production
   parameter-store:
     DB_HOST: DB_HOST
     DB_PORT: DB_PORT
@@ -18,7 +18,7 @@ phases:
   install:
     on-failure: ABORT
     runtime-versions:
-      nodejs: 16
+      nodejs: 16.19.0
     commands:
       - npm install -g yarn
       - yarn -v
