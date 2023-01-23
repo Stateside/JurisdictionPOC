@@ -1,5 +1,5 @@
 import { db } from '../../../db/db'
-import { DeployedContract } from "../../../db/entities/DeployedContract";
+import { DeployedContract } from 'db/entities/DeployedContract';
 import { NextApiRequest, NextApiResponse } from "next";
 
 /** Saves a new jurisdiction to the database */
@@ -9,6 +9,7 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
     name: item.name,
     version: item.version,
     interface: item.interface,
+    jurisdiction: item.jurisdiction,
     address: item.address,
     frontend: item.frontend,
     description: item.description,

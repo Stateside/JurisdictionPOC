@@ -73,6 +73,14 @@ Parameters:
     Description: The availability zone where the database and EC2 instance will be located
     Type: String
     Default: us-east-1d
+  GethDownloadURL:
+    Description: The URL for downloading the Geth client and tools
+    Type: String
+    Default: https://gethstore.blob.core.windows.net/builds/geth-alltools-linux-amd64-1.10.26-e5eb32ac.tar.gz
+  ChainId:
+    Description: The ChainId to use for the Geth private development network
+    Type: String
+    Default: 41506
 
 Resources:
 
@@ -96,7 +104,7 @@ Resources:
       - Key: Name
         Value: Master Database for Jurisdictions App
 
-# Server
+# NextJS Server
   WebServerInstanceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -235,7 +243,215 @@ Resources:
               /opt/aws/bin/cfn-init -v --stack '${AWS::StackName}' --resource WebServerInstance --configsets InstallAndConfigure --region '${AWS::Region}' --role ${WebServerInstanceRole}
               #Signal Cloud Formation that this EC2 instance is ready
               /opt/aws/bin/cfn-signal -e $? --stack '${AWS::StackName}' --resource WebServerInstance  --region '${AWS::Region}'
-  
+
+# Geth Server
+  GethServerInstanceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-GethServerInstanceRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonCognitoPowerUser
+        - arn:aws:iam::aws:policy/AmazonESCognitoAccess
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-pipeline-service-role-policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "autoscaling:Describe*"
+                  - "cloudformation:Describe*"
+                  - "cloudformation:GetTemplate"
+                  - "s3:*"
+                  - "codeartifact:*"
+                Resource: "*"
+  GethServerInstanceRoleInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      InstanceProfileName: !Sub ${AWS::StackName}-GethServerInstanceProfile
+      Path: /
+      Roles:
+        - !Ref GethServerInstanceRole
+  GethServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP access via port 3000
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8545
+          ToPort: 8545
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  GethServerInstance:
+    Type: 'AWS::EC2::Instance'
+    Metadata:
+      Comment1: Install Geth Ethereum client for testing the Jurisdictions frontend
+      Comment2: Install Cloud Formation helper scripts - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallBasicsAndGeth:
+            - InstallBasics
+            - InstallGeth
+        InstallBasics:
+          packages:
+            yum:
+              ruby: []
+              wget: []
+              tar: []
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |+
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+              mode: "000400"
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |+
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.GethServerInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack '${AWS::StackName}' --resource GethServerInstance --configsets InstallBasicsAndGeth --region '${AWS::Region}' --role ${GethServerInstanceRole}
+                runas=root
+            /etc/systemd/system/geth.service:
+              content: !Sub |+
+                [Unit]
+                Description=Geth instance to run on startup
+                After=network.target
+
+                [Service]
+                Type=simple
+                ExecStart=/usr/bin/geth --dev --identity "JurisdictionsStage" --networkid ${ChainId} --http --http.addr 0.0.0.0 --http.vhosts "*" --http.api eth,web3,net --http.corsdomain "*" --datadir /root/.ethereum --password /root/.ethereum/Password
+                [Install]
+                WantedBy=default.target
+              mode: "000400"
+              owner: root
+              group: root
+            /root/.ethereum/genesis.json:
+              content: !Sub |+
+                {
+                  "config": {
+                    "chainId": ${ChainId},
+                    "homesteadBlock": 0,
+                    "eip150Block": 0,
+                    "eip155Block": 0,
+                    "eip158Block": 0,
+                    "byzantiumBlock": 0,
+                    "constantinopleBlock": 0,
+                    "petersburgBlock": 0,
+                    "istanbulBlock": 0,
+                    "berlinBlock": 0,
+                    "clique": {
+                      "period": 0,
+                      "epoch": 30000
+                    }
+                  },
+                  "coinbase": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+                  "difficulty": "1",
+                  "gasLimit": "11500000",
+                  "extradata": "0x0000000000000000000000000000000000000000000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                  "alloc": {
+                    "f39fd6e51aad88f6f4ce6ab8827279cfffb92266": { "balance": "1000000000000000000000000" },
+                    "70997970c51812dc3a010c7d01b50e0d17dc79c8": { "balance": "10000000000000000000000" },
+                    "3c44cdddb6a900fa2b585dd299e03d12fa4293bc": { "balance": "10000000000000000000000" },
+                    "90f79bf6eb2c4f870365e785982e1f101e93b906": { "balance": "10000000000000000000000" },
+                    "15d34aaf54267db7d7c367839aaf71a00a2c6a65": { "balance": "10000000000000000000000" },
+                    "9965507d1a55bcc2695c58ba16fb37d819b0a4dc": { "balance": "10000000000000000000000" },
+                    "976ea74026e726554db657fa54763abd0c3a0aa9": { "balance": "10000000000000000000000" },
+                    "14dc79964da2c08b23698b3d3cc7ca32193d9955": { "balance": "10000000000000000000000" },
+                    "23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f": { "balance": "10000000000000000000000" },
+                    "a0ee7a142d267c1f36714e4a8f75612f20a79720": { "balance": "10000000000000000000000" },
+                    "bcd4042de499d14e55001ccbb24a551f3b954096": { "balance": "10000000000000000000000" },
+                    "71be63f3384f5fb98995898a86b02fb2426c5788": { "balance": "10000000000000000000000" },
+                    "fabb0ac9d68b0b445fb7357272ff202c5651694a": { "balance": "10000000000000000000000" },
+                    "1cbd3b2770909d4e10f157cabc84c7264073c9ec": { "balance": "10000000000000000000000" },
+                    "df3e18d64bc6a983f673ab319ccae4f1a57c7097": { "balance": "10000000000000000000000" },
+                    "cd3b766ccdd6ae721141f452c550ca635964ce71": { "balance": "10000000000000000000000" },
+                    "2546bcd3c84621e976d8185a91a922ae77ecec30": { "balance": "10000000000000000000000" },
+                    "bda5747bfd65f08deb54cb465eb87d40e51b197e": { "balance": "10000000000000000000000" },
+                    "dd2fd4581271e230360230f9337d5c0430bf44c0": { "balance": "10000000000000000000000" },
+                    "8626f6940e2eb28930efb4cef49b2d1f2c9c1199": { "balance": "10000000000000000000000" }
+                  }
+                }
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: "true"
+                ensureRunning: "true"
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+        InstallGeth:
+          commands:
+            01_Download_And_Install_Geth:
+              cwd: /root
+              command: !Sub |+
+                wget '${GethDownloadURL}'
+                tar -xf *.tar.gz
+                rm -f *.tar.gz
+                cp */geth /usr/bin
+                cp */clef /usr/bin
+                                
+                # Auto start geth on system boot
+
+                # Set up dev env for Geth
+
+                # Password for keystore
+                echo password > .ethereum/Password
+
+                # Create private key for Clique signer (Oscar)
+                echo ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 > .ethereum/signer.key
+                geth account import --password .ethereum/Password .ethereum/signer.key
+
+                # Initialize new private network with genesis.json
+                geth --dev --identity "JurisdictionsStage" --networkid ${ChainId} --password /root/.ethereum/Password --datadir /root/.ethereum init /root/.ethereum/genesis.json
+
+                # Start Geth automatically on reboot
+                systemctl enable geth
+                systemctl start geth
+
+      IamInstanceProfile: !Sub ${GethServerInstanceRoleInstanceProfile.Arn}
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - !Ref GethServerSecurityGroup
+      IamInstanceProfile: !Sub ${GethServerInstanceRoleInstanceProfile}
+      KeyName: !Ref KeyName
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 64
+      Tags:
+        - Key: "Type"
+          Value: "GethServer"
+        - Key: "Name"
+          Value: "Geth"
+      UserData:
+        Fn::Base64:
+          !Sub |+
+              #!/bin/bash -x
+              #Run CloudFormation helper script to perform initialization that is described in the metadata for this instance
+              /opt/aws/bin/cfn-init -v --stack '${AWS::StackName}' --resource GethServerInstance --configsets InstallBasicsAndGeth --region '${AWS::Region}' --role ${GethServerInstanceRole}
+
 #CodeDeploy
   CodePipelineRole:
     Type: "AWS::IAM::Role"
@@ -561,13 +777,10 @@ Resources:
           - POST
           - PATCH
           - DELETE
-          Compress: true
           TargetOriginId: WebOrigin
-          ForwardedValues:
-            QueryString: true
-            Cookies:
-              Forward: none
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
           ViewerProtocolPolicy: redirect-to-https
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3 # AllViewer https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html
         CacheBehaviors:
         - PathPattern: api/*
           AllowedMethods:
@@ -579,32 +792,28 @@ Resources:
           - POST
           - PUT
           TargetOriginId: WebOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
           ViewerProtocolPolicy: redirect-to-https
-          Compress: true
-          MinTTL: 0
-          DefaultTTL: 0
-          MaxTTL: 0
-          ForwardedValues:
-            QueryString: true
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3 # AllViewer https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html
         PriceClass: PriceClass_100
         ViewerCertificate:
           AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
-          MinimumProtocolVersion: TLSv1.2_2019
+          MinimumProtocolVersion: TLSv1.2_2021
           SslSupportMethod: sni-only
-  HardhatCloudFront:
+  GethCloudFront:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
       DistributionConfig:
         Origins:
-        - DomainName: !Sub ${WebServerInstance.PublicDnsName}
-          Id: WebOrigin
+        - DomainName: !Sub ${GethServerInstance.PublicDnsName}
+          Id: GethRPCOrigin
           CustomOriginConfig:
             HTTPPort: 8545
             OriginProtocolPolicy: http-only
         Enabled: true
-        Comment: CDN for Hardhat blockchain
+        Comment: CDN for Geth dev mode blockchain
         Aliases:
-        - jurisdictions-hh.stateside.agency
+        - jurisdictions-geth.stateside.agency
         DefaultCacheBehavior:
           AllowedMethods:
           - HEAD
@@ -614,13 +823,14 @@ Resources:
           - POST
           - PATCH
           - DELETE
-          TargetOriginId: WebOrigin
+          TargetOriginId: GethRPCOrigin
           CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
           ViewerProtocolPolicy: redirect-to-https
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3 # AllViewer https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html
         PriceClass: PriceClass_100
         ViewerCertificate:
           AcmCertificateArn: !Ref SSLCloudFrontCertificateARN
-          MinimumProtocolVersion: TLSv1.2_2019
+          MinimumProtocolVersion: TLSv1.2_2021
           SslSupportMethod: sni-only
 
 # Parameter Store

@@ -4,7 +4,7 @@ import { createSampleProposals } from "../utils/sample-proposals"
 import * as tc from "../typechain-types"
 import { PreparedProposal } from "../utils/proposals"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
-import { ParamType, ParamType2SolidyType } from '../utils/types';
+import { ParamType } from '../utils/types';
 
 declare global {
   const ethers: any

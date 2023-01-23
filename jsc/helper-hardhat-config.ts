@@ -10,6 +10,7 @@ export interface networkConfigInfo {
 export const networkConfig: networkConfigInfo = {
   localhost: {},
   hardhat: {},
+  staging: {},
   kovan: {
     blockConfirmations: 6,
   },
