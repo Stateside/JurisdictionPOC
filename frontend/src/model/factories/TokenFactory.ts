@@ -71,7 +71,7 @@ export const buildPropertyInfo = (
     },
     {
       infoLabel: 'URI:',
-      infoValue: `/jurisdiction/${jurisdictionAddress}/token${thisPropertyInfo.url}`,
+      infoValue: titleInfo.url || '',
     },
     {
       infoLabel: 'Location:',
