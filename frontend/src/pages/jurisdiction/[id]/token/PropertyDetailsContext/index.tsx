@@ -1,6 +1,6 @@
 import { createContext, useState, ReactNode, ChangeEvent, useEffect } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
-import { deepCopy, getAccountShortName } from 'utils/util';
+import { deepCopy, getAccountShortName } from '@/utils/util';
 import { ObjectHashInterface } from '@/interfaces/index';
 import { useRouter } from 'next/router';
 import {
@@ -15,17 +15,18 @@ import {
   ActionNames,
   OfferInfo,
   PropertyMapInfo,
-} from '../../../utils/property-types';
+} from '@/utils/property-types';
 import {
-  buildTokenInfoByTitleId,
-  buildActiveOffersInfoByTitleId,
-  buildLocationString,
-  getTokenByTitleId,
+  buildActiveOffersInfo,
+  buildPropertyInfo
 } from '@/model/factories/TokenFactory';
 import {getTokenInformationByTitleId} from '@/model/services/DataService';
-import useJSCTitleToken from '@/hooks/useJSCTitleToken';
 import useJSCJurisdiction from '@/hooks/useJSCJurisdiction';
 import {jscJurisdictionInfo} from '@/utils/types';
+import { useWeb3React } from '@web3-react/core';
+import { useTitleTokens } from '@/store/useTitleTokens';
+import { useAliases } from '@/store/useAliases';
+import { Token } from '@/store/useTitleTokens';
 
 interface PropertyDetailsContextProps {
   text?: string;
@@ -107,12 +108,18 @@ const PropertyDetailsProvider = function ({
 }: PropertyDetailsContextProps) {
   
   const { query } = useRouter();
-  const { slug = [] } = query;
-  const titleId = slug[0] || '';
-  const address = slug[1] || '';
+  const { id = '', titleId = '' } = query;
 
-  const {tokens, tokenJurisdictionAddress, loading} = useJSCTitleToken(address);
+  const tid = titleId as string;
+  const jurisdictionAddress = id as string;
+
+  const { library } = useWeb3React();
+  const isTokensInitialized = useTitleTokens(state => state.isInitialized);
+  const getTokensContractDetails = useTitleTokens(state => state.get);
+  const tokenInfo:Token = useTitleTokens(state => state.tokenContracts[jurisdictionAddress]?.tokens.tokensById[tid]);
+  const { aliasesByAddress } = useAliases();
   const [getJurisdictionInfo] = useJSCJurisdiction();
+
   // ----------------------------------------------------------------
   // Context states
   // ----------------------------------------------------------------
@@ -131,6 +138,7 @@ const PropertyDetailsProvider = function ({
   const [selectedOfferIndex, setSelectedOfferIndex] = useState<number | null>(
     null
   );
+  const [tkInfo, setTkInfo] = useState<Token | undefined>(undefined);
   const [jscJurisdictionInfo, setJscJurisdictionInfo] = useState<jscJurisdictionInfo | undefined>(undefined);
   const [dataReady, setDataReady] = useState<boolean>(false);
 
@@ -327,48 +335,46 @@ const PropertyDetailsProvider = function ({
   // Effects
   // ----------------------------------------------------------------
   useEffect(() => {
-    if (!loading) {
-      // console.log('propertyTiming: loading done!');
-      console.timeLog('propertyTiming', 'Property context: has finished loading');
-      const loadData = async () => {
-        const jurisdictionInfo = await getJurisdictionInfo(tokenJurisdictionAddress);
-
-        setJscJurisdictionInfo(jurisdictionInfo);
-      }
-
-      loadData().catch((err) => {
-        console.log(err);
-      });
+    if (isTokensInitialized()) {
+      const loadDetails = async () => {
+        const { loadToken } = await getTokensContractDetails(jurisdictionAddress, library);
+        const jurisdictionInfo = await getJurisdictionInfo(jurisdictionAddress);
+      
+        setJscJurisdictionInfo(jurisdictionInfo);  
+        loadToken(tid);
+      }      
+      loadDetails();
     }
-  }, [loading]);
+  }, [jurisdictionAddress, library, isTokensInitialized()]);
 
   useEffect(() => {
-    if (!loading && jscJurisdictionInfo) {
-      console.timeLog('propertyTiming', 'Property context: has finished loading and jscJurisdictionInfo is ready');
-      const thisPropertyInfo = getTokenInformationByTitleId(titleId);
-      // const cartesianMapInfo = buildLocationString(thisPropertyInfo.locationData, 'cartesian');
+    if (tokenInfo) {
+      setTkInfo(tokenInfo);
+    }
+  }, [tokenInfo]);
+
+  useEffect(() => {
+    if (tkInfo) {
+      const thisPropertyInfo = getTokenInformationByTitleId(tid);
+      const pInfo = buildPropertyInfo(tkInfo, thisPropertyInfo,  jurisdictionAddress, jscJurisdictionInfo, aliasesByAddress[tokenInfo?.owner?.toLowerCase() || '']?.alias);
       const {lat, lon} = thisPropertyInfo.locationData;
       const mapInfo = {
         lat, lon
       };
-      
-      const tokenInfo = buildTokenInfoByTitleId(tokens, jscJurisdictionInfo, thisPropertyInfo, titleId);
-      const buyOffersInfo = buildActiveOffersInfoByTitleId(
-        tokens,
-        titleId,
+      const buyOffersInfo = buildActiveOffersInfo(
+        tkInfo,
         'buy'
       );
 
-      setTokenId(getTokenByTitleId(tokens, titleId)?.tokenId || '');
-      setPropertyId(titleId);
-      setPropertyInfo(tokenInfo);
+      setTokenId(tkInfo.tokenId);
+      setPropertyId(tid);
+      setPropertyInfo(pInfo);
       setActiveOffers(buyOffersInfo);
-      setPropertyImages(thisPropertyInfo.images);
       setPropertyMapInfo(mapInfo);
+      setPropertyImages(thisPropertyInfo.images);
       setDataReady(true);
-      console.timeEnd('propertyTiming');
     }
-  }, [loading, jscJurisdictionInfo]);
+  }, [tkInfo]);
 
   return (
     <PropertyDetailsContext.Provider
@@ -376,7 +382,7 @@ const PropertyDetailsProvider = function ({
         dataReady,
         actionName,
         tokenId,
-        jurisdiction: tokenJurisdictionAddress,
+        jurisdiction: jurisdictionAddress,
         propertyId,
         propertyInfo,
         propertyImages,

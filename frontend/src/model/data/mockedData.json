@@ -42,6 +42,866 @@
           "alt": "some image alt description"
         }
       ]
+    },
+    {
+      "titleId": "title-2",
+      "ownerInfo": {
+        "id": "0123456789-02",
+        "fname": "Sara",
+        "lname": "Parker"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-2/",
+      "locationData": {
+        "address": "Pg. de Gràcia, 17, 08007 Barcelona",
+        "gpsCoordinates": {
+          "n": {
+            "d": 41,
+            "m": 23,
+            "s": 23.7
+          },
+          "s": {},
+          "e": {
+            "d":2,
+            "m": 10,
+            "s": 1.7
+          },
+          "w": {}
+        },
+        "lat": 41.389926835327614,
+        "lon": 2.167135487703919
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-3",
+      "ownerInfo": {
+        "id": "0123456789-02",
+        "fname": "Sara",
+        "lname": "Parker"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-3/",
+      "locationData": {
+        "address": "Googleplex, Amphitheatre Parkway, Mountain View, California, EE. UU.",
+        "gpsCoordinates": {
+          "n": {
+            "d": 37,
+            "m": 25,
+            "s": 20.4168
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 122,
+            "m": 5,
+            "s": 3.732
+          }
+        },
+        "lat": 37.4223384815328,
+        "lon": -122.08436965942383
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-4",
+      "ownerInfo": {
+        "id": "0123456789-03",
+        "fname": "Jane",
+        "lname": "Doe"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-4/",
+      "locationData": {
+        "address": "Apple Park",
+        "gpsCoordinates": {
+          "n": {
+            "d": 37,
+            "m": 25,
+            "s": 5.6394
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 122,
+            "m": 0,
+            "s": 32.472
+          }
+        },
+        "lat": 37.3349,
+        "lon": -122.00902
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-5",
+      "ownerInfo": {
+        "id": "0123456789-03",
+        "fname": "Jane",
+        "lname": "Doe"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-5/",
+      "locationData": {
+        "address": "966 Broadway",
+        "gpsCoordinates": {
+          "n": {
+            "d": 40,
+            "m": 44,
+            "s": 27.9
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 73,
+            "m": 59,
+            "s": 19.9
+          }
+        },
+        "lat": 40.74107602670487,
+        "lon": -73.98886051223886
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-6",
+      "ownerInfo": {
+        "id": "0123456789-04",
+        "fname": "Bryan",
+        "lname": "Gonzales"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-6/",
+      "locationData": {
+        "address": "Calle 5 de febrero, Mexico City, Mexico",
+        "gpsCoordinates": {
+          "n": {
+            "d": 19,
+            "m": 25,
+            "s": 53.8
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 99,
+            "m": 8,
+            "s": 4.3
+          }
+        },
+        "lat": 19.43161510532414,
+        "lon": -99.13453112210273
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-7",
+      "ownerInfo": {
+        "id": "0123456789-04",
+        "fname": "Bryan",
+        "lname": "Gonzales"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-7/",
+      "locationData": {
+        "address": "unnamed road, San Jose, Costa Rica",
+        "gpsCoordinates": {
+          "n": {
+            "d": 9,
+            "m": 56,
+            "s": 22.9
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 84,
+            "m": 8,
+            "s": 41.7
+          }
+        },
+        "lat": 9.939686192335659,
+        "lon": -84.14491603266808
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-8",
+      "ownerInfo": {
+        "id": "0123456789-04",
+        "fname": "Bryan",
+        "lname": "Gonzales"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-8/",
+      "locationData": {
+        "address": "1810 Broadway Blvd SE, Albuquerque, NM 87102, Estados Unidos",
+        "gpsCoordinates": {
+          "n": {
+            "d": 35,
+            "m": 3,
+            "s": 54.9
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 106,
+            "m": 38,
+            "s": 42.2
+          }
+        },
+        "lat": 35.06523631213406,
+        "lon": -106.64506076055581
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-9",
+      "ownerInfo": {
+        "id": "0123456789-05",
+        "fname": "Rich",
+        "lname": "Geere"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-9/",
+      "locationData": {
+        "address": "Exuma, Bahamas",
+        "gpsCoordinates": {
+          "n": {
+            "d": 23,
+            "m": 37,
+            "s": 56.3
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 75,
+            "m": 55,
+            "s": 1.7
+          }
+        },
+        "lat": 23.632307009222853,
+        "lon": -75.9171413823595
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-10",
+      "ownerInfo": {
+        "id": "0123456789-05",
+        "fname": "Rich",
+        "lname": "Geere"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-10/",
+      "locationData": {
+        "address": "Exuma, Bahamas",
+        "gpsCoordinates": {
+          "n": {
+            "d": 23,
+            "m": 37,
+            "s": 56.3
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 75,
+            "m": 55,
+            "s": 1.7
+          }
+        },
+        "lat": 23.632307009222853,
+        "lon": -75.9171413823595
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-11",
+      "ownerInfo": {
+        "id": "0123456789-05",
+        "fname": "Rich",
+        "lname": "Geere"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-11/",
+      "locationData": {
+        "address": "Pristine Bay, Honduras",
+        "gpsCoordinates": {
+          "n": {
+            "d": 16,
+            "m": 22,
+            "s": 23.0
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 86,
+            "m": 27,
+            "s": 36.9
+          }
+        },
+        "lat": 16.373066084261122,
+        "lon": -86.46024221684006
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-12",
+      "ownerInfo": {
+        "id": "0123456789-05",
+        "fname": "Rich",
+        "lname": "Geere"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-12/",
+      "locationData": {
+        "address": "Av. Corrientes 1166, C1043AAY CABA, Argentina",
+        "gpsCoordinates": {
+          "n": {
+            "d": 34,
+            "m": 36,
+            "s": 14.5
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 58,
+            "m": 22,
+            "s": 59.5
+          }
+        },
+        "lat": -34.604013536967166,
+        "lon": -58.38318595443976
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-13",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-13/",
+      "locationData": {
+        "address": "FR9F+9R8 Elliðaey, Iceland",
+        "gpsCoordinates": {
+          "n": {
+            "d": 63,
+            "m": 28,
+            "s": 6.3
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 20,
+            "m": 10,
+            "s": 31.5
+          }
+        },
+        "lat": 63.46840716850248,
+        "lon": -20.175421316697307
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-14",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-14/",
+      "locationData": {
+        "address": "C. de Cadarso, 28008 Madrid",
+        "gpsCoordinates": {
+          "n": {
+            "d": 40,
+            "m": 25,
+            "s": 19.4
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 3,
+            "m": 42,
+            "s": 55.6
+          }
+        },
+        "lat": 40.42206635438914,
+        "lon": -3.7154360861135225
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-15",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-15/",
+      "locationData": {
+        "address": "Via Papa Sergio I, 8, 90142 Palermo PA, Italy",
+        "gpsCoordinates": {
+          "n": {
+            "d": 38,
+            "m": 8,
+            "s": 49.0
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 13,
+            "m": 22,
+            "s": 12.8
+          }
+        },
+        "lat": 38.14694919249673,
+        "lon": 13.370207709408175
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-16",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-16/",
+      "locationData": {
+        "address": "245-247 Baker St, London NW1 6XE, UK",
+        "gpsCoordinates": {
+          "n": {
+            "d": 51,
+            "m": 31,
+            "s": 25.5
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 0,
+            "m": 9,
+            "s": 30.7
+          }
+        },
+        "lat": 51.523760143250875,
+        "lon": -0.158531505417136
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-17",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-17/",
+      "locationData": {
+        "address": "In den Ministergärten 10, 10117 Berlin, Germany",
+        "gpsCoordinates": {
+          "n": {
+            "d": 52,
+            "m": 30,
+            "s": 45.0
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 13,
+            "m": 22,
+            "s": 39.5
+          }
+        },
+        "lat": 52.51249035219583,
+        "lon": 13.377634214198661
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-18",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-18/",
+      "locationData": {
+        "address": "South Korea, Seoul, Gangnam-gu, Samseong-dong, 142 18번지 5층",
+        "gpsCoordinates": {
+          "n": {
+            "d": 37,
+            "m": 30,
+            "s": 23.9
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 127,
+            "m": 3,
+            "s": 6.0
+          }
+        },
+        "lat": 37.50662944996621,
+        "lon": 127.0516665597954
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-19",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-19/",
+      "locationData": {
+        "address": "Millers Point NSW 2000, Australia",
+        "gpsCoordinates": {
+          "n": {
+            "d": 33,
+            "m": 51,
+            "s": 38.2
+          },
+          "s": {},
+          "e": {},
+          "w": {
+            "d": 151,
+            "m": 12,
+            "s": 16.7
+          }
+        },
+        "lat": -33.86061346702456,
+        "lon": 151.20464577280953
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-20",
+      "ownerInfo": {
+        "id": "0123456789-06",
+        "fname": "Alex",
+        "lname": "Dumas"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-20/",
+      "locationData": {
+        "address": "3 Bd Saint-Michel, 75005 Paris, France",
+        "gpsCoordinates": {
+          "n": {
+            "d": 48,
+            "m": 51,
+            "s": 9.8
+          },
+          "s": {},
+          "e": {
+            "d": 2,
+            "m": 20,
+            "s": 39.5
+          },
+          "w": {}
+        },
+        "lat": 48.852732048617526,
+        "lon": 2.344297462850479
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
+    },
+    {
+      "titleId": "title-21",
+      "ownerInfo": {
+        "id": "0123456789-07",
+        "fname": "Peter",
+        "lname": "Parker"
+      },
+      "propertyDescription": "Lorem ipsum dolor sit amet consectetur. Eget bibendum non aliquet magna tincidunt elementum. Malesuada vestibulum neque nulla tristique diam sed bibendum nulla vel.",
+      "url": "/title-21/",
+      "locationData": {
+        "address": "Ornos 846 00, Greece",
+        "gpsCoordinates": {
+          "n": {
+            "d": 37,
+            "m": 25,
+            "s": 35.6
+          },
+          "s": {},
+          "e": {
+            "d": 25,
+            "m": 19,
+            "s": 25.8
+          },
+          "w": {}
+        },
+        "lat": 37.4265427761131,
+        "lon": 25.323836556104606
+      },
+      "images": [
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        },
+        {
+          "src": "https://picsum.photos/297/198",
+          "alt": "some image alt description"
+        }
+      ]
     }
   ]
 }
