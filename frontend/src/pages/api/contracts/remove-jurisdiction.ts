@@ -5,11 +5,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 /** Removes a jurisdiction and all related contracts and favourites from the database */
 const removeJurisdiction = async (req: NextApiRequest, res: NextApiResponse) => {
   const { address } = req.body;
-  const contractsRepo = (await db()).getRepository(DeployedContract)
+  const contractsRepo = (await db()).getRepository<DeployedContract>(DeployedContract.name)
   try {
     await contractsRepo.createQueryBuilder()
       .delete()
-      .from(DeployedContract)
+      .from<DeployedContract>(DeployedContract.name)
       .where("jurisdiction = :address", { address })
       .execute();
   } catch (err) {

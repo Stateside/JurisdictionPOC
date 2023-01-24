@@ -10,11 +10,11 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
     address: i.address
   }))
 
-  const aliasesRepo = (await db()).getRepository(Alias)
+  const aliasesRepo = (await db()).getRepository<Alias>(Alias.name)
   try {
     await aliasesRepo.createQueryBuilder()
       .insert()
-      .into(Alias)
+      .into<Alias>(Alias.name)
       .values(newItems)
       .orUpdate(["alias"]) // Overwrite alias if the address already exists
       .execute();

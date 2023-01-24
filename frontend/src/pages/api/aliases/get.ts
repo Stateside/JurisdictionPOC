@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 /** Gets all known account address aliases from the database */
 const get = async (req: NextApiRequest, res: NextApiResponse) => {
-  const aliasesRepo = (await db()).getRepository(Alias)
+  const aliasesRepo = (await db()).getRepository<Alias>(Alias.name)
   let aliases:Alias[] = []
 
   try {

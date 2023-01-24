@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 /** Loads all proposal details for the given contract or chainId from the database */
 const get = async (req: NextApiRequest, res: NextApiResponse) => {
-  const proposalRepo = (await db()).getRepository(Proposal)
+  const proposalRepo = (await db()).getRepository<Proposal>(Proposal.name)
   let proposals:Proposal[] = []
 
   let filter:any = {}
