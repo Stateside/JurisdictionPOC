@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 /** Gets all the given owner's likes from the database */
 const get = async (req: NextApiRequest, res: NextApiResponse) => {
-  const likesRepo = (await db()).getRepository(Like)
+  const likesRepo = (await db()).getRepository<Like>(Like.name)
   let likes:Like[] = []
 
   let filter:any = {}

@@ -1,13 +1,13 @@
 import { db } from '../../../db/db'
 import { Proposal } from "../../../db/entities/Proposal";
 import { NextApiRequest, NextApiResponse } from "next";
-import { IProposal, ParamType } from 'db/interfaces/IProposal';
+import { IProposal, ParamType } from '../../../db/interfaces/IProposal';
 
 /** Saves a new proposal to the database */
 const save = async (req: NextApiRequest, res: NextApiResponse) => {
   let savedProposal:Proposal|undefined = undefined
   try {
-    const proposalRepo = (await db()).getRepository(Proposal)
+    const proposalRepo = (await db()).getRepository<Proposal>(Proposal.name)
     const proposals = req.body.map((p:IProposal) => ({
       id: p.id,
       startBlock: p.startBlock,

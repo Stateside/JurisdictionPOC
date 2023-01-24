@@ -16,7 +16,7 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
     chainId: item.chainId
   })
 
-  const contractsRepo = (await db()).getRepository(DeployedContract)
+  const contractsRepo = (await db()).getRepository<DeployedContract>(DeployedContract.name)
   let savedContract:DeployedContract|undefined = undefined
   try {
     savedContract = await contractsRepo.save(newItem)

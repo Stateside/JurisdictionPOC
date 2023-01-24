@@ -15,11 +15,11 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
     chainId: likeData.chainId
   })
 
-  const likesRepo = (await db()).getRepository(Like)
+  const likesRepo = (await db()).getRepository<Like>(Like.name)
   try {
     await likesRepo.createQueryBuilder()
       .insert()
-      .into(Like)
+      .into<Like>(Like.name)
       .values([newLike])
       .execute();
   } catch (err) {

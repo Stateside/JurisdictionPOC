@@ -34,7 +34,7 @@ const mergeArtifacts = async (jurisdictions:DeployedContract[]) => {
 
 /** Gets all known contract addresses from the database */
 const get = async (req: NextApiRequest, res: NextApiResponse) => {
-  const contractsRepo = (await db()).getRepository(DeployedContract)
+  const contractsRepo = (await db()).getRepository<DeployedContract>(DeployedContract.name)
   let jurisdictions:DeployedContract[] = []
 
   let filter:any = {}

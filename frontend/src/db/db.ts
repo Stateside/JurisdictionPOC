@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { DataSource, DataSourceOptions } from "typeorm"
-import { DeployedContract } from './entities/DeployedContract';
 import * as dotenv from 'dotenv'
+import { DeployedContract } from './entities/DeployedContract';
 import { Alias } from './entities/Alias';
 import { Like } from './entities/Like';
 import { Proposal } from './entities/Proposal';
@@ -33,9 +33,15 @@ const dbconfig:DataSourceOptions = {
 
 export const datasource:DataSource = new DataSource(dbconfig)
 
-const connection = datasource.initialize()
 export const db = async ():Promise<DataSource> => {
-  return await connection
+  // Save datasource in global context so that we don't have to reconnect to the database for every request
+  const globals:any = global
+  if (globals.jsc === undefined)
+    globals.jsc = {}
+
+  if (globals.jsc.datasource === undefined)  {
+    console.log("Connecting to database " + database)
+    globals.jsc.datasource = new DataSource(dbconfig).initialize()
+  }
+  return await globals.jsc.datasource
 }
-
-
