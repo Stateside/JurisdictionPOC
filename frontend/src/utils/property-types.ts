@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import { ChangeEvent, ReactNode } from 'react';
 
 export type PropertyImage = {

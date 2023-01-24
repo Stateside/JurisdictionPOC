@@ -241,6 +241,63 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
   },
 }))
 
+const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSCTitleToken,tokenIdAsHex: string, set: any, titleId?: string ) => {
+  const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenIdAsHex);
+
+  set((state: ITitleTokensState) => ({ 
+    tokenContracts: { ...state.tokenContracts, 
+      [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+        tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
+          tokensById: {
+            ...state.tokenContracts[jurisdictionAddress].tokens.tokensById,
+            [tokenIdAsHex]: {
+              ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[tokenIdAsHex],
+              tokenId: tokenIdAsHex,
+              owner,
+              offersToBuy,
+              offersToSell,
+              frozen,
+              url,
+              loading: false
+            }
+          }
+        } 
+      } 
+    } 
+  }));
+
+  if (titleId) {
+    set((state: ITitleTokensState) => {
+      const tokensById = {
+        ... state.tokenContracts[jurisdictionAddress].tokens.tokensById,
+        [titleId]: {
+          ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[titleId],
+          tokenId: tokenIdAsHex,
+          owner,
+          offersToBuy,
+          offersToSell,
+          frozen,
+          url,
+          titleId,
+          loading: false
+        }
+      };
+
+      return { 
+        tokenContracts: { ...state.tokenContracts, 
+          [jurisdictionAddress]: { 
+            ...state.tokenContracts[jurisdictionAddress], 
+            tokens: {
+              tokensById,
+              pages: state.tokenContracts[jurisdictionAddress].tokens.pages
+            }
+          } 
+        }
+      };
+    });
+  }
+}
+
 const getTokenData = async (jscTitleToken: IJSCTitleToken, token: string) => {
   const owner = await jscTitleToken.ownerOf(token)
   const url = await jscTitleToken.tokenURI(token)
