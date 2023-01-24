@@ -19,7 +19,7 @@ const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRi
 const MissingCaret = () => <SmallCloseIcon marginRight=".5em" color="brand.coralRed" />
 
 type LikeURLCreator = (itemId:string, jurisdiction:string) => string
-const TokenURLCreator:LikeURLCreator = (titleId:string, jurisdiction:string) => `/0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9/token/${titleId}/` // should be ${jurisdiction} but component not finished
+const TokenURLCreator:LikeURLCreator = (titleId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/token/${titleId}/` // should be ${jurisdiction} but component not finished
 const ProposalURLCreator:LikeURLCreator = (proposalId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/proposal/${proposalId}`
 
 type Sortable = { createdAt?:Date }

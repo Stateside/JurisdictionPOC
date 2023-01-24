@@ -59,7 +59,7 @@ const Properties = () => {
         {tokenIds.map(tokenId => {
           const titleId = tokensById?.[tokenId]?.titleId || tokenId 
           return (
-            <Link href={`/jurisdiction/0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9/token/${titleId}/`} variant={'15/20'} key={titleId}>
+            <Link href={`/jurisdiction/${jurisdictionAddress}/token/${titleId}/`} variant={'15/20'} key={titleId}>
               <Tag><Text>{titleId}</Text></Tag>
             </Link>
           );
