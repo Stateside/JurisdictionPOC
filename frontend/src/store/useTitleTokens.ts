@@ -129,7 +129,34 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
           tokens: { pages: {}, tokensById: {} },
           tokensLoading: false,
 
-          loadToken: async (tokenId:string) => {},
+          loadToken: async (titleId:string) => {
+            // Set the loading flag
+            set((state) => ({ 
+              tokenContracts: { ...state.tokenContracts, 
+                [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+                  tokensLoading: true 
+                } 
+              }
+            }));
+  
+            try {
+              const tokenId = await instance.titleToTokenId(titleId);
+              const tokenIdAsHex = tokenId.toHexString();
+  
+              await updateStateTitlesById(jurisdictionAddress,instance,tokenIdAsHex,set, titleId);
+            } catch (error) {
+              console.log(error);
+            }
+  
+            set((state) => ({ 
+              tokenContracts: { ...state.tokenContracts, 
+                [jurisdictionAddress]: { 
+                  ...state.tokenContracts[jurisdictionAddress], 
+                  tokensLoading: false 
+                } 
+              }
+            }));
+          },
 
           loadPage: async (page:number) => {
             if (get().tokenContracts[jurisdictionAddress].tokensLoading || get().tokenContracts[jurisdictionAddress].tokens.pages[page])
@@ -178,28 +205,7 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
 
               // Now load the details for these tokens
               newIds.forEach(async (tokenId) => {
-                const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenId)
-                set((state) => ({ 
-                  tokenContracts: { ...state.tokenContracts, 
-                    [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
-                      tokens: { ...state.tokenContracts[jurisdictionAddress].tokens, 
-                        tokensById: {
-                          ...state.tokenContracts[jurisdictionAddress].tokens.tokensById,
-                          [tokenId]: {
-                            ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[tokenId],
-                            tokenId,
-                            owner,
-                            offersToBuy,
-                            offersToSell,
-                            frozen,
-                            url,
-                            loading: false
-                          }
-                        }
-                      } 
-                    } 
-                  } 
-                }))
+                await updateStateTitlesById(jurisdictionAddress,instance,tokenId,set);
               })
             }
             catch (err) {
