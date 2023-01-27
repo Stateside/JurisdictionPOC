@@ -11,7 +11,7 @@ import MemberOnlyButton from '@/components/MemberOnlyButton';
 const Properties = () => {
   const { library } = useWeb3React();
   const router = useRouter();
-  const jurisdictionAddress = router.query.id as string;
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
 
   const isTokensInitialized = useTitleTokens(state => state.isInitialized)
   const getTokensContractDetails = useTitleTokens(state => state.get)
@@ -70,7 +70,14 @@ const Properties = () => {
       {(!tokenIds || tokenIds.length === 0) && <Text>No properties found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
-        <MemberOnlyButton variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.tokens/AddToken`)}>Add New Property Tokens</MemberOnlyButton>
+        <MemberOnlyButton 
+          variant="Header" 
+          onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.tokens/AddToken`)}
+          disabled
+          tooltip="Coming soon"
+        >
+            Add New Property Tokens
+        </MemberOnlyButton>
       </Box>
     </>
   );

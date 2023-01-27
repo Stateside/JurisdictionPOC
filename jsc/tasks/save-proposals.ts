@@ -30,7 +30,7 @@ const saveProposals = async (website: string, chainId:string, governor:string, p
       pdata: r.pdata,
       parameters: r.parameters.map(p => ({
         name: p.name,
-        type: ParamType[p.type],
+        type: p.type,
         hint: p.hint,
         value: p.value
       }))

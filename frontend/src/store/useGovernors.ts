@@ -1,7 +1,7 @@
 import { ProposalState } from '@/utils/types';
 import { Provider } from '@ethersproject/providers';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 import create from 'zustand'
 import { IJSCGovernor, IJSCGovernor__factory } from '../../typechain-types';
 
@@ -61,6 +61,9 @@ export type IGovernorDetails = {
 
   /** Returns an individual proposal */
   loadProposal: (proposalId:string) => Promise<void>
+
+  /** Gets an instance of the Governor using the given Signer which allows you to send transactions to this contract */
+  instanceWithSigner: (signer:Signer) => IJSCGovernor
 };
 
 export type GovernorMap = { [address: string]: IGovernorDetails }
@@ -82,9 +85,13 @@ export interface IGovernorsState {
 
   /** Returns details of the Governor contract stored at the given address */
   get: (address:string, provider:Provider) => IGovernorDetails,
+  
+  /** Clears details about the governer stored at the given address */
+  refresh: (address:string) => void,
 }
 
 const updateProposalDetails = (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string, newDetails:Partial<IProposalDetails>) => {
+  proposalId = proposalId.toLowerCase()
   const governors = get().governors
   const governorDetails = governors[instance.address]
   const proposals = governorDetails.proposals
@@ -108,7 +115,8 @@ const getVotes = async (instance:IJSCGovernor, proposalId:string) => {
 }
 
 const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string) => {
-  if (get().governors[instance.address].proposals?.[proposalId]?.startBlock)
+  proposalId = proposalId.toLowerCase()
+  if (get().governors[instance.address].proposals?.[proposalId]?.revisions !== undefined)
     return; // Don't load again if we already have the details
   if (get().governors[instance.address].proposals?.[proposalId]?.detailsLoading)
     return; // Don't load again if already loading
@@ -149,6 +157,24 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
         console.log("Error loading proposal details", e)
       }
     }
+    else {
+      const newProposalDetails = { 
+        detailsLoading: false,
+        startBlock: 0,
+        deadline: 0,
+        proposer: "",
+        version: 0,
+        status: await instance.state(proposalId),
+        description: "Unrecognized proposal",
+        votes: { 
+          againstVotes: ethers.constants.Zero, 
+          forVotes: ethers.constants.Zero, 
+          abstainVotes: ethers.constants.Zero 
+        },
+        revisions: []
+      }
+      updateProposalDetails(get, set, instance, proposalId, newProposalDetails)
+    }
   })
 }
 
@@ -170,6 +196,8 @@ const updateGovernorDetails = (get:() => IGovernorsState, set: (state:Partial<IG
 const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string, account:string) => {
   // If we know the answer return it immediately.
   // If we don't know the answer return undefined immediately but start querying the contract for the answer so it is available the next time this method is called
+  account = account.toLowerCase()
+  proposalId = proposalId.toLowerCase()
   let hasVoted = get().governors[instance.address].proposals?.[proposalId]?.whoHasVoted[account]
   if (hasVoted === undefined)
     try {
@@ -185,6 +213,7 @@ const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernor
 
 /** Loads the given proposal for the given governor unless the proposals are already loading */
 const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string) => {
+  proposalId = proposalId.toLowerCase()
   const governorDetails = get().governors[instance.address]
   if (governorDetails) {
     if (governorDetails.proposalsLoading)
@@ -212,9 +241,9 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
       id: proposalId,
       startBlock: 0,
       deadline: 0,
-      proposer: 'Not Found',
+      proposer: '',
       version: 0,
-      description: 'Not Found',
+      description: 'Not Found. If this is a new proposal, then please wait a few minjutes for the proposal to be confirmed on the blockchain.',
       status: ProposalState.Expired,
       revisions: [],
       detailsLoading: false,
@@ -324,10 +353,11 @@ export const useGovernors = create<IGovernorsState>((set, get) => ({
     set({governors: {}, chainId})
   },
 
-  get: (address:string, provider:Provider) => {
+  get: (address:string, provider:Provider|Signer) => {
     if (get().chainId === 0)
       return {} as IGovernorDetails
 
+    address = address.toLowerCase()
     let details:IGovernorDetails = get().governors[address]
     if (!details) {
       const instance = IJSCGovernor__factory.connect(address, provider)
@@ -337,9 +367,17 @@ export const useGovernors = create<IGovernorsState>((set, get) => ({
         proposalsLoading:false,
         loadAllProposals: async () => await loadAllProposals(get, set, instance),
         loadProposal: async (proposalId:string) => await loadProposal(get, set, instance, proposalId),
+        instanceWithSigner: (signer:Signer) => IJSCGovernor__factory.connect(address, signer)
       }
       set({ governors: { ...get().governors, [address]: details } })
     }
     return details
   },
+
+  refresh: (address:string) => {
+    address = address.toLowerCase()
+    const g = { ...get().governors }
+    delete g[address]
+    set({ governors: g })
+  }
 }))

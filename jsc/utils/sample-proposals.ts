@@ -35,7 +35,6 @@ const getVotes = () => {
       votes[voters[i]] = v as VoteType
   }
     
-  console.log("Votes:", votes)
   return votes;
 }
 

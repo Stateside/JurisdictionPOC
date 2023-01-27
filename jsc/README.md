@@ -122,7 +122,9 @@ yarn hardhat save-proposals --network staging --prefix development
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
 - add jurisdiction to titletoken and cabinet and make sure this is is validated properly inside contracts
 - add function to validate jurisdictions (make sure they are properly initialized and secured)
-
+- Add support for role parameter type
+- Add support for contract address parameter type + account address parameter type
+- Add button to jump forward in time to the next voting period
 Payments
 1. Pay registry fees
 2. Pay maintainer fees

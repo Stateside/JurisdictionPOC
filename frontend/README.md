@@ -51,9 +51,4 @@ For more commands see the [migrations documentation](https://typeorm.io/migratio
 
 # To do
 
-- Keep HH running or persist new transactions or replace with a different implementation
-- Add maintainer, registry to titletoken when creating jurisdiction
-- add useTitleToken() and useCabinet() hooks
-- Add a page with all sample accounts and their balances plus copy buttons for key
 - Check behaviour when bad addresses and IDs manually edited into URLs
-- Display inactive proposals

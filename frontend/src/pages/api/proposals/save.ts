@@ -24,7 +24,7 @@ const save = async (req: NextApiRequest, res: NextApiResponse) => {
         pdata: r.pdata,
         parameters: r.parameters.map((p:any) => ({
           name: p.name,
-          type: ParamType[p.type],
+          type: p.type,
           hint: p.hint,
           value: p.value
         }))

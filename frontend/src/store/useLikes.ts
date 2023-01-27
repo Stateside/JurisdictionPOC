@@ -13,34 +13,38 @@ export type LikeAction = {
 /** Convenience function to update Zustand state with a new like */
 const addToLikedProposals = (state:ILikesState, like:ILike, set:any) => {
   const likedProposals = {...state.likedProposals}
-  if (!likedProposals[like.jurisdiction])
-    likedProposals[like.jurisdiction] = {}
-  likedProposals[like.jurisdiction][like.itemId] = like
+  const ljAddress = like.jurisdiction.toLowerCase()
+  if (!likedProposals[ljAddress])
+    likedProposals[ljAddress] = {}
+  likedProposals[ljAddress][like.itemId] = like
   set({likedProposals})
 }
 
 /** Convenience function to update Zustand state removing an existing like */
 const removeFromLikedProposals = (state:ILikesState, like:ILike, set:any) => {
   const likedProposals = {...state.likedProposals}
-  if (likedProposals[like.jurisdiction])
-    delete likedProposals[like.jurisdiction][like.itemId]
+  const ljAddress = like.jurisdiction.toLowerCase()
+  if (likedProposals[ljAddress])
+    delete likedProposals[ljAddress][like.itemId]
   set({likedProposals})
 }
 
 /** Convenience function to update Zustand state with a new like */
 const addToLikedTokens = (state:ILikesState, like:ILike, set:any) => {
   const likedTokens = {...state.likedTokens}
-  if (!likedTokens[like.jurisdiction])
-    likedTokens[like.jurisdiction] = {}
-  likedTokens[like.jurisdiction][like.itemId] = like
+  const ljAddress = like.jurisdiction.toLowerCase()
+  if (!likedTokens[ljAddress])
+    likedTokens[ljAddress] = {}
+  likedTokens[ljAddress][like.itemId] = like
   set({likedTokens})
 }
 
 /** Convenience function to update Zustand state removing an existing like */
 const removeFromLikedTokens = (state:ILikesState, like:ILike, set:any) => {
   const likedTokens = {...state.likedTokens}
-  if (likedTokens[like.jurisdiction])
-    delete likedTokens[like.jurisdiction][like.itemId]
+  const ljAddress = like.jurisdiction.toLowerCase()
+  if (likedTokens[ljAddress])
+    delete likedTokens[ljAddress][like.itemId]
   set({likedTokens})
 }
 
@@ -139,15 +143,16 @@ export const useLikes = create<ILikesState>((set, get) => ({
     const likedProposals:JurisdictionMap = {}
     const likedTokens:JurisdictionMap = {}
     likes.forEach(like => {
+      const ljAddress = like.jurisdiction.toLowerCase()
       if (like.itemType === LikableItem.Proposal) {
-        if (!likedProposals[like.jurisdiction])
-          likedProposals[like.jurisdiction] = {}
-        likedProposals[like.jurisdiction][like.itemId] = like
+        if (!likedProposals[ljAddress])
+          likedProposals[ljAddress] = {}
+        likedProposals[ljAddress][like.itemId] = like
       }
       else if (like.itemType === LikableItem.Token) {
-        if (!likedTokens[like.jurisdiction])
-          likedTokens[like.jurisdiction] = {}
-        likedTokens[like.jurisdiction][like.itemId] = like
+        if (!likedTokens[ljAddress])
+          likedTokens[ljAddress] = {}
+        likedTokens[ljAddress][like.itemId] = like
       }
     })
     set({
@@ -159,7 +164,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
   },
 
   likesProposal: (like:LikeAction) => {
-    return get().likedProposals[like.jurisdiction]?.[like.itemId] || null
+    return get().likedProposals[like.jurisdiction.toLowerCase()]?.[like.itemId] || null
   },
 
   likeProposal: (like:LikeAction) => {
@@ -176,7 +181,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
     const likeObject = {
         name: like.name,
         owner: state.owner,
-        jurisdiction: like.jurisdiction,
+        jurisdiction: like.jurisdiction.toLowerCase(),
         itemType: LikableItem.Proposal,
         itemId: like.itemId,
         frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
@@ -221,7 +226,7 @@ export const useLikes = create<ILikesState>((set, get) => ({
     const likeObject = {
         name: like.name,
         owner: state.owner,
-        jurisdiction: like.jurisdiction,
+        jurisdiction: like.jurisdiction.toLowerCase(),
         itemType: LikableItem.Token,
         itemId: like.itemId,
         frontend: process.env.NEXT_PUBLIC_FRONTEND||"",

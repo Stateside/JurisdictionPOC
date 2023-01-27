@@ -20,7 +20,7 @@ const Proposals = () => {
   // First load jurisdiction, then contracts, then Governor, then proposals...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
-  const jurisdictionAddress = router.query.id as string;
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
 
   const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)

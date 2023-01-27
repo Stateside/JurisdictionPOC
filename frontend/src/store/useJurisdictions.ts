@@ -96,27 +96,29 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
       const details:JurisdictionInfoMap = {}
       res.forEach(j => {
         j.status = process.env.NEXT_PUBLIC_VOLATILE_BLOCKCHAIN === "false" ? JurisdictionStatus.Exists : JurisdictionStatus.Unknown
-        details[j.address] = {
+        details[j.address.toLowerCase()] = {
           ...j,
           createdAt: j.createdAt ? new Date(j.createdAt) : undefined
         }
       })
 
-      set({infos: details, chainId, loaded:true})
+      set({infos: details, contracts: {}, instances: {}, chainId, loaded:true})
     })
   },
 
   confirm: async (provider:Provider) => {
     Object.values(get().infos).forEach(async j => {
-      if (j.status === JurisdictionStatus.Unknown)
+      if (j.status === JurisdictionStatus.Unknown) {
+        const jAddress = j.address.toLowerCase()
         try {
-          const instance = await get().getInstance(j.address, provider)
+          const instance = await get().getInstance(jAddress, provider)
           await instance.getJurisdictionName()
-          set({infos: {...get().infos, [j.address]: { ...j, status: JurisdictionStatus.Exists } }})
+          set({infos: {...get().infos, [jAddress]: { ...j, status: JurisdictionStatus.Exists } }})
         }
         catch(e) {
-          set({infos: {...get().infos, [j.address]: { ...j, status: JurisdictionStatus.NotFound } }})
+          set({infos: {...get().infos, [jAddress]: { ...j, status: JurisdictionStatus.NotFound } }})
         }
+      }
     })
   },
 
@@ -124,6 +126,7 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
     if (!get().loaded)
       throw new Error("useJurisdictions state not initialized")
 
+    address = address.toLowerCase()
     const info:JurisdictionInfo = get().infos[address]
     if (!info && provider) {
       try {
@@ -153,6 +156,7 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
     if (!get().loaded)
       throw new Error("useJurisdictions state not initialized")
       
+    address = address.toLowerCase()
     const instances = get().instances
     if (instances[address]) 
       return instances[address]
@@ -168,7 +172,8 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
   loadContracts: async (address:string, provider:Provider) => {
     if (!get().loaded)
       throw new Error("useJurisdictions state not initialized")
-      
+
+    address = address.toLowerCase()
     const contracts = get().contracts
     if (contracts[address]) 
       return contracts[address]
@@ -184,7 +189,7 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
         const p = await instance.parameterIteratorGet(i);
         if (p.ptype == ParamType.t_address) {
           const a = await instance.getAddressParameter(p.name);
-          const c = {name:p.name, address:a, description:p.description}
+          const c = {name:p.name, address:a.toLowerCase(), description:p.description}
           newContracts.list.push(c)
           newContracts.byName[p.name] = c
           i = await instance.nextParameter(i)
@@ -204,14 +209,15 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
       throw new Error("useJurisdictions state not initialized")
       
     const info = get().infos
-    info[newJurisdiction.address] = {...newJurisdiction}
+    info[newJurisdiction.address.toLowerCase()] = {...newJurisdiction}
     set({infos: info})
   },
 
   remove: async (address:string) => {
     if (!get().loaded)
       throw new Error("useJurisdictions state not initialized")
-      
+
+    address = address.toLowerCase()
     const request = {
       method: "POST",
       headers: {

@@ -24,7 +24,7 @@ import { useMemo } from 'react';
 
 const Jurisdiction: NextPage = () => {
   const router = useRouter();
-  const jurisdictionAddress = router.query.id as string;
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const name = useJurisdictions(state => state.infos[jurisdictionAddress]?.name)
 
   const tabSelectedStyles = {

@@ -7,7 +7,7 @@ import { ArrowBackIcon } from '@chakra-ui/icons';
 import { useWeb3React } from '@web3-react/core';
 import { useJurisdictions } from '@/store/useJurisdictions';
 import { useEffect, useMemo, useState } from 'react';
-import { useGovernors } from '@/store/useGovernors';
+import { IRevisionDetails, useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
 import RevisionModal from './RevisionModal';
@@ -52,16 +52,16 @@ const Proposal: NextPage = () => {
 
   const [ blockNumber, setBlockNumber ] = useState(0)
   const [openRevisionModal, setOpenRevisionModal] = useState(false);
-  const [selectedRevsionId, setSelectedRevisionId] = useState(0)
-  const jurisdictionAddress = router.query.id as string;
-  const proposalId = router.query.pid as string;
+  const [selectedRevision, setSelectedRevision] = useState<IRevisionDetails|undefined>()
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
+  const proposalId = (router.query.pid as string).toLowerCase();
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
   
   const jurisdictionName = useJurisdictions(state => state.infos[jurisdictionAddress]?.name)
   const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
   const loadGovernorDetails = useGovernors(state => state.get)
   const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
-  const proposal = jscGovernorDetails?.proposals && jscGovernorDetails?.proposals[proposalId]
+  const proposal = useGovernors(state => state.governors[jscGovernorAddress]?.proposals?.[proposalId])
 
   const [hasVoted, setHasVoted] = useState(true)
 
@@ -86,7 +86,8 @@ const Proposal: NextPage = () => {
     [jscGovernorAddress, jscGovernorDetails, library]);
 
   // Load proposal
-  useEffect(() => { jscGovernorDetails && jscGovernorDetails.loadProposal(proposalId) }, [jscGovernorDetails, proposalId]);
+  useEffect(() => { jscGovernorDetails && jscGovernorDetails.loadProposal(proposalId) }, 
+    [jscGovernorDetails, proposalId]);
 
   // Load proposal details
   useEffect(() => { proposal && proposal.loadDetails() }, [proposal]);
@@ -175,7 +176,7 @@ const Proposal: NextPage = () => {
               {proposal?.revisions ? (
                 proposal?.revisions.map(r => (
                   <Link
-                    onClick={() => {setSelectedRevisionId(r.id); setOpenRevisionModal(true)}}
+                    onClick={() => {setSelectedRevision(r); setOpenRevisionModal(true)}}
                     variant={'15/20'}
                     key={r.id}
                     width="100%"
@@ -216,9 +217,9 @@ const Proposal: NextPage = () => {
         </VStack>
       </Box>
       <RevisionModal
-        jurisdictionAddress={jurisdictionAddress}
-        proposalId={proposalId}
-        revisionId={selectedRevsionId}
+        jurisdictionName={jurisdictionName}
+        revision={selectedRevision as any}
+        unknownRevision={!proposal?.detailsLoading && proposal?.revisions?.length === 0}
         isOpen={openRevisionModal}
         onClose={() => setOpenRevisionModal(false)}
       />
