@@ -129,7 +129,7 @@ contract JSCCabinet is
         _addRevision(
             _createRevisionForRemoveMember(
                 "RemoveMember",
-                "Remove the member {key}"
+                "Remove the member {account}"
             )
         );
         _addHandler("RemoveMember", _handleRemoveMember);
@@ -193,11 +193,11 @@ contract JSCCabinet is
         string memory rname,
         string memory description
     ) internal pure returns (rlib.Revision memory) {
-        string[] memory names = new string[](2);
+        string[] memory names = new string[](1);
         names[0] = "account";
-        rlib.ParamType[] memory types = new rlib.ParamType[](2);
+        rlib.ParamType[] memory types = new rlib.ParamType[](1);
         types[0] = rlib.ParamType.t_address;
-        string[] memory hints = new string[](2);
+        string[] memory hints = new string[](1);
         hints[0] = "Address of member's account";
         string[] memory roles = new string[](1);
         roles[0] = "Judicial";

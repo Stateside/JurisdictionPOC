@@ -9,7 +9,7 @@ import MemberOnlyButton from '@/components/MemberOnlyButton';
 
 const Contracts = () => {
   const router = useRouter();
-  const jurisdictionAddress = router.query.id as string;
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const { library } = useWeb3React();
   
   // First load jurisdiction, then contracts...
@@ -34,13 +34,15 @@ const Contracts = () => {
                 variant="Transparent"
                 rightIcon={<ReloadIcon height={6} width={6} />}
                 onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/UpgradeContract`)}
+                disabled
+                tooltip="Coming soon"
               >
                 Replace
               </MemberOnlyButton>
               <MemberOnlyButton width="15%"
                 variant="Transparent"
                 rightIcon={<LockIcon height={6} width={6} />}
-                onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/FreezeContract`)}
+                onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=${contract.name}/FreezeContract&target=${contract.address}&freeze=1`)}
               >
                 Freeze
               </MemberOnlyButton>

@@ -105,6 +105,7 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
     if (get().chainId === 0)
       throw new Error('useTitleTokens() state not initialized')
       
+    jurisdictionAddress = jurisdictionAddress.toLowerCase()
     let details:ITokenContractDetails = get().tokenContracts[jurisdictionAddress]
     if (!details) {
       try {
@@ -118,14 +119,14 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
         const registryAccount = await instance.getAddressParameter("jsc.accounts.registry")
         const maintainerAccount = await instance.getAddressParameter("jsc.accounts.maintainer")
         details = {
-          address: titleTokenContractAddress, 
+          address: titleTokenContractAddress.toLowerCase(), 
           instance, 
           tokenCount,
           tokenName,
           tokenSymbol,
           tokenBaseURI,
-          registryAccount,
-          maintainerAccount,
+          registryAccount: registryAccount?.toLowerCase(),
+          maintainerAccount: maintainerAccount?.toLowerCase(),
           tokens: { pages: {}, tokensById: {} },
           tokensLoading: false,
 
@@ -247,7 +248,8 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
   },
 }))
 
-const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSCTitleToken,tokenIdAsHex: string, set: any, titleId?: string ) => {
+const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSCTitleToken, tokenIdAsHex: string, set: any, titleId?: string ) => {
+  jurisdictionAddress = jurisdictionAddress.toLowerCase()
   const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenIdAsHex);
 
   set((state: ITitleTokensState) => ({ 

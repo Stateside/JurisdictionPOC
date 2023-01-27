@@ -24,7 +24,7 @@ const Members = () => {
   // First load jurisdiction, then Cabinet, then members...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
-  const jurisdictionAddress = router.query.id as string;
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
   const jscCabinetAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.cabinet']?.address?.toLowerCase())
   const loadCabinet = useCabinets(state => state.get)
@@ -70,7 +70,7 @@ const Members = () => {
                 <MemberOnlyButton width="15%"
                   variant="Transparent"
                   rightIcon={<DeleteIcon height={7} width={7} />}
-                  onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.cabinet/RemoveMemberRole&account=${member.account}`)}
+                  onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.cabinet/RemoveMemberRole&account=${member.account}&role=${member.role}`)}
                 >
                   Remove
                 </MemberOnlyButton>
@@ -85,7 +85,7 @@ const Members = () => {
         <MemberOnlyButton
           rightIcon={<PersonAddIcon height={5} width={5} />}
           variant="Heading"
-          onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.cabinet/AddMember`)}
+          onClick={() => router.push(`${jurisdictionAddress}/proposal/create?p=jsc.contracts.cabinet/AddMemberRole`)}
         >
           Add new member
         </MemberOnlyButton>

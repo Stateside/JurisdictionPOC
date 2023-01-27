@@ -50,13 +50,14 @@ export interface ICabinetState {
 /** Loads the given members for the given cabinet unless the members are already loading */
 const loadMembers = async (get:() => ICabinetState, set: (state:Partial<ICabinetState>) => void, instance:IJSCCabinet) => {
   let cabinets = get().cabinets
-  let cabinet = cabinets[instance.address]
+  let instanceAddress = instance.address.toLowerCase()
+  let cabinet = cabinets[instanceAddress]
   if (cabinet.membersLoading || cabinet.membersLoaded)
     return
 
   set({
     cabinets: {...cabinets, 
-      [instance.address]: { ...cabinet,
+      [instanceAddress]: { ...cabinet,
         membersLoading: true
       }
     }
@@ -71,7 +72,7 @@ const loadMembers = async (get:() => ICabinetState, set: (state:Partial<ICabinet
       const roleId = await instance.getRoleAt(r);
       const roleMemberCount = (await instance.getRoleMemberCount(roleId)).toNumber();
       for (let rm = 0; rm < roleMemberCount; rm++) {
-        const acc = await instance.getRoleMember(roleId, rm);
+        const acc = (await instance.getRoleMember(roleId, rm)).toLowerCase();
         const m:IMember = {
           account: acc,
           role: roleId,
@@ -85,19 +86,21 @@ const loadMembers = async (get:() => ICabinetState, set: (state:Partial<ICabinet
     console.error('Error loading members', e)
   }
   cabinets = get().cabinets
-  cabinet = { ...cabinets[instance.address], 
+  cabinet = { ...cabinets[instanceAddress], 
     members,
     membersByAddress,
     areMembers,
     membersLoading: false,
     membersLoaded: true
   }
-  set({cabinets: {...cabinets, [instance.address]: cabinet }});
+  set({cabinets: {...cabinets, [instanceAddress]: cabinet }});
 }
 
 /** Checks if the given address is a member of the current cabinet */
 const isMember = async (get:() => ICabinetState, set: (state:Partial<ICabinetState>) => void, instance:IJSCCabinet, account:string) => {
-  const cabinet = get().cabinets[instance.address]
+  let instanceAddress = instance.address.toLowerCase()
+  account = account.toLowerCase()
+  const cabinet = get().cabinets[instanceAddress]
   if (cabinet.membersLoaded)
     return cabinet.areMembers[account] === true
 
@@ -108,12 +111,10 @@ const isMember = async (get:() => ICabinetState, set: (state:Partial<ICabinetSta
   try {
     // Start checking if the given account is a member
     cabinet.instance.isMember(account).then(res => {
-      const cabinets = get().cabinets
-      const cabinet = cabinets[instance.address]
       if (cabinet.areMembers[account] === undefined)
         set({ 
-          cabinets: { ...cabinets, 
-            [instance.address]: { ...cabinet, 
+          cabinets: { ...get().cabinets, 
+            [instanceAddress]: { ...cabinet, 
               areMembers: { ...cabinet.areMembers, 
                 [account]: res 
               } 

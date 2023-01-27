@@ -46,6 +46,7 @@ export interface IRevisionsState {
 
 /** Asynchronously loads revisions for the given instance */
 const loadRevisions = async (address:string, instance:IJSCRevisioned, get:() => IRevisionsState, set: (state:Partial<IRevisionsState>) => void) => {
+  address = address.toLowerCase()
   if (get().revisions[address]?.revisionsLoading || get().revisions[address]?.revisions.length > 0) 
     return
 
@@ -96,6 +97,7 @@ export const useRevisions = create<IRevisionsState>((set, get) => ({
     if (get().chainId === 0)
       throw new Error('useRevisions() state not initialized')
 
+    address = address.toLowerCase()
     let details:IRevisionedDetails = get().revisions[address]
     if (!details) {
       const instance = IJSCRevisioned__factory.connect(address, provider)

@@ -22,7 +22,7 @@ const MemberOnlyButton = (props: Props) => {
 
   // First load jurisdiction, then Cabinet...
 
-  const jurisdictionAddress = router.query.id as string;
+  const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const { loaded: jurisdictionsLoaded, loadContracts } = useJurisdictions();
   const jscCabinetAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.cabinet']?.address?.toLowerCase())
   const loadCabinet = useCabinets(state => state.get)

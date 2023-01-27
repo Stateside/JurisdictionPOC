@@ -15,105 +15,33 @@ import {
   Switch,
 } from '@chakra-ui/react';
 import { useJurisdictions } from '@/store/useJurisdictions';
-import { useGovernors } from '@/store/useGovernors';
+import { IRevisionDetails, useGovernors } from '@/store/useGovernors';
 import { useCallback, useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { useParameterSimplifier } from '@/store/useParameterSimplifier';
 import { capitalizeString } from '@/utils/util';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
 import { useAliases } from '@/store/useAliases';
+import { ParameterDetails } from '../ParameterDetails';
 
 const LoadingIcon = () => (
   <CircularProgress isIndeterminate size="1em" color="brand.java" />
 );
 
 const RevisionModal = ({
+  jurisdictionName,
+  revision,
+  unknownRevision,
   isOpen,
-  onClose,
-  jurisdictionAddress,
-  proposalId,
-  revisionId
+  onClose
 }: {
-  jurisdictionAddress: string;
-  proposalId: string;
-  revisionId: number;
-  isOpen: boolean;
-  onClose: any;
+  jurisdictionName: string
+  revision: IRevisionDetails
+  unknownRevision: boolean
+  isOpen: boolean
+  onClose: any
 }) => {
-  const { library } = useWeb3React();
-  const { aliasesByAddress } = useAliases()
-
-  // First load jurisdiction, then Governor, then proposal, then revision...
-  // If this page was saved as a bookmark, then none of the above may be loaded yet.
-
-  const { loaded: jurisdictionsLoaded, loadContracts } = useJurisdictions();
-
-  const jurisdictionName = useJurisdictions(
-    state => state.infos[jurisdictionAddress]?.name
-  );
-  const jscGovernorAddress = useJurisdictions(
-    state =>
-      state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']
-        ?.address
-  );
-  const loadGovernorDetails = useGovernors(state => state.get);
-  const jscGovernorDetails = useGovernors(
-    state => state.governors[jscGovernorAddress]
-  );
-  const proposal =
-    jscGovernorDetails?.proposals && jscGovernorDetails?.proposals[proposalId];
-  const revision = proposal?.revisions?.find(
-    revision => revision.id === revisionId
-  );
-  const unknownRevision = proposal?.revisions && !revision;
-
-  const { simplifyDescription, simplifyValue } = useParameterSimplifier();
-
-  // Load contracts from jurisdiction
-  useEffect(() => {
-    jurisdictionsLoaded && loadContracts(jurisdictionAddress, library);
-  }, [jurisdictionAddress, jurisdictionsLoaded, library]);
-
-  // Load governor details
-  useEffect(() => {
-    jscGovernorAddress &&
-      !jscGovernorDetails &&
-      loadGovernorDetails(jscGovernorAddress, library);
-  }, [jscGovernorAddress, jscGovernorDetails, library]);
-
-  // Load proposal
-  useEffect(() => {
-    jscGovernorDetails && jscGovernorDetails.loadProposal(proposalId);
-  }, [jscGovernorDetails, proposalId]);
-
-  // Load proposal details
-  useEffect(() => {
-    proposal && proposal.loadDetails();
-  }, [proposal]);
-
-  const getValue = useCallback((p: IRevisionParameter, w:string) => {
-    switch(p.type) {
-      case ParamType.t_address:
-        return (
-          <HStack width={w}>
-            <Text variant="break-word">
-              {aliasesByAddress[p.value.toLowerCase()]?.alias || p.value}
-            </Text>
-            <Text pl="3rem" variant="break-word">
-              {p.value}
-            </Text>
-          </HStack>)
-      case ParamType.t_bool:
-        return (
-          <Switch width={w} isChecked={p.value === '1'} disabled={true}/>
-        )
-      default:
-        return (
-          <Text width={w} variant="break-word">
-            {simplifyValue(p)}
-          </Text>)
-    }
-  },[])
+  const { simplifyDescription } = useParameterSimplifier();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
@@ -161,7 +89,7 @@ const RevisionModal = ({
                           <Text width="20%">
                             {capitalizeString(parameter.name)}:
                           </Text>
-                          {getValue(parameter, "80%")}
+                          <ParameterDetails param={parameter} width="80%" />
                         </HStack>
                       </VStack>
                     ))

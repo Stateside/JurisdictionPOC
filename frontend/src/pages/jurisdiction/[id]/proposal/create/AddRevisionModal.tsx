@@ -1,52 +1,47 @@
-import { IContract, useJurisdictions } from '@/store/useJurisdictions';
+import { IContract } from '@/store/useJurisdictions';
 import { IRevision, useRevisions } from '@/store/useRevisions';
-import {
-  Button,
-  Divider,
-  HStack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Select,
-  Text,
-  Textarea,
-} from '@chakra-ui/react';
+import { ParamType } from '@/utils/types';
+import { capitalizeString } from '@/utils/util';
+import { Button, Divider, HStack, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Select, Text, Textarea, VStack, Code } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
-import router from 'next/router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+import Parameter from './Parameter';
 
-const AddRevisionModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: any }) => {
+export type ParameterValues = {
+  [name: string]: string
+}
+
+export type NewRevision = {
+  id: number
+  target: string
+  name: string
+  description: string
+  parameters: ParameterValues
+  paramNames?: string[]
+  paramTypes?: ParamType[]
+  paramHints?: string[]
+}
+
+export type Props = {
+  jurisdictionName: string
+  revision: NewRevision
+  contracts: IContract[]
+  isOpen: boolean
+  setRevision: (r: NewRevision) => void
+  onOkAddRevision: () => void
+  onOkUpdateRevision: () => void
+  onCancelAddRevision: () => void
+}
+
+const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, isOpen, onOkAddRevision, onOkUpdateRevision, onCancelAddRevision }: Props) => {
   const { library } = useWeb3React();
-  const { loaded, loadContracts } = useJurisdictions();
-  const jurisdictionAddress = router.query.id as string;
-  const [ selectedContract, setSelectedContract ] = useState<IContract|undefined>()
-  const [ selectedRevision, setSelectedRevision ] = useState<IRevision|undefined>()
-  const name = useJurisdictions(state => state.infos[jurisdictionAddress]?.name);
   const isRevisionsHookInitialized = useRevisions(state => state.isInitialized)
   const getRevisions = useRevisions(state => state.get)
+  const selectedContract = revision.target ? contracts?.find(c => c.address === revision.target) : undefined
   const loadRevisions = useRevisions(state => state.revisions?.[selectedContract?.address as any]?.loadRevisions)
   const revisionsLoading = useRevisions(state => state.revisions?.[selectedContract?.address as any]?.revisionsLoading)
   const revisions = useRevisions(state => state.revisions?.[selectedContract?.address as any]?.revisions)
-  
-  const params = router.query.p as string
-  const [defaultContract, defaultRevision] = params?.split("/") || []	
-
-  // Get list of contracts
-  let contracts = useJurisdictions(state => state.contracts[jurisdictionAddress])?.list
-  if (contracts)
-    contracts = [...contracts, {
-      name: "jsc.contracts.jurisdiction",
-      address: jurisdictionAddress,
-      description: "Jurisdiction Contract"
-    }].sort((a,b) => a.name.localeCompare(b.name))
-
-  // Load contracts from jurisdiciton
-  useEffect(() => { loaded && contracts === undefined && loadContracts(jurisdictionAddress, library) },
-    [jurisdictionAddress, loaded, library]);
+  const selectedRevision = revision.name ? revisions?.find(r => r.name === revision.name) : undefined
 
   // Load revisions from selected contract
   useEffect(() => {
@@ -55,41 +50,89 @@ const AddRevisionModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: any }
         getRevisions(selectedContract?.address, library)
       else if (revisions !== undefined && revisions.length === 0 && !revisionsLoading && loadRevisions)
         loadRevisions()
-  }}, [selectedContract, revisions, revisionsLoading, loadRevisions, library])
+    }
+  }, [selectedContract, revisions, revisionsLoading, loadRevisions, library])
 
-  // Set default contract and revision if provided
-  if (!selectedContract && defaultContract && contracts) { 
-    const c = contracts.find(c => c.name === defaultContract)
-    if (c)
-      setSelectedContract(c)
-  }
-  if (!selectedRevision && defaultRevision && revisions) { 
-    const r = revisions.find(r => r.name === defaultRevision)
-    if (r)
-      setSelectedRevision(r)
-  }
+  const areParameterValuesValid = useCallback(() => {
+    if (!selectedContract || !selectedRevision)
+      return false
 
-  const updateSelection = (contract:string, revision:string) => {
-    setSelectedContract(contracts?.find(c => c.address === contract) || undefined)
-    setSelectedRevision(revisions?.find(r => r.name === revision) || undefined)
-  }
+    for (let i = 0; i < selectedRevision.paramNames.length; i++) {
+      if (!revision.parameters[selectedRevision.paramNames[i]])
+        return false
+    }
+
+    return true
+  }, [selectedContract, selectedRevision, revision.parameters])
+
+  const updateRevision = useCallback((paramName:string, value: string, rev: IRevision) => {
+    setRevision({
+      ...revision,
+      parameters: {
+        ...revision.parameters,
+        [paramName]: value
+      },
+      paramNames: rev.paramNames,
+      paramTypes: rev.paramTypes,
+      paramHints: rev.paramHints
+    })
+  }, [revision, setRevision])
+
+  /** Updated the selected contract and revision */
+  const updateSelection = useCallback((contract: string, revName: string) => {
+    let params = revision.parameters
+    if (contract !== revision.target || revName !== revision.name)
+      params = {}
+    setRevision({
+      ...revision,
+      target: contract,
+      name: revName,
+      description: selectedRevision?.description||"",
+      parameters: params,
+      paramNames: selectedRevision?.paramNames,
+      paramTypes: selectedRevision?.paramTypes,
+      paramHints: selectedRevision?.paramHints
+    })
+  }, [revision, selectedRevision, setRevision])
+
+  useEffect(() => {
+    // This is called the first time the modal is displayed with URL parameters
+    // and then when the user selects a new revision or contract from the dropdowns
+    if (!revision.description && selectedRevision?.description)
+      updateSelection(selectedContract?.address || "", selectedRevision?.name || "")
+  }, [selectedRevision?.description, selectedContract?.address, selectedRevision?.name, revision, updateSelection])
+
+  const parameterComponents = useMemo(() => {
+    return selectedRevision?.paramNames.map((p, i) => (
+      <HStack alignItems="flex-start" padding="20px 0" width="100%" key={p}>
+        <Text width="15%">{capitalizeString(p)}:</Text>
+        <Parameter width="85%"
+          name={p}
+          hint={selectedRevision.paramHints[i]}
+          type={selectedRevision.paramTypes[i]}
+          value={revision.parameters[p] || ""}
+          onChange={value => updateRevision(p, value, selectedRevision) }
+        />
+      </HStack>
+    ))
+  }, [selectedRevision, updateRevision, revision])
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
+      <Modal isOpen={isOpen} onClose={onCancelAddRevision} size="6xl" isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Modal Title</ModalHeader>
+          <ModalHeader>Add Revision</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="25%">Jurisdiction Name:</Text>
-              <Text>{name}</Text>
+              <Text width="15%">Jurisdiction Name:</Text>
+              <Text>{jurisdictionName}</Text>
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="25%">Contract Name:</Text>
-              <Select width="75%" placeholder="Choose a contract" value={selectedContract?.address||""} onChange={o => updateSelection(o.target.value, "")}>
+              <Text width="15%">Contract Name:</Text>
+              <Select width="85%" placeholder="Choose a contract" value={selectedContract?.address || ""} onChange={o => updateSelection(o.target.value, "")}>
                 {
                   contracts?.map(c => (<option value={c.address} key={c.address}>{c.name}</option>))
                 }
@@ -97,27 +140,40 @@ const AddRevisionModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: any }
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="25%">Revision Name:</Text>
-              <Select width="75%" placeholder="Choose a revision" value={selectedRevision?.name||""} onChange={o => updateSelection(selectedContract?.address||"", o.target.value)}>
+              <Text width="15%">Revision Name:</Text>
+              <Select width="85%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
                 {
-                  revisions?.sort((a,b) => a.name.localeCompare(b.name)).map(r => (<option value={r.name} key={r.name}>{r.name}</option>))
+                  revisions?.sort((a, b) => a.name.localeCompare(b.name)).map(r => (<option value={r.name} key={r.name}>{r.name}</option>))
                 }
               </Select>
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="25%">Description:</Text>
-              <Textarea width="75%" value={selectedRevision?.description || ""} readOnly={true}/>
+              <Text width="15%">Description:</Text>
+              <Textarea width="85%" value={selectedRevision?.description || ""} readOnly={true} />
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="25%">Parameters:</Text>
+              <Text width="15%">Parameters:</Text>
+              <VStack alignItems="flex-start" width="85%">
+                {parameterComponents}
+              </VStack>
             </HStack>
             <Divider />
           </ModalBody>
 
           <ModalFooter>
-            <Button variant="Header" onClick={onClose}>Create Revision</Button>
+            <Button variant="Header"
+              onClick={onCancelAddRevision}>Cancel</Button>
+            <Button ml="2rem" variant="Header"
+              onClick={() => {
+                if (revision.id === 0)
+                  onOkAddRevision()
+                else
+                  onOkUpdateRevision()
+              }
+              }
+              disabled={!areParameterValuesValid()}>{revision.id === 0 ? "Create" : "Save"} Revision</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

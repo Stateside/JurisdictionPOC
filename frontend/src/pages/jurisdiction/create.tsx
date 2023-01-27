@@ -188,6 +188,16 @@ const CreateJurisdiction: NextPage = () => {
     setNewMemberAddress(value)
   }, [newMemberAddress, newMemberName, getNameForAddress])
 
+  const updateNewMemberAccountName = useCallback((value: string): void => {
+    // Update address if it is empty or if it matches the address for the previous value of the name
+    let expectedAddress:string = getAddressForName(newMemberName)
+    let newAddress:string = getAddressForName(value)
+    if (newMemberAddress !== "" && newMemberAddress !== expectedAddress)
+      newAddress = newMemberAddress
+    setNewMemberName(value)
+    setNewMemberAddress(newAddress)
+  }, [jurisdiction.maintainerAddress, getAddressForName])
+
   const updateRegistryAddress = useCallback((value: string): void => {
     // Update name if it is the default name, if it is a new name then leave it as is
     let expectedName: string = getNameForAddress(jurisdiction.registryAddress)
@@ -536,10 +546,10 @@ const CreateJurisdiction: NextPage = () => {
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
-      <Input width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
-      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
-      <RoleSelector isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
-      <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
+      <Input width="15%" value={newMemberName} onChange={(e) => updateNewMemberAccountName(e.target.value)}/>
+      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember()||isEmptyNewMember())?{}:invalidAddressProps} />
+      <RoleSelector isValid={newMemberRole!==undefined||isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName||""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <Button width="15%" {...isValidNewMember()?greenButtonProps:""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
   ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
 
