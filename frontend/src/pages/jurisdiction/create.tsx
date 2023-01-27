@@ -1,5 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import { Tooltip } from '@chakra-ui/react';
 import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, Checkbox, CircularProgress, CircularProgressLabel, Divider, Heading, HStack, Input, Select, Switch, Text, useDisclosure, VStack } from '@chakra-ui/react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Role, buildRoles } from "../../utils/roles"
@@ -17,64 +18,65 @@ import { ethers } from 'ethers';
 // Use Zustand for managing state changes to Jurisdiction
 
 interface IJurisdictionState {
-  jurisdiction:Jurisdiction,
+  jurisdiction: Jurisdiction,
   modified: boolean,
   reset: () => void,
-  setJurisdictionName: (name:string) => void,
-  setTitleTokenName: (name:string) => void,
-  setTitleTokenSymbol: (symbol:string) => void,
-  setTitleTokenURI: (uri:string) => void,
-  setRegistryAddress: (address:string) => void,
-  setRegistryFee: (fee:ethers.BigNumber) => void,
-  setMaintainerAddress: (address:string) => void,
-  setMaintainerFee: (fee:ethers.BigNumber) => void,
-  setNFTSupport: (support:boolean) => void,
-  addMember: (member:IMember) => void,
-  removeMember: (index:number) => void,
-  replaceMember: (index:number, member:IMember) => void,
-  addContract: (contract:ContractDefinition) => void,
-  removeContract: (index:number) => void,
-  replaceContract: (index:number, contract:ContractDefinition) => void
+  setJurisdictionName: (name: string) => void,
+  setTitleTokenName: (name: string) => void,
+  setTitleTokenSymbol: (symbol: string) => void,
+  setTitleTokenURI: (uri: string) => void,
+  setRegistryAddress: (address: string) => void,
+  setRegistryFee: (fee: ethers.BigNumber) => void,
+  setMaintainerAddress: (address: string) => void,
+  setMaintainerFee: (fee: ethers.BigNumber) => void,
+  setNFTSupport: (support: boolean) => void,
+  addMember: (member: IMember) => void,
+  removeMember: (index: number) => void,
+  replaceMember: (index: number, member: IMember) => void,
+  addContract: (contract: ContractDefinition) => void,
+  removeContract: (index: number) => void,
+  replaceContract: (index: number, contract: ContractDefinition) => void
 }
 
 /** Create Zustand state with instance of Jurisdiction class and methods to update it. This lets us optimize the rendering */
 const useNewJurisdiction = create<IJurisdictionState>((set) => ({
   jurisdiction: Jurisdiction.createDefaultJurisdiction(),
   modified: false,
-  reset: () => set(state => ({jurisdiction: Jurisdiction.createDefaultJurisdiction(), modified: false})),
-  setJurisdictionName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, jurisdictionName: name}), modified: true})),
-  setTitleTokenName: (name:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenName: name}), modified: true})),
-  setTitleTokenSymbol: (symbol:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenSymbol: symbol}), modified: true})),
-  setTitleTokenURI: (uri:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, titleTokenURI: uri}), modified: true})),
-  setRegistryAddress: (address:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, registryAddress: address}), modified: true})),
-  setRegistryFee: (fee:ethers.BigNumber) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, registryFee: fee}), modified: true})),
-  setMaintainerAddress: (address:string) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, maintainerAddress: address}), modified: true})),
-  setMaintainerFee: (fee:ethers.BigNumber) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, maintainerFee: fee}), modified: true})),
-  setNFTSupport: (enabled:boolean) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, nftSupport: enabled}), modified: true})),
-  addMember: (member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: [...state.jurisdiction.members, member]}), modified: true})),
-  removeMember: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.filter((_:IMember, i:number) => i !== index)}), modified: true})),
-  replaceMember: (index:number, member:IMember) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m)}), modified: true})),
-  addContract: (contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: [...state.jurisdiction.contracts, contract]}), modified: true})),
-  removeContract: (index:number) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index)}), modified: true})),
-  replaceContract: (index:number, contract:ContractDefinition) => set(state => ({jurisdiction: Jurisdiction.copy({...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c)}), modified: true}))
+  reset: () => set(state => ({ jurisdiction: Jurisdiction.createDefaultJurisdiction(), modified: false })),
+  setJurisdictionName: (name: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, jurisdictionName: name }), modified: true })),
+  setTitleTokenName: (name: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, titleTokenName: name }), modified: true })),
+  setTitleTokenSymbol: (symbol: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, titleTokenSymbol: symbol }), modified: true })),
+  setTitleTokenURI: (uri: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, titleTokenURI: uri }), modified: true })),
+  setRegistryAddress: (address: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, registryAddress: address }), modified: true })),
+  setRegistryFee: (fee: ethers.BigNumber) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, registryFee: fee }), modified: true })),
+  setMaintainerAddress: (address: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, maintainerAddress: address }), modified: true })),
+  setMaintainerFee: (fee: ethers.BigNumber) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, maintainerFee: fee }), modified: true })),
+  setNFTSupport: (enabled: boolean) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, nftSupport: enabled }), modified: true })),
+  addMember: (member: IMember) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: [...state.jurisdiction.members, member] }), modified: true })),
+  removeMember: (index: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: state.jurisdiction.members.filter((_: IMember, i: number) => i !== index) }), modified: true })),
+  replaceMember: (index: number, member: IMember) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m) }), modified: true })),
+  addContract: (contract: ContractDefinition) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: [...state.jurisdiction.contracts, contract] }), modified: true })),
+  removeContract: (index: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index) }), modified: true })),
+  replaceContract: (index: number, contract: ContractDefinition) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c) }), modified: true }))
 }))
 
-const greenButtonProps = {_hover: { background: "brand.javaHover" }, variant: 'Header'}
-const invalidAddressProps = { borderColor:"red", color:"red" }
+const greenButtonProps = { _hover: { background: "brand.javaHover" }, variant: 'Header' }
+const invalidAddressProps = { borderColor: "red", color: "red" }
 
 /** Props for RoleSelector component */
 type RoleSelectorProps = {
-  required:boolean
-  value:string
-  isValid:boolean
-  width:string
-  onChange:ChangeEventHandler<HTMLSelectElement>
+  required: boolean
+  value: string
+  isValid: boolean
+  width: string
+  disabled?: boolean
+  onChange: ChangeEventHandler<HTMLSelectElement>
 }
 
 const roles = buildRoles(ethers)
 
 /** Select component for selecting a role */
-const RoleSelector = (props:RoleSelectorProps) => 
+const RoleSelector = (props: RoleSelectorProps) =>
   <Select
     placeholder="Role?"
     bg="white"
@@ -84,8 +86,9 @@ const RoleSelector = (props:RoleSelectorProps) =>
     value={props.value}
     width={props.width}
     onChange={props.onChange}
+    disabled={props.disabled}
   >
-    {roles.rolesArray.map((r:Role) => (<option key={r.id} value={r.friendlyName}>{r.friendlyName}</option>))}
+    {roles.rolesArray.map((r: Role) => (<option key={r.id} value={r.friendlyName}>{r.friendlyName}</option>))}
   </Select>
 
 /** Component for creating a new jurisdiction */
@@ -115,7 +118,7 @@ const CreateJurisdiction: NextPage = () => {
   const { isOpen: isErrorAlertOpen, onOpen: onErrorAlertOpen, onClose: onCloseErrorAlert } = useDisclosure()
   const cancelErrorRef = useRef<HTMLButtonElement | null>(null)
   const [deployError, setDeployError] = useState<string>()
-  
+
   const { isOpen: isProgressAlertOpen, onOpen: onProgressAlertOpen, onClose: onCloseProgressAlert } = useDisclosure()
   const cancelProgressRef = useRef<HTMLButtonElement | null>(null)
   const [progressValue, setProgressValue] = useState<number>(0)
@@ -125,8 +128,8 @@ const CreateJurisdiction: NextPage = () => {
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<Role>()
 
-  const { aliases, aliasesByAddress, aliasesByName, addAliases, loaded:aliasesLoaded } = useAliases()
-  const [ successfulDeployments, setSuccessfulDeployments ] = useState<Deployments|undefined>()
+  const { aliases, aliasesByAddress, aliasesByName, addAliases, loaded: aliasesLoaded } = useAliases()
+  const [successfulDeployments, setSuccessfulDeployments] = useState<Deployments | undefined>()
 
   const cacheJurisdiction = useJurisdictions(state => state.add)
 
@@ -134,21 +137,21 @@ const CreateJurisdiction: NextPage = () => {
     if (aliasesLoaded) {
       // Add some sample members to the new jurisdictions
       if (jurisdiction.members.length === 0 && !isJurisdictionModified)
-        aliases.slice(0,5).forEach(a => {
-          addMember({name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE})
+        aliases.slice(0, 5).forEach(a => {
+          addMember({ name: a.alias, address: a.address, role: roles.EXECUTIVE_ROLE })
         })
-      }
+    }
   }, [addMember, jurisdiction.members, aliases, aliasesLoaded])
 
   // Memoized callbacks
 
-  const getNameForAddress = useCallback((address:string) => {
+  const getNameForAddress = useCallback((address: string) => {
     const address_lc = address.toLowerCase()
     const acc = aliasesByAddress[address_lc]?.alias
     return acc ? acc : ""
   }, [aliasesByAddress])
 
-  const getAddressForName = useCallback((name:string) => {
+  const getAddressForName = useCallback((name: string) => {
     const name_lc = name.toLowerCase()
     const acc = aliasesByName[name_lc]?.address
     return acc ? acc : ""
@@ -166,19 +169,19 @@ const CreateJurisdiction: NextPage = () => {
       setMaintainerFeeUI(ethers.utils.formatUnits(jurisdiction.maintainerFee, "gwei"))
   }, [jurisdiction, getNameForAddress, maintainerAccountName, registryAccountName, registryFeeUI, maintainerFeeUI])
 
-  const updateMemberAddress = useCallback((index: number, m:IMember, value: string): void => {
+  const updateMemberAddress = useCallback((index: number, m: IMember, value: string): void => {
     // Update name if it is the default name, if it is a new name then leave it as is
-    let expectedName:string = getNameForAddress(m.address)
-    let newName:string = getNameForAddress(value)
+    let expectedName: string = getNameForAddress(m.address)
+    let newName: string = getNameForAddress(value)
     if (m.name !== "" && m.name !== expectedName)
       newName = m.name
-    replaceMember(index, {...m, address: value, name:newName})
+    replaceMember(index, { ...m, address: value, name: newName })
   }, [replaceMember, getNameForAddress])
 
   const updateNewMemberAddress = useCallback((value: string): void => {
     // Update name if it is the default name, if it is a new name then leave it as is
-    let expectedName:string = getNameForAddress(newMemberAddress)
-    let newName:string = getNameForAddress(value)
+    let expectedName: string = getNameForAddress(newMemberAddress)
+    let newName: string = getNameForAddress(value)
     if (newMemberName !== "" && newMemberName !== expectedName)
       newName = newMemberName
     setNewMemberName(newName)
@@ -187,8 +190,8 @@ const CreateJurisdiction: NextPage = () => {
 
   const updateRegistryAddress = useCallback((value: string): void => {
     // Update name if it is the default name, if it is a new name then leave it as is
-    let expectedName:string = getNameForAddress(jurisdiction.registryAddress)
-    let newName:string = getNameForAddress(value)
+    let expectedName: string = getNameForAddress(jurisdiction.registryAddress)
+    let newName: string = getNameForAddress(value)
     if (registryAccountName !== "" && registryAccountName !== expectedName)
       newName = registryAccountName
     setRegistryAccountName(newName)
@@ -197,8 +200,8 @@ const CreateJurisdiction: NextPage = () => {
 
   const updateRegistryAccountName = useCallback((value: string): void => {
     // Update address if it is empty or if it matches the address for the previous value of the name
-    let expectedAddress:string = getAddressForName(registryAccountName)
-    let newAddress:string = getAddressForName(value)
+    let expectedAddress: string = getAddressForName(registryAccountName)
+    let newAddress: string = getAddressForName(value)
     if (jurisdiction.registryAddress !== "" && jurisdiction.registryAddress !== expectedAddress)
       newAddress = jurisdiction.registryAddress
     setRegistryAccountName(value)
@@ -237,8 +240,8 @@ const CreateJurisdiction: NextPage = () => {
 
   const updateMaintainerAddress = useCallback((value: string): void => {
     // Update name if it is the default name, if it is a new name then leave it as is
-    let expectedName:string = getNameForAddress(jurisdiction.maintainerAddress)
-    let newName:string = getNameForAddress(value)
+    let expectedName: string = getNameForAddress(jurisdiction.maintainerAddress)
+    let newName: string = getNameForAddress(value)
     if (maintainerAccountName !== "" && maintainerAccountName !== expectedName)
       newName = maintainerAccountName
     setMaintainerAccountName(newName)
@@ -247,8 +250,8 @@ const CreateJurisdiction: NextPage = () => {
 
   const updateMaintainerAccountName = useCallback((value: string): void => {
     // Update address if it is empty or if it matches the address for the previous value of the name
-    let expectedAddress:string = getAddressForName(maintainerAccountName)
-    let newAddress:string = getAddressForName(value)
+    let expectedAddress: string = getAddressForName(maintainerAccountName)
+    let newAddress: string = getAddressForName(value)
     if (jurisdiction.maintainerAddress !== "" && jurisdiction.maintainerAddress !== expectedAddress)
       newAddress = jurisdiction.maintainerAddress
     setMaintainerAccountName(value)
@@ -268,52 +271,52 @@ const CreateJurisdiction: NextPage = () => {
     setMaintainerFeeUI(value)
   }, [])
 
-  const isEmptyRegistryAddress = useCallback(():boolean => {
+  const isEmptyRegistryAddress = useCallback((): boolean => {
     return registryAccountName === "" && jurisdiction.registryAddress === ""
   }, [registryAccountName, jurisdiction.registryAddress])
 
-  const isValidRegistryAddress = useCallback(():boolean => {
-    return jurisdiction.registryAddress !== "" && 
+  const isValidRegistryAddress = useCallback((): boolean => {
+    return jurisdiction.registryAddress !== "" &&
       jurisdiction.isValidAddress(jurisdiction.registryAddress)
   }, [jurisdiction.registryAddress, jurisdiction.isValidAddress])
 
-  const isEmptyMaintainerAddress = useCallback(():boolean => {
+  const isEmptyMaintainerAddress = useCallback((): boolean => {
     return maintainerAccountName === "" && jurisdiction.maintainerAddress === ""
   }, [maintainerAccountName, jurisdiction.maintainerAddress])
 
-  const isValidMaintainerAddress = useCallback(():boolean => {
-    return jurisdiction.maintainerAddress !== "" && 
+  const isValidMaintainerAddress = useCallback((): boolean => {
+    return jurisdiction.maintainerAddress !== "" &&
       jurisdiction.isValidAddress(jurisdiction.maintainerAddress)
   }, [jurisdiction.maintainerAddress, jurisdiction.isValidAddress])
 
-  const isEmptyNewMember = useCallback(():boolean => {
+  const isEmptyNewMember = useCallback((): boolean => {
     return newMemberName === "" && newMemberAddress === "" && newMemberRole === undefined
   }, [newMemberName, newMemberAddress, newMemberRole])
 
-  const isValidNewMember = useCallback(():boolean => {
-    return newMemberAddress !== "" && 
+  const isValidNewMember = useCallback((): boolean => {
+    return newMemberAddress !== "" &&
       newMemberRole !== undefined &&
-      jurisdiction.isValidAddress(newMemberAddress) && 
+      jurisdiction.isValidAddress(newMemberAddress) &&
       !jurisdiction.existsMemberAddress(newMemberAddress)
   }, [newMemberAddress, newMemberRole, jurisdiction.members, jurisdiction.isValidAddress, jurisdiction.existsMemberAddress])
 
-  const addNewMember = useCallback(():void => {
+  const addNewMember = useCallback((): void => {
     if (isValidNewMember() && newMemberRole !== undefined) {
-      addMember({name: newMemberName, address: newMemberAddress, role: newMemberRole})
+      addMember({ name: newMemberName, address: newMemberAddress, role: newMemberRole })
       setNewMemberName("")
       setNewMemberAddress("")
       setNewMemberRole(undefined)
     }
   }, [addMember, newMemberName, newMemberAddress, newMemberRole, isValidNewMember])
 
-  const isValidForm = useCallback(():boolean => {
+  const isValidForm = useCallback((): boolean => {
     return (
-      jurisdiction.isValid() 
-      && (isValidNewMember() || isEmptyNewMember()) 
-      && (isValidMaintainerAddress() || isEmptyMaintainerAddress()) 
+      jurisdiction.isValid()
+      && (isValidNewMember() || isEmptyNewMember())
+      && (isValidMaintainerAddress() || isEmptyMaintainerAddress())
       && (isValidRegistryAddress() || isEmptyRegistryAddress())
       && isValidGwei(registryFeeUI)
-      && isValidGwei(maintainerFeeUI) 
+      && isValidGwei(maintainerFeeUI)
       && web3Provider
     )
   }, [jurisdiction, isValidNewMember, isEmptyNewMember, web3Provider])
@@ -329,21 +332,21 @@ const CreateJurisdiction: NextPage = () => {
       router.push(`/jurisdiction/${jurisdictionAddress}`)
   }, [onCloseProgressAlert, successfulDeployments, router])
 
-  const startingStep = useCallback(async (jurisdiction:Jurisdiction, progress:number, name:string) => {
+  const startingStep = useCallback(async (jurisdiction: Jurisdiction, progress: number, name: string) => {
     setProgressLabel(name)
   }, [])
 
-  const onDeployed = useCallback(async (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => {
+  const onDeployed = useCallback(async (jurisdiction: Jurisdiction, progress: number, type: string, key: string, address: string) => {
     setProgressValue(progress)
     console.log(`deployed: ${key} ${type} at ${address} - progress = ${progress}`)
   }, [])
 
-  const onInitialized = useCallback(async (jurisdiction:Jurisdiction, progress:number, type:string, key:string, address:string) => {
+  const onInitialized = useCallback(async (jurisdiction: Jurisdiction, progress: number, type: string, key: string, address: string) => {
     setProgressValue(progress)
     console.log(`initialized: ${key} ${type} at ${address} - progress = ${progress}`)
   }, [])
 
-  const onError = useCallback(async (jurisdiction:Jurisdiction, msg:string, successfulDeployments:Deployments) => {
+  const onError = useCallback(async (jurisdiction: Jurisdiction, msg: string, successfulDeployments: Deployments) => {
     onCloseProgressAlert()
     setDeployError(msg)
     onErrorAlertOpen()
@@ -351,12 +354,12 @@ const CreateJurisdiction: NextPage = () => {
     console.log("Successful deployments:", successfulDeployments)
   }, [onCloseProgressAlert, onErrorAlertOpen])
 
-  const onCancelled = useCallback(async (jurisdiction:Jurisdiction, successfulDeployments:Deployments) => {
+  const onCancelled = useCallback(async (jurisdiction: Jurisdiction, successfulDeployments: Deployments) => {
     setSuccessfulDeployments(successfulDeployments)
     console.log("Successful deployments:", successfulDeployments)
   }, [onCloseProgressAlert])
 
-  const onCompleted = useCallback(async (jurisdiction:Jurisdiction, successfulDeployments:Deployments) => {
+  const onCompleted = useCallback(async (jurisdiction: Jurisdiction, successfulDeployments: Deployments) => {
     setProgressValue(1)
     setSuccessfulDeployments(successfulDeployments)
     console.log("Successful deployments:", successfulDeployments)
@@ -368,17 +371,17 @@ const CreateJurisdiction: NextPage = () => {
       status: JurisdictionStatus.Exists,
       createdAt: new Date()
     })
-    
+
     addAliases([
       {
         address: jurisdiction.registryAddress,
-        alias: registryAccountName  
+        alias: registryAccountName
       },
       {
         address: jurisdiction.maintainerAddress,
         alias: maintainerAccountName
       }])
-    }, [jurisdiction.registryAddress, jurisdiction.maintainerAddress, registryAccountName, maintainerAccountName])
+  }, [jurisdiction.registryAddress, jurisdiction.maintainerAddress, registryAccountName, maintainerAccountName])
 
   const deploy = useCallback(async () => {
     setProgressValue(0)
@@ -392,10 +395,10 @@ const CreateJurisdiction: NextPage = () => {
     setNewMemberName("")
     setNewMemberAddress("")
     setNewMemberRole(undefined)
-}, [resetJurisdiction])
+  }, [resetJurisdiction])
 
   // Memoized components
-  
+
   const progressDialog = useMemo(() => (
     <AlertDialog
       motionPreset='slideInBottom'
@@ -409,16 +412,16 @@ const CreateJurisdiction: NextPage = () => {
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-          {progressValue < 1 ? "Deployment in progress" : "Deployment complete!"}
+            {progressValue < 1 ? "Deployment in progress" : "Deployment complete!"}
           </AlertDialogHeader>
 
           <AlertDialogBody>
             <VStack>
               <HStack>
-                <CircularProgress value={progressValue*100 || 5} color='green.400'>
-                  <CircularProgressLabel>{Math.round(progressValue*100) || 5}%</CircularProgressLabel>
+                <CircularProgress value={progressValue * 100 || 5} color='green.400'>
+                  <CircularProgressLabel>{Math.round(progressValue * 100) || 5}%</CircularProgressLabel>
                 </CircularProgress>
-                <Text>{ progressValue < 1 ? progressLabel + "..." : "Deployment complete!" }</Text>
+                <Text>{progressValue < 1 ? progressLabel + "..." : "Deployment complete!"}</Text>
               </HStack>
               <Text>Please check MetaMask for new transactions.</Text>
             </VStack>
@@ -426,7 +429,7 @@ const CreateJurisdiction: NextPage = () => {
 
           <AlertDialogFooter>
             <Button ref={cancelProgressRef} onClick={progressValue === 1 ? onClickCloseDeployment : onClickCancelDeployment}>
-              {progressValue == 1 ? "Close": "Cancel"}
+              {progressValue == 1 ? "Close" : "Cancel"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -449,7 +452,7 @@ const CreateJurisdiction: NextPage = () => {
           </AlertDialogHeader>
 
           <AlertDialogBody>
-            {deployError||"Deployment failed"}
+            {deployError || "Deployment failed"}
           </AlertDialogBody>
 
           <AlertDialogFooter>
@@ -477,7 +480,7 @@ const CreateJurisdiction: NextPage = () => {
         borderWidth={1}
         value={JurisdictionId}
         width="40%"
-        onChange={() => {}}
+        onChange={() => { }}
       >
         <option key={JurisdictionId} value={JurisdictionId}>{JurisdictionId}</option>
       </Select>
@@ -505,58 +508,69 @@ const CreateJurisdiction: NextPage = () => {
     <VStack width="100%">
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Account:</Text>
-        <Input width="15%" value={registryAccountName} onChange={(e) => updateRegistryAccountName(e.target.value)}/>
-        <Input width="55%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress()||isEmptyRegistryAddress())?{}:invalidAddressProps} />
+        <Input width="15%" value={registryAccountName} onChange={(e) => updateRegistryAccountName(e.target.value)} />
+        <Input width="55%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress() || isEmptyRegistryAddress()) ? {} : invalidAddressProps} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Fee:</Text>
-        <Input width="80%" value={registryFeeUI} onChange={(e) => updateRegistryFee(e.target.value)} {...(isValidGwei(registryFeeUI)?{}:invalidAddressProps)}/>
+        <Input width="80%" value={registryFeeUI} onChange={(e) => updateRegistryFee(e.target.value)} {...(isValidGwei(registryFeeUI) ? {} : invalidAddressProps)} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Account:</Text>
-        <Input width="15%" value={maintainerAccountName} onChange={(e) => updateMaintainerAccountName(e.target.value)}/>
-        <Input width="55%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress()||isValidMaintainerAddress())?{}:invalidAddressProps} />
+        <Input width="15%" value={maintainerAccountName} onChange={(e) => updateMaintainerAccountName(e.target.value)} />
+        <Input width="55%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress() || isValidMaintainerAddress()) ? {} : invalidAddressProps} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Fee:</Text>
-        <Input width="80%" value={maintainerFeeUI} onChange={(e) => updateMaintainerFee(e.target.value)} {...(isValidGwei(maintainerFeeUI)?{}:invalidAddressProps)}/>
+        <Input width="80%" value={maintainerFeeUI} onChange={(e) => updateMaintainerFee(e.target.value)} {...(isValidGwei(maintainerFeeUI) ? {} : invalidAddressProps)} />
       </HStack>
     </VStack>
   ), [jurisdiction.registryAddress, jurisdiction.registryFee, jurisdiction.maintainerAddress, jurisdiction.maintainerFee, registryAccountName, maintainerAccountName, registryFeeUI, maintainerFeeUI])
 
   const nftSupporRow = useMemo(() => (
     <HStack width="100%">
-        <Text width="20%" fontSize='md'>Enable NFT Support:</Text>
-        <Switch size='lg' isChecked={jurisdiction.nftSupport} onChange={(e) => setNFTSupport(e.target.checked)} variant={jurisdiction.nftSupport?"java":""} />
+      <Text width="20%" fontSize='md'>Enable NFT Support:</Text>
+      <Switch size='lg' isChecked={jurisdiction.nftSupport} onChange={(e) => setNFTSupport(e.target.checked)} variant={jurisdiction.nftSupport ? "java" : ""} />
     </HStack>
   ), [jurisdiction.nftSupport])
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
-      <Input width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)}/>
-      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember()||isEmptyNewMember())?{}:invalidAddressProps} />
-      <RoleSelector isValid={newMemberRole!==undefined||isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName||""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
-      <Button width="15%" {...isValidNewMember()?greenButtonProps:""} onClick={() => addNewMember()}>Add</Button>
+      <Input width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
+      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
+      <RoleSelector isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
-    ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
+  ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
 
-  const membersRows= useMemo(() => (
+  const newMemberMaxReached = useMemo(() => (
+    <HStack width="100%">
+      <Input disabled width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
+      <Input disabled width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
+      <RoleSelector disabled isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <Tooltip label={`You've reached maximum number of members`}>
+        <Button disabled width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
+      </Tooltip>
+    </HStack>
+  ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
+
+  const membersRows = useMemo(() => (
     <VStack spacing={4}>
-      {jurisdiction.members.map((m:IMember, i:number) => (
+      {jurisdiction.members.map((m: IMember, i: number) => (
         <HStack width="100%" key={i}>
-          <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, {...m, name: e.target.value})}/>
-          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2))?{}:invalidAddressProps} />
-          <RoleSelector width="15%" isValid={m.role!==undefined} required={true} value={m.role.friendlyName||""} onChange={(e) => replaceMember(i, {...m, role: roles.rolesByFriendlyName[e.target.value]})} />
+          <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, { ...m, name: e.target.value })} />
+          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2)) ? {} : invalidAddressProps} />
+          <RoleSelector width="15%" isValid={m.role !== undefined} required={true} value={m.role.friendlyName || ""} onChange={(e) => replaceMember(i, { ...m, role: roles.rolesByFriendlyName[e.target.value] })} />
           <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
         </HStack>
       ))}
-      {newMemberRow}
+      {jurisdiction.members.length <= 9 ? newMemberRow : newMemberMaxReached}
     </VStack>
   ), [jurisdiction.members, newMemberRow])
-  
+
   const contractsRows = useMemo(() => (
     <VStack spacing={4}>
-      {jurisdiction.contracts.map((c:ContractDefinition) => (
+      {jurisdiction.contracts.map((c: ContractDefinition) => (
         <HStack width="100%" key={c.key}>
           <Text width="20%" fontSize='md'>{c.key}</Text>
           <Select
@@ -564,7 +578,7 @@ const CreateJurisdiction: NextPage = () => {
             borderWidth={1}
             value={c.id}
             width="80%"
-            onChange={() => {}}
+            onChange={() => { }}
           >
             <option key={c.id} value={c.id}>{c.id}</option>
           </Select>
@@ -578,7 +592,7 @@ const CreateJurisdiction: NextPage = () => {
   ), [jurisdiction.contracts, deploy])
 
   const configSection = useMemo(() => (
-    <VStack alignItems="flex-start" spacing={4}>        
+    <VStack alignItems="flex-start" spacing={4}>
       {jurisdictionNameRow}
       {jurisdictionContractRow}
       {titleTokenRows}
@@ -601,7 +615,7 @@ const CreateJurisdiction: NextPage = () => {
     return (
       <HStack width="100%" justifyContent="flex-end">
         <Button {...greenButtonProps} onClick={() => reset()}>Reset All</Button>
-        <Button {...(isValidForm()?greenButtonProps:"")} onClick={() => isValidForm()&&deploy()} >Create Jurisdiction</Button>
+        <Button {...(isValidForm() ? greenButtonProps : "")} onClick={() => isValidForm() && deploy()} >Create Jurisdiction</Button>
       </HStack>)
   }, [isValidForm, deploy, reset])
 
@@ -611,17 +625,18 @@ const CreateJurisdiction: NextPage = () => {
         <title>Create a Jurisdiction</title>
       </Head>
 
-      <Divider width="100%" marginBottom="1em"/>
+      <Divider width="100%" marginBottom="1em" />
       <VStack>
         {
           sections.map((section, i) => {
             return (
               <Box key={section.name} width="100%">
-                {i>0 && <Divider width="100%" margin="2em 0" border="1px" />}
-                <Heading as='h2' size='md' marginBottom="1em">{i+1}. {section.name}</Heading>
+                {i > 0 && <Divider width="100%" margin="2em 0" border="1px" />}
+                <Heading as='h2' size='md' marginBottom="1em">{i + 1}. {section.name}</Heading>
                 <Box width="100%">{section.content}</Box>
               </Box>
-            )})
+            )
+          })
         }
       </VStack>
       <Divider width="100%" margin="2em 0" />
