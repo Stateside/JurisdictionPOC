@@ -61,7 +61,10 @@ const Config = () => {
       </Box>
     </MemberOnlyButton>
   ),[jurisdictionAddress]);
-    
+
+  const registryAccountName = getAccount(d => d?.registryAccount)
+  const maintainerAccountName = getAccount(d => d?.maintainerAccount)
+
   return (
     <VStack alignItems="flex-start">
       <HStack width="100%">
@@ -106,7 +109,10 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Account:</Text>
-        <Text width="65%">{getAccount(d => d?.registryAccount) || <LoadingIcon/>}</Text>
+        <HStack width="65%">
+          <Text>{registryAccountName || <LoadingIcon/>}</Text>
+          <Text color={"brand.grey.grey03"} pl="3rem">{tokensContractDetails?.registryAccount === registryAccountName ? "" : tokensContractDetails?.registryAccount}</Text>
+        </HStack>
         <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.accounts.registry'/>
       </HStack>
 
@@ -122,7 +128,10 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Account:</Text>
-        <Text width="65%">{getAccount(d => d?.maintainerAccount) || <LoadingIcon/>}</Text>
+        <HStack width="65%">
+          <Text>{maintainerAccountName || <LoadingIcon/>}</Text>
+          <Text color={"brand.grey.grey03"} pl="3rem">{tokensContractDetails?.maintainerAccount === maintainerAccountName ? "" : tokensContractDetails?.maintainerAccount}</Text>
+        </HStack>
         <ChangeButton proposal='jsc.contracts.tokens/ChangeConfig:jsc.accounts.maintainer'/>
       </HStack>
 

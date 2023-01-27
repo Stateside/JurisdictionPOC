@@ -6,9 +6,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 const addToJurisdiction = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { jurisdiction, contracts } = req.body;
-    const contractsRepo = (await db()).getRepository(DeployedContract)
+    const contractsRepo = (await db()).getRepository<DeployedContract>(DeployedContract.name)
     await contractsRepo.createQueryBuilder()
-      .update(DeployedContract)
+      .update<DeployedContract>(DeployedContract.name)
       .where("address in (:addresses)", { addresses: contracts })
       .set({ jurisdiction })
       .execute();

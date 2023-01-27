@@ -25,6 +25,23 @@ phases:
   pre_build:
     on-failure: ABORT
     commands:
+      - |+
+        cat << END > frontend/.env
+        NEXT_PUBLIC_CHAIN_ID=41506
+        NEXT_PUBLIC_CHAIN_NAME=Jurisdictions Testnet
+        NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-geth.stateside.agency
+        NEXT_PUBLIC_CHAIN_BLOCK_EXPLORER_URL=
+        NEXT_PUBLIC_CHAIN_SYMBOL=ETH
+        NEXT_PUBLIC_CHAIN_DECIMALS=18        
+        NEXT_PUBLIC_VOLATILE_BLOCKCHAIN=true
+        NEXT_PUBLIC_FRONTEND=staging
+        NEXT_PUBLIC_GMAPS_API=AIzaSyDCurLmsvnyf7VD8lFZRzAcUluBW7YEviI
+        DB_HOST = ${DB_HOST}
+        DB_PORT = ${DB_PORT}
+        DB_USERNAME = ${DB_USERNAME}
+        DB_PASSWORD = ${DB_PASSWORD}
+        DB_DATABASE = ${DB_DATABASE}
+        END
       - cd jsc
       - yarn install --pure-lockfile --silent
       - cd ..
@@ -43,23 +60,6 @@ phases:
       - cd ..
   post_build:
     commands:
-      - |+
-        cat << END > frontend/.env
-        NEXT_PUBLIC_CHAIN_ID=41506
-        NEXT_PUBLIC_CHAIN_NAME=Jurisdictions Testnet
-        NEXT_PUBLIC_CHAIN_RPC_URL=https://jurisdictions-geth.stateside.agency
-        NEXT_PUBLIC_CHAIN_BLOCK_EXPLORER_URL=
-        NEXT_PUBLIC_CHAIN_SYMBOL=ETH
-        NEXT_PUBLIC_CHAIN_DECIMALS=18        
-        NEXT_PUBLIC_VOLATILE_BLOCKCHAIN=true
-        NEXT_PUBLIC_FRONTEND=staging
-        NEXT_PUBLIC_GMAPS_API=AIzaSyDCurLmsvnyf7VD8lFZRzAcUluBW7YEviI
-        DB_HOST = ${DB_HOST}
-        DB_PORT = ${DB_PORT}
-        DB_USERNAME = ${DB_USERNAME}
-        DB_PASSWORD = ${DB_PASSWORD}
-        DB_DATABASE = ${DB_DATABASE}
-        END
 artifacts:
   files:
     - "**/*"
