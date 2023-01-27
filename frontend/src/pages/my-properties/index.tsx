@@ -3,9 +3,9 @@ import Head from 'next/head';
 import {
   Box,
   Heading,
-  Link,
   Text,
 } from '@chakra-ui/react';
+import { Link } from '@/components/Link';
 import Property from './Property';
 import { ArrowBackIcon } from '@chakra-ui/icons';
 
