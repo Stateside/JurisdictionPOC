@@ -1,7 +1,11 @@
 export interface MenuItemInterface {
   label: string;
-  url: string;
-  command: string;
+  url?: string;
+  command?: string;
+  action?: ()=>Promise<void>;
+  actionMsg?: string;
+  children?: Array<MenuItemInterface>;
+  chainIds?: number[]
 }
 
 export interface SiteLayoutData {
