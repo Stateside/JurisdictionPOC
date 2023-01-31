@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Button, Divider, Heading, HStack, Input, Link, Text, Textarea, VStack } from '@chakra-ui/react';
+import { Box, Button, Divider, Heading, HStack, Input, Link, Text, Textarea, useToast, VStack } from '@chakra-ui/react';
 import AddRevisionModal, { NewRevision, ParameterValues } from './AddRevisionModal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowBackIcon } from '@chakra-ui/icons';
@@ -16,6 +16,7 @@ import { ParamType2SolidyType } from '@/utils/types';
 
 const CreateProposal: NextPage = () => {
   const { account, chainId, library } = useWeb3React();
+  const toast = useToast()
   const router = useRouter();
   const { loaded: loadedJurisdictions, loadContracts } = useJurisdictions();
   const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
@@ -212,7 +213,13 @@ const CreateProposal: NextPage = () => {
       // Clear cache for this governor
       refreshGovernorDetails(jscGovernorAddress)
 
-      router.push(`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId.toHexString()}`)
+      toast({
+        title: 'Proposal Submitted',
+        description: "The proposal has been submitted to the blockchain. It may take a few minutes to be confirmed.",
+        status: 'success',
+        duration: 3000
+      })
+    router.push(`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId.toHexString()}`)
     } catch (e) {
       console.log(e)
     }

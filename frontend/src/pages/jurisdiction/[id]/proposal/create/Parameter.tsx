@@ -1,7 +1,7 @@
 import DeleteIcon from "@/components/icons/deleteIcon";
 import { useAliases } from "@/store/useAliases";
 import { ParamType } from "@/utils/types";
-import { Button, HStack, Input, Select, Switch } from "@chakra-ui/react"
+import { Button, HStack, Input, Select, Switch, Tooltip } from "@chakra-ui/react"
 import { useEffect, useMemo, useState } from "react";
 
 export type Props = {
@@ -13,7 +13,7 @@ export type Props = {
   onChange: (value: string) => void
 }
 
-const AliasAndAddress = (props:{value:string, onChange:(newValue:string) => void}) => {
+const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue:string) => void}) => {
   const { aliasesByAddress, aliasesByName } = useAliases()
   const [alias, setAlias] = useState<string>("")
   const address = props.value || ""
@@ -56,8 +56,12 @@ const AliasAndAddress = (props:{value:string, onChange:(newValue:string) => void
   
   return (
     <HStack width="100%">
-      <Input width="25%" value={alias||""} onChange={e => updateAlias(e.target.value)}/>
-      <Input width="75%" value={address||""} onChange={e => updateAddress(e.target.value)}/>
+      <Tooltip label="Optional alias for this account">
+        <Input width="25%" value={alias||""} onChange={e => updateAlias(e.target.value)}/>
+      </Tooltip>
+      <Tooltip label={props.tooltip}>
+        <Input width="75%" value={address||""} onChange={e => updateAddress(e.target.value)}/>
+      </Tooltip>
     </HStack>
   )
 }
@@ -67,15 +71,19 @@ const Parameter = (props:Props) => {
     switch(props.type) {
       case ParamType.t_address:
         return (
-          <AliasAndAddress value={props.value||""} onChange={address => props.onChange(address)}/>
+          <AliasAndAddress tooltip={props.hint} value={props.value||""} onChange={address => props.onChange(address)}/>
         )
       case ParamType.t_bool:
         return (
-          <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")}/>
+          <Tooltip label={props.hint}>
+            <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")}/>
+          </Tooltip>
         )
       default:
         return (
-          <Input value={props.value || ""} onChange={e => props.onChange(e.target.value)}/>
+          <Tooltip label={props.hint}>
+            <Input value={props.value || ""} onChange={e => props.onChange(e.target.value)}/>
+          </Tooltip>
         )
     }
   },[props.type, props.value, props.onChange])
