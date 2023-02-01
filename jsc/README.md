@@ -107,7 +107,6 @@ yarn hardhat save-proposals --network staging --prefix development
 # TO DO
 
 - Register offers to sell I have received
-- Add a parameter to the title token to disable NFT support
 - Add a boolean to the individual tokens to enable NFT support
 - Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
 - Add tests for contracts when the governor is the owner

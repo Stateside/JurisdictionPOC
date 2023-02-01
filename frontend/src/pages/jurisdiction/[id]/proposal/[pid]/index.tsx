@@ -203,10 +203,13 @@ const Proposal: NextPage = () => {
           <HStack
             alignItems="flex-start"
             width="100%"
-            style={{ marginBottom: '20px' }}
           >
             <Text width="20%">Description:</Text>
             <Text>{proposal?.description || proposal?.id || ''}</Text>
+          </HStack>
+          <HStack alignItems="flex-start" width="100%" style={{ marginBottom: '20px' }}>
+            <Text width="20%">Status:</Text>
+            <Text>{proposal ? ProposalState[proposal?.status||0] : ""}</Text>
           </HStack>
           <Divider />
           <HStack
