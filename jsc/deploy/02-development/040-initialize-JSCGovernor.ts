@@ -6,6 +6,7 @@ import * as tc from "../../typechain-types"
 import { ethers } from "hardhat" 
 import { createSampleProposals } from "../../utils/sample-proposals"
 import { PreparedProposal } from "../../utils/proposals"
+import { accountsByAddress, buildWallets } from "../../utils/accounts"
 
 const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -22,18 +23,26 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscGovernor.init(jscJurisdiction.address, true)
 
-  const sampleProposals = await createSampleProposals(ethers, jscGovernor, jscCabinet, jscTitleToken)
   const proposalMap:{[hash:string]: PreparedProposal} = {}
-  for (let i = 0; i < sampleProposals.length; i++) {
-    const p = sampleProposals[i];
-    await jscGovernor.propose(p.revs, p.description, p.version)
-    proposalMap[p.proposalHash.toHexString().toLowerCase()] = p
+  try {
+    const wallets = buildWallets(ethers)
     
-    const voters = Object.keys(p.whoHasVoted)
-    for (let j = 0; j < voters.length; j++) {
-      const voter = voters[j]
-      await jscGovernor.connect(ethers.provider.getSigner(voter)).castVote(p.proposalHash, p.whoHasVoted[voter])
+    const sampleProposals = await createSampleProposals(ethers, jscGovernor, jscCabinet, jscTitleToken)
+    for (let i = 0; i < sampleProposals.length; i++) {
+      const p = sampleProposals[i];
+      console.log(`Proposing ${p.description}...`)
+      await jscGovernor.propose(p.revs, p.description, p.version)
+      proposalMap[p.proposalHash.toHexString().toLowerCase()] = p
+      
+      console.log(`Voting on ${p.description}...`)
+      const voters = Object.keys(p.whoHasVoted)
+      for (let j = 0; j < voters.length; j++) {
+        const voter = voters[j]
+        await jscGovernor.connect(wallets[accountsByAddress[voter].name]).castVote(p.proposalHash, p.whoHasVoted[voter])
+      }
     }
+  } catch (error) {
+    console.log(error)
   }
 
   log(`development_JSCGovernor Initialized with the following tokens:`)

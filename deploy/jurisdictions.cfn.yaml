@@ -409,8 +409,6 @@ Resources:
                 cp */geth /usr/bin
                 cp */clef /usr/bin
                                 
-                # Auto start geth on system boot
-
                 # Set up dev env for Geth
 
                 # Password for keystore

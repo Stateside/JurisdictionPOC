@@ -21,19 +21,23 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
 
   log("Initializing development_JSCTitleTokenTest...")
   const jscTitleToken:tc.JSCTitleTokenTest = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
-  await jscTitleToken.init(
-    "Our Title Token",
-    "OTT",
-    chainId === 41506 ? "https://jurisdictions.stateside.agency/api/token/" : "http://localhost:3000/api/token/",
-    jscJurisdictionContract.address,
-    accountsByName["Mary"].address,
-    ethers.utils.parseUnits("0.1", "gwei"),
-    accountsByName["Sophia"].address,
-    ethers.utils.parseUnits("0.2", "gwei"),
-    true,
-    zeroAddress
-  )
-
+  
+  try {
+	  await jscTitleToken.init(
+	    "Our Title Token",
+	    "OTT",
+	    chainId === 41506 ? "https://jurisdictions.stateside.agency/api/token/" : "http://localhost:3000/api/token/",
+	    jscJurisdictionContract.address,
+	    accountsByName["Mary"].address,
+	    ethers.utils.parseUnits("0.1", "gwei"),
+	    accountsByName["Sophia"].address,
+	    ethers.utils.parseUnits("0.2", "gwei"),
+	    true,
+	    zeroAddress
+    )
+  } catch (error) {
+    console.log(error)
+  }
   const { Bob, Sara, Jane, Bryan, Rich, Alex, Peter } = accountsByName
 
   type Offer = { buyer: Account, amt: number }
@@ -158,25 +162,30 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     ],
   }
 
-  const wallets = buildWallets(ethers)
-  for (const name in tokens) {
-      const titles = tokens[name];
-      for (let i = 0; i < titles.length; i++) {
-        const t = titles[i];
-        const owner = accountsByName[name]
-        await jscTitleToken.mint(owner.address, t.titleId)
-        const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
-        for (let b = 0; b < t.offersToBuy.length; b++) {
-          const o = t.offersToBuy[b];
-          await jscTitleToken.connect(wallets[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
-        }
-        for (let s = 0; s < t.offersToSell.length; s++) {
-          const o = t.offersToSell[s];
-          await jscTitleToken.connect(wallets[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
-        }
-      }
+  try {
+	  const wallets = buildWallets(ethers)
+	  for (const name in tokens) {
+	      const titles = tokens[name];
+	      for (let i = 0; i < titles.length; i++) {
+	        const t = titles[i];
+	        const owner = accountsByName[name]
+	        console.log(t.titleId)
+	        await jscTitleToken.mint(owner.address, t.titleId)
+	        const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
+	        for (let b = 0; b < t.offersToBuy.length; b++) {
+	          const o = t.offersToBuy[b];
+	          await jscTitleToken.connect(wallets[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
+	        }
+	        for (let s = 0; s < t.offersToSell.length; s++) {
+	          const o = t.offersToSell[s];
+	          await jscTitleToken.connect(wallets[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
+	        }
+	      }
+	  }
+	
+  } catch (error) {
+    console.log(error)
   }
-
   // In development we will freeze Peters account for testing
   await jscTitleToken.setFrozenOwner(Peter.address, true);
   const tokenId = await jscTitleToken.titleToTokenId("title-14")
