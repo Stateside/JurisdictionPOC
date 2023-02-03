@@ -1,7 +1,8 @@
 import DeleteIcon from "@/components/icons/deleteIcon";
+import SpecialSelect from "@/components/SpecialSelect";
 import { useAliases } from "@/store/useAliases";
 import { ParamType } from "@/utils/types";
-import { Button, HStack, Input, Select, Switch, Tooltip } from "@chakra-ui/react"
+import { HStack, Input, Switch, Tooltip } from "@chakra-ui/react"
 import { useEffect, useMemo, useState } from "react";
 
 export type Props = {
@@ -13,21 +14,23 @@ export type Props = {
   onChange: (value: string) => void
 }
 
+
 const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue:string) => void}) => {
+
   const { aliasesByAddress, aliasesByName } = useAliases()
   const [alias, setAlias] = useState<string>("")
   const address = props.value || ""
 
-  const updateParent = (newValue:string) => {
+  const updateParent = (newValue: string) => {
     props.onChange(newValue)
   }
 
-  const updateAlias = (newValue:string) => {
+  const updateAlias = (newValue: string) => {
     const lcAddress = address.toLowerCase()
     const lcNewValue = newValue.toLowerCase()
     const lcAlias = alias.toLowerCase()
-    let expectedAddress:string = aliasesByName[lcAlias]?.address || ""
-    let newAddress:string = aliasesByName[lcNewValue]?.address || ""
+    let expectedAddress: string = aliasesByName[lcAlias]?.address || ""
+    let newAddress: string = aliasesByName[lcNewValue]?.address || ""
     if (lcAddress !== "" && lcAddress !== expectedAddress.toLowerCase())
       newAddress = address
     setAlias(newValue)
@@ -35,12 +38,12 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
       updateParent(newAddress)
   }
 
-  const updateAddress = (newValue:string) => {
+  const updateAddress = (newValue: string) => {
     const lcAddress = address.toLowerCase()
     const lcNewValue = newValue.toLowerCase()
     const lcAlias = alias.toLowerCase()
-    let expectedAlias:string = aliasesByAddress[lcAddress]?.alias || "" 
-    let newAlias:string = aliasesByAddress[lcNewValue]?.alias || ""
+    let expectedAlias: string = aliasesByAddress[lcAddress]?.alias || ""
+    let newAlias: string = aliasesByAddress[lcNewValue]?.alias || ""
     if (lcAlias !== "" && lcAlias !== expectedAlias.toLowerCase())
       newAlias = alias
     setAlias(newAlias)
@@ -53,22 +56,38 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
       setAlias(aliasesByAddress[lcAddress]?.alias)
     }
   }, [address, alias, aliasesByAddress])
-  
+
   return (
+
     <HStack width="100%">
       <Tooltip label="Optional alias for this account">
-        <Input width="25%" value={alias||""} onChange={e => updateAlias(e.target.value)}/>
+      <SpecialSelect
+          width='40%'
+          value={(address || alias) ? { label: alias, value: address } :{ label: '', value: '' } }
+          options={aliasesByAddress}
+          onChange={(selectedOption: any) => {
+            if(selectedOption.label === selectedOption.value) {
+              updateAlias(selectedOption.label)
+            } else {
+              updateAlias(selectedOption.label)
+              updateAddress(selectedOption.value)
+            }
+            
+          }}
+        />
       </Tooltip>
       <Tooltip label={props.tooltip}>
         <Input width="75%" value={address||""} onChange={e => updateAddress(e.target.value)}/>
       </Tooltip>
+
     </HStack>
+
   )
 }
 
-const Parameter = (props:Props) => {
+const Parameter = (props: Props) => {
   const controls = useMemo(() => {
-    switch(props.type) {
+    switch (props.type) {
       case ParamType.t_address:
         return (
           <AliasAndAddress tooltip={props.hint} value={props.value||""} onChange={address => props.onChange(address)}/>
@@ -86,7 +105,7 @@ const Parameter = (props:Props) => {
           </Tooltip>
         )
     }
-  },[props.type, props.value, props.onChange])
+  }, [props.type, props.value, props.onChange])
 
   return (
     <HStack width={props.width}>

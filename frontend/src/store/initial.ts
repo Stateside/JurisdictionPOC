@@ -16,6 +16,7 @@ export const siteMainMenu:Array<MenuItemInterface> = [
         {label: 'Mine 16 Blocks', url: '', action:() => mineBlocks(16), actionMsg:"Mined 16 blocks", command: '⌘6', chainIds: [31337]},
         {label: 'Mine 32 Blocks', url: '', action:() => mineBlocks(32), actionMsg:"Mined 32 blocks", command: '⌘3', chainIds: [31337]},
     ]}
+
 ]
 
 export const siteLayoutData:SiteLayoutData = {
