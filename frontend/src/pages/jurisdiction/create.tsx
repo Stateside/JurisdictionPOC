@@ -5,6 +5,7 @@ import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, Al
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Role, buildRoles } from "../../utils/roles"
 import DeleteIcon from '@/components/icons/deleteIcon';
+import SpecialSelect from '@/components/SpecialSelect';
 import { Deployments, IMember, Jurisdiction, JurisdictionId } from 'classes/jurisdiction';
 import create from 'zustand'
 import shallow from 'zustand/shallow'
@@ -190,8 +191,8 @@ const CreateJurisdiction: NextPage = () => {
 
   const updateNewMemberAccountName = useCallback((value: string): void => {
     // Update address if it is empty or if it matches the address for the previous value of the name
-    let expectedAddress:string = getAddressForName(newMemberName)
-    let newAddress:string = getAddressForName(value)
+    let expectedAddress: string = getAddressForName(newMemberName)
+    let newAddress: string = getAddressForName(value)
     if (newMemberAddress !== "" && newMemberAddress !== expectedAddress)
       newAddress = newMemberAddress
     setNewMemberName(value)
@@ -518,8 +519,21 @@ const CreateJurisdiction: NextPage = () => {
     <VStack width="100%">
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Account:</Text>
-        <Input width="15%" value={registryAccountName} onChange={(e) => updateRegistryAccountName(e.target.value)} />
-        <Input width="55%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress() || isEmptyRegistryAddress()) ? {} : invalidAddressProps} />
+        <SpecialSelect
+          width='20%'
+          value={(registryAccountName || jurisdiction.registryAddress) ? { label: registryAccountName, value: jurisdiction.registryAddress } : { label: '', value: '' }}
+          options={aliasesByAddress}
+          onChange={(selectedOption: any) => {
+            if (selectedOption.label === selectedOption.value) {
+              updateRegistryAccountName(selectedOption.label)
+            } else {
+              updateRegistryAccountName(selectedOption.label)
+              updateRegistryAddress(selectedOption.value)
+            }
+
+          }}
+        />
+        <Input width="60%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress() || isEmptyRegistryAddress()) ? {} : invalidAddressProps} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Fee:</Text>
@@ -527,8 +541,21 @@ const CreateJurisdiction: NextPage = () => {
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Account:</Text>
-        <Input width="15%" value={maintainerAccountName} onChange={(e) => updateMaintainerAccountName(e.target.value)} />
-        <Input width="55%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress() || isValidMaintainerAddress()) ? {} : invalidAddressProps} />
+        <SpecialSelect
+          width='20%'
+          value={(maintainerAccountName || jurisdiction.maintainerAddress) ? { label: maintainerAccountName, value: jurisdiction.maintainerAddress } : { label: '', value: '' }}
+          options={aliasesByAddress}
+          onChange={(selectedOption: any) => {
+            if (selectedOption.label === selectedOption.value) {
+              updateMaintainerAccountName(selectedOption.label)
+            } else {
+              updateMaintainerAccountName(selectedOption.label)
+              updateMaintainerAddress(selectedOption.value)
+            }
+
+          }}
+        />
+        <Input width="60%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress() || isValidMaintainerAddress()) ? {} : invalidAddressProps} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Fee:</Text>
@@ -546,10 +573,10 @@ const CreateJurisdiction: NextPage = () => {
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
-      <Input width="15%" value={newMemberName} onChange={(e) => updateNewMemberAccountName(e.target.value)}/>
-      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember()||isEmptyNewMember())?{}:invalidAddressProps} />
-      <RoleSelector isValid={newMemberRole!==undefined||isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName||""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
-      <Button width="15%" {...isValidNewMember()?greenButtonProps:""} onClick={() => addNewMember()}>Add</Button>
+      <Input width="15%" value={newMemberName} onChange={(e) => updateNewMemberAccountName(e.target.value)} />
+      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
+      <RoleSelector isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
   ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
 
@@ -568,7 +595,20 @@ const CreateJurisdiction: NextPage = () => {
     <VStack spacing={4}>
       {jurisdiction.members.map((m: IMember, i: number) => (
         <HStack width="100%" key={i}>
-          <Input width="15%" value={m.name} onChange={(e) => replaceMember(i, { ...m, name: e.target.value })} />
+          <SpecialSelect
+            width='20%'
+            value={(m.name || m.address) ? { label: m.name, value: m.address } : { label: '', value: '' }}
+            options={aliasesByAddress}
+            onChange={(selectedOption: any) => {
+              if (selectedOption.label === selectedOption.value) {
+                replaceMember(i, { ...m, name: selectedOption.label })
+              } else {
+                replaceMember(i, { ...m, name: selectedOption.label })
+                updateMemberAddress(i, m, selectedOption.value)
+              }
+
+            }}
+          />
           <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2)) ? {} : invalidAddressProps} />
           <RoleSelector width="15%" isValid={m.role !== undefined} required={true} value={m.role.friendlyName || ""} onChange={(e) => replaceMember(i, { ...m, role: roles.rolesByFriendlyName[e.target.value] })} />
           <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>

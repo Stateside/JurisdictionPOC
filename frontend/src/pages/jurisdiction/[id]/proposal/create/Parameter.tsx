@@ -1,7 +1,9 @@
 import DeleteIcon from "@/components/icons/deleteIcon";
+import SpecialSelect from "@/components/SpecialSelect";
 import { useAliases } from "@/store/useAliases";
 import { ParamType } from "@/utils/types";
-import { Button, HStack, Input, Select, Switch } from "@chakra-ui/react"
+import { Box, HStack, Input, Switch } from "@chakra-ui/react"
+import { Select } from "chakra-react-select";
 import { useEffect, useMemo, useState } from "react";
 
 export type Props = {
@@ -13,21 +15,21 @@ export type Props = {
   onChange: (value: string) => void
 }
 
-const AliasAndAddress = (props:{value:string, onChange:(newValue:string) => void}) => {
+const AliasAndAddress = (props: { value: string, onChange: (newValue: string) => void }) => {
   const { aliasesByAddress, aliasesByName } = useAliases()
   const [alias, setAlias] = useState<string>("")
   const address = props.value || ""
 
-  const updateParent = (newValue:string) => {
+  const updateParent = (newValue: string) => {
     props.onChange(newValue)
   }
 
-  const updateAlias = (newValue:string) => {
+  const updateAlias = (newValue: string) => {
     const lcAddress = address.toLowerCase()
     const lcNewValue = newValue.toLowerCase()
     const lcAlias = alias.toLowerCase()
-    let expectedAddress:string = aliasesByName[lcAlias]?.address || ""
-    let newAddress:string = aliasesByName[lcNewValue]?.address || ""
+    let expectedAddress: string = aliasesByName[lcAlias]?.address || ""
+    let newAddress: string = aliasesByName[lcNewValue]?.address || ""
     if (lcAddress !== "" && lcAddress !== expectedAddress.toLowerCase())
       newAddress = address
     setAlias(newValue)
@@ -35,12 +37,12 @@ const AliasAndAddress = (props:{value:string, onChange:(newValue:string) => void
       updateParent(newAddress)
   }
 
-  const updateAddress = (newValue:string) => {
+  const updateAddress = (newValue: string) => {
     const lcAddress = address.toLowerCase()
     const lcNewValue = newValue.toLowerCase()
     const lcAlias = alias.toLowerCase()
-    let expectedAlias:string = aliasesByAddress[lcAddress]?.alias || "" 
-    let newAlias:string = aliasesByAddress[lcNewValue]?.alias || ""
+    let expectedAlias: string = aliasesByAddress[lcAddress]?.alias || ""
+    let newAlias: string = aliasesByAddress[lcNewValue]?.alias || ""
     if (lcAlias !== "" && lcAlias !== expectedAlias.toLowerCase())
       newAlias = alias
     setAlias(newAlias)
@@ -53,32 +55,47 @@ const AliasAndAddress = (props:{value:string, onChange:(newValue:string) => void
       setAlias(aliasesByAddress[lcAddress]?.alias)
     }
   }, [address, alias, aliasesByAddress])
-  
+
   return (
+
     <HStack width="100%">
-      <Input width="25%" value={alias||""} onChange={e => updateAlias(e.target.value)}/>
-      <Input width="75%" value={address||""} onChange={e => updateAddress(e.target.value)}/>
+        <SpecialSelect
+          width='40%'
+          value={(address || alias) ? { label: alias, value: address } :{ label: '', value: '' } }
+          options={aliasesByAddress}
+          onChange={(selectedOption: any) => {
+            if(selectedOption.label === selectedOption.value) {
+              updateAlias(selectedOption.label)
+            } else {
+              updateAlias(selectedOption.label)
+              updateAddress(selectedOption.value)
+            }
+            
+          }}
+        />
+      <Input width="70%" value={address || ""} onChange={e => updateAddress(e.target.value)} />
     </HStack>
+
   )
 }
 
-const Parameter = (props:Props) => {
+const Parameter = (props: Props) => {
   const controls = useMemo(() => {
-    switch(props.type) {
+    switch (props.type) {
       case ParamType.t_address:
         return (
-          <AliasAndAddress value={props.value||""} onChange={address => props.onChange(address)}/>
+          <AliasAndAddress value={props.value || ""} onChange={address => props.onChange(address)} />
         )
       case ParamType.t_bool:
         return (
-          <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")}/>
+          <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")} />
         )
       default:
         return (
-          <Input value={props.value || ""} onChange={e => props.onChange(e.target.value)}/>
+          <Input value={props.value || ""} onChange={e => props.onChange(e.target.value)} />
         )
     }
-  },[props.type, props.value, props.onChange])
+  }, [props.type, props.value, props.onChange])
 
   return (
     <HStack width={props.width}>
