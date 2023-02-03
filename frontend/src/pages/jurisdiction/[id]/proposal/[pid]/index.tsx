@@ -1,18 +1,19 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Button, CircularProgress, Divider, Heading, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, Divider, Heading, HStack, Text, useToast, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import FavoriteProposalButton from '@/components/FavoriteProposalButton';
 import { ArrowBackIcon } from '@chakra-ui/icons';
 import { useWeb3React } from '@web3-react/core';
 import { useJurisdictions } from '@/store/useJurisdictions';
-import { useEffect, useMemo, useState } from 'react';
-import { IRevisionDetails, useGovernors } from '@/store/useGovernors';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { IProposalDetails, IRevisionDetails, useGovernors } from '@/store/useGovernors';
 import { Link } from '@/components/Link';
 import Tag from '@/components/Tag';
 import RevisionModal from './RevisionModal';
-import { ProposalState } from '@/utils/types';
+import { ProposalState, VoteType } from '@/utils/types';
 import MemberOnlyButton from '@/components/MemberOnlyButton';
+import { ethers } from 'ethers';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number) => {
@@ -46,6 +47,7 @@ const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='
 const Proposal: NextPage = () => {
   const router = useRouter();
   const { account, library } = useWeb3React();
+  const toast = useToast()
 
   // First load jurisdiction, then contracts, then Governor, then proposal...
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
@@ -64,6 +66,17 @@ const Proposal: NextPage = () => {
   const proposal = useGovernors(state => state.governors[jscGovernorAddress]?.proposals?.[proposalId])
 
   const [hasVoted, setHasVoted] = useState(true)
+
+  const onBlockEvent = useCallback((b:any) => {
+    console.log("block event", b)
+    const getBlockNumber = async () => { setBlockNumber(library ? await library.getBlockNumber() : 0) }
+    getBlockNumber()
+  }, [library])
+
+  useEffect(() => {
+    library?.on("block", onBlockEvent)
+    return () => { library?.removeListener("block", onBlockEvent) }
+  }, [onBlockEvent])
 
   useEffect(() => {
     if (account && proposal) {
@@ -124,7 +137,38 @@ const Proposal: NextPage = () => {
       executeTooltip = 'This proposal was cancelled'
       break
   }
- 
+
+  const vote = async (vote:VoteType) => {
+    if (jscGovernorDetails) {
+      await jscGovernorDetails.instanceWithSigner(library.getSigner()).castVote(proposalId, vote)
+      toast({
+        title: 'Vote Submitted',
+        description: "Your vote has been submitted to the blockchain. It may take a few minutes to be confirmed.",
+        status: 'success',
+        duration: 3000
+      })
+    }
+  }
+
+  const execute = async (proposal:IProposalDetails|undefined) => {
+    if (jscGovernorDetails && proposal && proposal.revisions && proposal.revisions.length > 0 && proposal.version && proposal.description) {
+      await jscGovernorDetails.instanceWithSigner(library.getSigner()).execute(
+        proposal.revisions?.map(r => ({
+          target: r.target,
+          name: r.name,
+          pdata: r.pdata,
+        })),
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes(proposal.description)),
+        proposal.version)
+      toast({
+        title: 'Proposal Executed',
+        description: "Your execution of this proposal has been submitted to the blockchain. It may take a few minutes to be confirmed.",
+        status: 'success',
+        duration: 3000
+      })
+    }
+  }
+
   return (
     <Box width="100%">
       <Head>
@@ -198,20 +242,20 @@ const Proposal: NextPage = () => {
           <HStack width="100%" paddingTop="20px" alignItems="flex-start">
             <HStack gap="20px" width="80%">
               <VStack>
-                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Vote YES</MemberOnlyButton>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip} onClick={() => vote(VoteType.For)}>Vote For</MemberOnlyButton>
                 <Text>{(proposal?.votes?.forVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Vote NO</MemberOnlyButton>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip} onClick={() => vote(VoteType.Against)}>Vote Against</MemberOnlyButton>
                 <Text>{(proposal?.votes?.againstVotes || 0) + " Votes"}</Text>
               </VStack>
               <VStack>
-                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip}>Abstain</MemberOnlyButton>
+                <MemberOnlyButton variant="Header" disabled={!canVote} tooltip={voteToolTip} onClick={() => vote(VoteType.Abstain)}>Abstain</MemberOnlyButton>
                 <Text>{(proposal?.votes?.abstainVotes || 0) + " Votes"}</Text>
               </VStack>
             </HStack>
             <HStack flexDirection="row-reverse" width="20%">
-              <MemberOnlyButton variant="Header" disabled={!canExecute} tooltip={executeTooltip}>Execute</MemberOnlyButton>
+              <MemberOnlyButton variant="Header" disabled={!canExecute} tooltip={executeTooltip} onClick={() => execute(proposal)}>Execute</MemberOnlyButton>
             </HStack>
           </HStack>
         </VStack>

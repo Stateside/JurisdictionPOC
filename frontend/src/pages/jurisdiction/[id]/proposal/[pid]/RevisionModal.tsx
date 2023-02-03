@@ -12,17 +12,11 @@ import {
   Text,
   VStack,
   Heading,
-  Switch,
 } from '@chakra-ui/react';
-import { useJurisdictions } from '@/store/useJurisdictions';
-import { IRevisionDetails, useGovernors } from '@/store/useGovernors';
-import { useCallback, useEffect } from 'react';
-import { useWeb3React } from '@web3-react/core';
+import { IRevisionDetails } from '@/store/useGovernors';
 import { useParameterSimplifier } from '@/store/useParameterSimplifier';
 import { capitalizeString } from '@/utils/util';
-import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
-import { useAliases } from '@/store/useAliases';
-import { ParameterDetails } from '../ParameterDetails';
+import ParameterDetails from '../ParameterDetails';
 
 const LoadingIcon = () => (
   <CircularProgress isIndeterminate size="1em" color="brand.java" />
@@ -84,13 +78,17 @@ const RevisionModal = ({
                         key={parameter.name}
                         width="100%"
                         alignItems={'flex-start'}
+                        mb=".5rem"
                       >
-                        <HStack width="100%" mb="30px">
-                          <Text width="20%">
+                        <HStack width="100%" mb="-.5rem">
+                          <Text width="10%">
                             {capitalizeString(parameter.name)}:
                           </Text>
-                          <ParameterDetails param={parameter} width="80%" />
+                          <ParameterDetails param={parameter} width="90%" />
                         </HStack>
+                        <Text variant="break-word" width="30%" fontSize="sm" color="brand.grey.grey03">
+                          {parameter.hint}
+                        </Text>
                       </VStack>
                     ))
                   ) : (

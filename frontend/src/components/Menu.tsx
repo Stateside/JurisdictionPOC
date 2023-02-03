@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu as MenuChakra, MenuButton, MenuList, MenuItem, IconButton, Text, Box } from '@chakra-ui/react'
+import { Menu as MenuChakra, MenuButton, MenuList, MenuItem, IconButton, Text, Box, MenuGroup, MenuDivider, useToast } from '@chakra-ui/react'
 import MenuIcon from '@/components/icons/menuIcon'
 import { MenuItemInterface} from '@/interfaces/index';
 import { Link } from './Link';
@@ -10,7 +10,48 @@ type Props = {
 
 const Menu = (props: Props) => {
     const { items } = props;
+    const toast = useToast();
 
+    const filterItems = (items:MenuItemInterface[]|undefined) => items === undefined? [] : items.filter(item => item.chainIds === undefined || item.chainIds?.includes(parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '')))
+
+    const getMenuItem = (item: MenuItemInterface, ml:number) => (
+      item.label.startsWith("divider")
+      ? <MenuDivider key={item.label}/>
+      : item.children
+        ? getSubMenu(item, ml)
+        : <MenuItem key={item.label} ml={ml}>
+            <Link
+              href={item.url || undefined}
+              onClick={item.action ? async () => {
+                item.action && await item.action()
+                item.actionMsg && toast({
+                  title: item.actionMsg,
+                  status: 'success',
+                  duration: 3000
+                }) 
+              } : undefined}
+              style={{ textDecoration: 'none' }}
+              _focus={{ boxShadow: 'none' }}
+            >
+              <Text
+                fontSize="15px"
+                fontWeight="700"
+                lineHeight="20px"
+                letterSpacing="0px"
+                textAlign="left"
+              >
+                {item.label}
+              </Text>
+            </Link>
+          </MenuItem>
+    )
+
+    const getSubMenu = (item: MenuItemInterface, ml:number) => (
+      <MenuGroup title={item.label} key={item.label}>
+        {filterItems(item.children).map((item) => getMenuItem(item, ml+3))}
+      </MenuGroup>
+    )
+    
     return (
       <MenuChakra variant={'mainMenu'} {...props}>
         <MenuButton
@@ -30,27 +71,7 @@ const Menu = (props: Props) => {
           top="15px"
           boxShadow="0px -5px 10px -15px rgb(0 0 0 / 10%), 0px 5px 10px 5px rgb(0 0 0 / 10%)"
         >
-          {items.map((item, key) => {
-            return (
-              <MenuItem key={key}>
-                <Link
-                  href={item.url}
-                  style={{ textDecoration: 'none' }}
-                  _focus={{ boxShadow: 'none' }}
-                >
-                  <Text
-                    fontSize="15px"
-                    fontWeight="700"
-                    lineHeight="20px"
-                    letterSpacing="0px"
-                    textAlign="left"
-                  >
-                    {item.label}
-                  </Text>
-                </Link>
-              </MenuItem>
-            );
-          })}
+          {filterItems(items).map((item, key) => getMenuItem(item, 0))}
           <Box
             position="absolute"
             top="-14px"

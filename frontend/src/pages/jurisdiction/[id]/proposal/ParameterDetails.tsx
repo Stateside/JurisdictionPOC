@@ -2,6 +2,7 @@ import {
   HStack,
   Text,
   Switch,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useParameterSimplifier } from '@/store/useParameterSimplifier';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
@@ -12,8 +13,8 @@ export type Props = {
   width: string
 };
 
-export const ParameterDetails = ({param, width}:Props) => {
-  const { simplifyDescription, simplifyValue } = useParameterSimplifier();
+const ParameterDetails = ({param, width}:Props) => {
+  const { simplifyValue } = useParameterSimplifier();
   const { aliasesByAddress } = useAliases()
 
   switch(param.type) {
@@ -23,10 +24,11 @@ export const ParameterDetails = ({param, width}:Props) => {
           <Text variant="break-word">
             {aliasesByAddress[param.value.toLowerCase()]?.alias || param.value}
           </Text>
-          <Text pl="3rem" variant="break-word">
+          <Text pl="2rem" variant="break-word">
             {param.value}
           </Text>
-        </HStack>)
+        </HStack>
+      )
     case ParamType.t_bool:
       return (
         <Switch width={width} isChecked={param.value === '1'} disabled={true}/>
@@ -35,6 +37,9 @@ export const ParameterDetails = ({param, width}:Props) => {
       return (
         <Text width={width} variant="break-word">
           {simplifyValue(param)}
-        </Text>)
+        </Text>
+      )
   }
 }
+
+export default ParameterDetails;
