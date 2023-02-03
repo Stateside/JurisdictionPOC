@@ -573,7 +573,19 @@ const CreateJurisdiction: NextPage = () => {
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
-      <Input width="15%" value={newMemberName} onChange={(e) => updateNewMemberAccountName(e.target.value)} />
+      <SpecialSelect
+            width='20%'
+            value={(newMemberName || newMemberAddress) ? { label: newMemberName, value: newMemberAddress } : { label: '', value: '' }}
+            options={aliasesByAddress}
+            onChange={(selectedOption: any) => {
+              if (selectedOption.label === selectedOption.value) {
+                updateNewMemberAccountName(selectedOption.label)
+              } else {
+                updateNewMemberAccountName(selectedOption.label)
+                updateNewMemberAddress(selectedOption.value)
+              }
+            }}
+          />
       <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
       <RoleSelector isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
       <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
