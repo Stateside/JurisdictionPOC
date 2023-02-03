@@ -4,7 +4,8 @@ import { MenuItemInterface, SiteLayoutData, SiteLabel, HomeLabels } from '@/inte
 export const siteMainMenu:Array<MenuItemInterface> = [
     {label: 'My Properties', url: '/my-properties', command: '⌘T'},
     {label: 'Create a Jurisdiction', url: '/jurisdiction/create', command: '⌘J'},
-    {label: 'Show Sample Accounts', url: '/accounts', command: '⌘A'}
+    {label: 'Create a Proposal', url: '/jurisdiction/unknownJurisdiction/proposal/create', command: '⌘A'},
+    {label: 'Show Sample Accounts', url: '/accounts', command: '⌘A'},
 ]
 
 export const siteLayoutData:SiteLayoutData = {
