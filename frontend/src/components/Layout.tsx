@@ -57,23 +57,19 @@ export function Layout(props: Props) {
         base: 'bottom right',
 
       }}
-      backgroundSize={
-        { 
-          base: 'auto', 
-
-      }}
+      backgroundSize={{ base: '720px'}}
       maxW="1140px"
       backgroundRepeat="no-repeat"
       margin="0 auto"
       padding={{ base: '0 20px', sm: '0 20px', md: '0 30px', lg: '0 45px' }}
     >
       <Container
-        
         display="flex"
         flexDirection="column"
         position="relative"
         maxW="container.lg"
         py="8"
+        height={'100%'}
         minHeight={'100vh'}
         padding="0"
       >
