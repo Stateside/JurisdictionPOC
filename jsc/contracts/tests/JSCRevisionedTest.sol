@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "contracts/production/JSCRevisioned.sol";
+import "../production/JSCRevisioned.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 
 /**
@@ -85,16 +85,13 @@ contract JSCRevisionedTest is JSCRevisioned {
     types[0] = rlib.ParamType.t_string;
     string[] memory hints = new string[](1);
     hints[0] = "Any string";
-    string[] memory roles = new string[](1);
-    roles[0] = "Legislative";
 
     return rlib.Revision({
         name: "first",
         description: "first desc",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       });
   }
 
@@ -105,16 +102,13 @@ contract JSCRevisionedTest is JSCRevisioned {
     types[0] = rlib.ParamType.t_number;
     string[] memory hints = new string[](1);
     hints[0] = "Any unsigned number";
-    string[] memory roles = new string[](1);
-    roles[0] = "Legislative";
-
+  
     return rlib.Revision({
         name: "second",
         description: "second desc",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       });
   }
 
@@ -125,16 +119,13 @@ contract JSCRevisionedTest is JSCRevisioned {
     types[0] = rlib.ParamType.t_address;
     string[] memory hints = new string[](1);
     hints[0] = "Any address";
-    string[] memory roles = new string[](1);
-    roles[0] = "Legislative";
 
     return rlib.Revision({
         name: "third",
         description: "third desc",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       });
   }
 }

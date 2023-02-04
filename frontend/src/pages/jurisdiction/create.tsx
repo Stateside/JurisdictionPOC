@@ -31,6 +31,11 @@ interface IJurisdictionState {
   setMaintainerAddress: (address: string) => void,
   setMaintainerFee: (fee: ethers.BigNumber) => void,
   setNFTSupport: (support: boolean) => void,
+  setVotingPeriod: (blocks: number) => void,
+  setVotingApprovals: (approvals: number) => void,
+  setVotingMajority: (majority: number) => void,
+  setVotingQuorum: (quorum: number) => void,
+  setVotingRole: (role: string) => void,
   addMember: (member: IMember) => void,
   removeMember: (index: number) => void,
   replaceMember: (index: number, member: IMember) => void,
@@ -53,6 +58,11 @@ const useNewJurisdiction = create<IJurisdictionState>((set) => ({
   setMaintainerAddress: (address: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, maintainerAddress: address }), modified: true })),
   setMaintainerFee: (fee: ethers.BigNumber) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, maintainerFee: fee }), modified: true })),
   setNFTSupport: (enabled: boolean) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, nftSupport: enabled }), modified: true })),
+  setVotingPeriod: (blocks: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, votingPeriod: blocks }), modified: true })),
+  setVotingApprovals: (approvals: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, votingApprovals: approvals }), modified: true })),
+  setVotingMajority: (majority: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, votingMajority: majority }), modified: true })),
+  setVotingQuorum: (quorum: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, votingQuorum: quorum }), modified: true })),
+  setVotingRole: (role: string) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, votingRole: role }), modified: true })),
   addMember: (member: IMember) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: [...state.jurisdiction.members, member] }), modified: true })),
   removeMember: (index: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: state.jurisdiction.members.filter((_: IMember, i: number) => i !== index) }), modified: true })),
   replaceMember: (index: number, member: IMember) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m) }), modified: true })),
@@ -62,7 +72,7 @@ const useNewJurisdiction = create<IJurisdictionState>((set) => ({
 }))
 
 const greenButtonProps = { _hover: { background: "brand.javaHover" }, variant: 'Header' }
-const invalidAddressProps = { borderColor: "red", color: "red" }
+const invalidProps = { borderColor: "red", color: "red" }
 
 /** Props for RoleSelector component */
 type RoleSelectorProps = {
@@ -81,7 +91,7 @@ const RoleSelector = (props: RoleSelectorProps) =>
   <Select
     placeholder="Role?"
     bg="white"
-    {...(props.isValid ? {} : invalidAddressProps)}
+    {...(props.isValid ? {} : invalidProps)}
     borderWidth={1}
     required={props.required}
     value={props.value}
@@ -112,6 +122,15 @@ const CreateJurisdiction: NextPage = () => {
   const [maintainerFeeUI, setMaintainerFeeUI] = useState("0")
   const setMaintainerFee = useNewJurisdiction(state => state.setMaintainerFee)
   const setNFTSupport = useNewJurisdiction(state => state.setNFTSupport)
+  const [votingPeriodUI, setVotingPeriodUI] = useState("0")
+  const setVotingPeriod = useNewJurisdiction(state => state.setVotingPeriod)
+  const [votingApprovalsUI, setVotingApprovalsUI] = useState("0")
+  const setVotingApprovals = useNewJurisdiction(state => state.setVotingApprovals)
+  const [votingMajorityUI, setVotingMajorityUI] = useState("0")
+  const setVotingMajority = useNewJurisdiction(state => state.setVotingMajority)
+  const [votingQuorumUI, setVotingQuorumUI] = useState("0")
+  const setVotingQuorum = useNewJurisdiction(state => state.setVotingQuorum)
+  const setVotingRole = useNewJurisdiction(state => state.setVotingRole)
   const addMember = useNewJurisdiction(state => state.addMember)
   const removeMember = useNewJurisdiction(state => state.removeMember)
   const replaceMember = useNewJurisdiction(state => state.replaceMember)
@@ -168,6 +187,14 @@ const CreateJurisdiction: NextPage = () => {
       setRegistryFeeUI(ethers.utils.formatUnits(jurisdiction.registryFee, "gwei"))
     if (maintainerFeeUI === "0" && !jurisdiction.maintainerFee.eq(ethers.constants.Zero))
       setMaintainerFeeUI(ethers.utils.formatUnits(jurisdiction.maintainerFee, "gwei"))
+    if (votingPeriodUI === "0" && jurisdiction.votingPeriod !== 0)
+      setVotingPeriodUI(jurisdiction.votingPeriod.toString())
+    if (votingApprovalsUI === "0" && jurisdiction.votingApprovals !== 0)
+      setVotingApprovalsUI(jurisdiction.votingApprovals.toString())
+    if (votingMajorityUI === "0" && jurisdiction.votingMajority !== 0)
+      setVotingMajorityUI(jurisdiction.votingMajority.toString())
+    if (votingQuorumUI === "0" && jurisdiction.votingQuorum !== 0)
+      setVotingQuorumUI(jurisdiction.votingQuorum.toString())
   }, [jurisdiction, getNameForAddress, maintainerAccountName, registryAccountName, registryFeeUI, maintainerFeeUI])
 
   const updateMemberAddress = useCallback((index: number, m: IMember, value: string): void => {
@@ -236,6 +263,12 @@ const CreateJurisdiction: NextPage = () => {
     }
   }, [])
 
+  const isValidNumber = useCallback((value: string, min: number = 0, max?: number) => {
+    value = cleanNumber(value)
+    const n = Number(value)
+    return !isNaN(n) && n >= min && (max === undefined || n <= max)
+  }, [])
+
   const updateRegistryFee = useCallback((value: string) => {
     // The UI displays the fee in gwei and the contract stores the fee in wei
     // Set the value in the contract only if it is a valid number in the UI
@@ -280,6 +313,34 @@ const CreateJurisdiction: NextPage = () => {
       console.log("Invalid fee value")
     }
     setMaintainerFeeUI(value)
+  }, [])
+
+  const updateVotingPeriod = useCallback((value: string) => {
+    value = cleanNumber(value)
+    if (isValidNumber(value))
+      setVotingPeriod(parseInt(value))
+    setVotingPeriodUI(value)
+  }, [])
+
+  const updateVotingApprovals = useCallback((value: string) => {
+    value = cleanNumber(value)
+    if (isValidNumber(value))
+      setVotingApprovals(parseInt(value))
+    setVotingApprovalsUI(value)
+  }, [])
+
+  const updateVotingMajority = useCallback((value: string) => {
+    value = cleanNumber(value)
+    if (isValidNumber(value, 0, 100))
+      setVotingMajority(parseInt(value))
+    setVotingMajorityUI(value)
+  }, [])
+
+  const updateVotingQuorum = useCallback((value: string) => {
+    value = cleanNumber(value)
+    if (isValidNumber(value, 0, 100))
+      setVotingQuorum(parseInt(value))
+    setVotingQuorumUI(value)
   }, [])
 
   const isEmptyRegistryAddress = useCallback((): boolean => {
@@ -533,11 +594,11 @@ const CreateJurisdiction: NextPage = () => {
 
           }}
         />
-        <Input width="60%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress() || isEmptyRegistryAddress()) ? {} : invalidAddressProps} />
+        <Input width="60%" value={jurisdiction.registryAddress} onChange={(e) => updateRegistryAddress(e.target.value)} {...(isValidRegistryAddress() || isEmptyRegistryAddress()) ? {} : invalidProps} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Fee:</Text>
-        <Input width="80%" value={registryFeeUI} onChange={(e) => updateRegistryFee(e.target.value)} {...(isValidGwei(registryFeeUI) ? {} : invalidAddressProps)} />
+        <Input width="80%" value={registryFeeUI} onChange={(e) => updateRegistryFee(e.target.value)} {...(isValidGwei(registryFeeUI) ? {} : invalidProps)} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Account:</Text>
@@ -555,11 +616,11 @@ const CreateJurisdiction: NextPage = () => {
 
           }}
         />
-        <Input width="60%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress() || isValidMaintainerAddress()) ? {} : invalidAddressProps} />
+        <Input width="60%" value={jurisdiction.maintainerAddress} onChange={(e) => updateMaintainerAddress(e.target.value)} {...(isEmptyMaintainerAddress() || isValidMaintainerAddress()) ? {} : invalidProps} />
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Fee:</Text>
-        <Input width="80%" value={maintainerFeeUI} onChange={(e) => updateMaintainerFee(e.target.value)} {...(isValidGwei(maintainerFeeUI) ? {} : invalidAddressProps)} />
+        <Input width="80%" value={maintainerFeeUI} onChange={(e) => updateMaintainerFee(e.target.value)} {...(isValidGwei(maintainerFeeUI) ? {} : invalidProps)} />
       </HStack>
     </VStack>
   ), [jurisdiction.registryAddress, jurisdiction.registryFee, jurisdiction.maintainerAddress, jurisdiction.maintainerFee, registryAccountName, maintainerAccountName, registryFeeUI, maintainerFeeUI])
@@ -570,6 +631,31 @@ const CreateJurisdiction: NextPage = () => {
       <Switch size='lg' isChecked={jurisdiction.nftSupport} onChange={(e) => setNFTSupport(e.target.checked)} variant={jurisdiction.nftSupport ? "java" : ""} />
     </HStack>
   ), [jurisdiction.nftSupport])
+
+  const votingRows = useMemo(() => (
+    <>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Period:</Text>
+        <Input width="80%" value={votingPeriodUI} onChange={(e) => updateVotingPeriod(e.target.value)} {...(isValidNumber(votingPeriodUI) ? {} : invalidProps)} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Approvals:</Text>
+        <Input width="80%" value={votingApprovalsUI} onChange={(e) => updateVotingApprovals(e.target.value)} {...(isValidNumber(votingApprovalsUI) ? {} : invalidProps)} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Majority:</Text>
+        <Input width="80%" value={votingMajorityUI} onChange={(e) => updateVotingMajority(e.target.value)} {...(isValidNumber(votingMajorityUI, 0, 100) ? {} : invalidProps)} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Quorum:</Text>
+        <Input width="80%" value={votingQuorumUI} onChange={(e) => updateVotingQuorum(e.target.value)} {...(isValidNumber(votingQuorumUI, 0, 100) ? {} : invalidProps)} />
+      </HStack>
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Role:</Text>
+        <Input width="80%" value={jurisdiction.votingRole} onChange={(e) => setVotingRole(e.target.value)} />
+      </HStack>
+    </>
+  ), [jurisdiction.votingPeriod, jurisdiction.votingApprovals, votingPeriodUI, votingApprovalsUI, votingMajorityUI, votingQuorumUI, jurisdiction.votingMajority, jurisdiction.votingQuorum, jurisdiction.votingRole])
 
   const newMemberRow = useMemo(() => (
     <HStack width="100%">
@@ -586,7 +672,7 @@ const CreateJurisdiction: NextPage = () => {
               }
             }}
           />
-      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
+      <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidProps} />
       <RoleSelector isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
       <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
@@ -595,7 +681,7 @@ const CreateJurisdiction: NextPage = () => {
   const newMemberMaxReached = useMemo(() => (
     <HStack width="100%">
       <Input disabled width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
-      <Input disabled width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidAddressProps} />
+      <Input disabled width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidProps} />
       <RoleSelector disabled isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
       <Tooltip label={`You've reached maximum number of members`}>
         <Button disabled width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
@@ -621,7 +707,7 @@ const CreateJurisdiction: NextPage = () => {
 
             }}
           />
-          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2)) ? {} : invalidAddressProps} />
+          <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2)) ? {} : invalidProps} />
           <RoleSelector width="15%" isValid={m.role !== undefined} required={true} value={m.role.friendlyName || ""} onChange={(e) => replaceMember(i, { ...m, role: roles.rolesByFriendlyName[e.target.value] })} />
           <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
         </HStack>
@@ -660,8 +746,9 @@ const CreateJurisdiction: NextPage = () => {
       {titleTokenRows}
       {titleFeesRows}
       {nftSupporRow}
+      {votingRows}
     </VStack>
-  ), [jurisdictionNameRow, jurisdictionContractRow, titleTokenRows, titleFeesRows, nftSupporRow])
+  ), [jurisdictionNameRow, jurisdictionContractRow, titleTokenRows, titleFeesRows, nftSupporRow, votingRows])
 
   const membersSection = useMemo(() => membersRows, [membersRows])
 

@@ -16,12 +16,21 @@ const initializeJSCCabinet: DeployFunction = async function (hre: HardhatRuntime
   const jscCabinetContract = await get("development_JSCCabinet")
 
   const roles = buildRoles(ethers)
+  log(`----------------------------------------------------`)
   log("Initializing development_JSCCabinet...")
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
   await jscCabinet.init(jscJurisdiction.address,
     [accountsByName["Bob"].address,  accountsByName["Jane"].address, accountsByName["Sara"].address],
     [roles.JUDICIAL_ROLE.id,         roles.LEGISLATIVE_ROLE.id,      roles.EXECUTIVE_ROLE.id],
-    jscGovernorContract.address)
+    jscGovernorContract.address,
+    {
+      votingPeriod: 50,
+      approvals: 1,
+      majority: 0,
+      quorum: 0,
+      role: ethers.constants.HashZero,
+    }
+  )
   
   log(`development_JSCCabinet Initialized with the following roles:`)
   log("/----------------------------------------------------------\\")

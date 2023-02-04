@@ -106,7 +106,11 @@ yarn hardhat save-proposals --network staging --prefix development
 
 # TO DO
 
-- Register offers to sell I have received
+- Change connect button to alias if known
+- Add functionality to offers to buy and sell
+- Add SELECT component for roles in UI
+- Add Unit Tests for different voting rules
+- Calculate quorum from number of members in cabinet
 - Add a boolean to the individual tokens to enable NFT support
 - Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
 - Add tests for contracts when the governor is the owner
@@ -121,7 +125,7 @@ yarn hardhat save-proposals --network staging --prefix development
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
 - add jurisdiction to titletoken and cabinet and make sure this is is validated properly inside contracts
 - add function to validate jurisdictions (make sure they are properly initialized and secured)
-- Add support for role parameter type
+- Add support parameter types, role, gwei, contract
 - Add support for contract address parameter type + account address parameter type
 - Add button to jump forward in time to the next voting period
 Payments

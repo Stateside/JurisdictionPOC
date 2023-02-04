@@ -10,26 +10,16 @@ library JSCRevisionsLib {
   uint16 public constant BlocksPerDay = 24 * 60 * 5; // Assuming a block every 12 seconds
   uint16 public constant BlocksPerWeek = BlocksPerDay * 7;
   struct VotingRules {
-    /** 
-      How long voting lasts in number of blocks 
-    */
+    /** How long voting lasts in number of blocks */
     uint16 votingPeriod;
-    /** 
-      How many approvals needed (0-65535). Yes votes count as approvals.
-    */
+    /** How many approvals needed (0-65535). Yes votes count as approvals. */
     uint16 approvals;
-    /** 
-      Percentage of quorum that are yes votes needed for revision to pass (0-100) 
-    */
+    /** Percentage of quorum that are yes votes needed for revision to pass (0-100) */
     uint8 majority;
-    /** 
-      Percentage of cabinet response needed for vote to be considered valid (0-100). 
-    */
+    /** Percentage of cabinet response needed for vote to be considered valid (0-100). */
     uint8 quorum;
-    /** 
-      What roles may execute this revision 
-    */
-    string[] roles;
+    /** What role may propose this revision */
+    bytes32 role;
   }
   struct Revision {
     /** Name of this revision */
@@ -42,8 +32,6 @@ library JSCRevisionsLib {
     ParamType[] paramTypes;
     /** UI Hints for parameters required by revision */
     string[] paramHints;
-    /** Rules for voting on this revision */
-    VotingRules rules;
   }
 
   /** Iterable implementation */
@@ -90,7 +78,6 @@ library JSCRevisionsLib {
     require(self.data[r.name].keyIndex == 0, "Revision with same name already exists");
     require(r.paramNames.length == r.paramTypes.length, "Inconsistent parameter data");
     require(r.paramNames.length == r.paramHints.length, "Inconsistent parameter data");
-    checkVotingRules(r.rules);
 
     string memory key = r.name;
     self.data[key].value = r;

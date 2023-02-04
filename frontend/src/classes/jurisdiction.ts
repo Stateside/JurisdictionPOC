@@ -50,6 +50,11 @@ export interface IJurisdiction {
   maintainerAddress: string
   maintainerFee: ethers.BigNumber
   nftSupport: boolean
+  votingPeriod: number
+  votingApprovals: number
+  votingMajority: number
+  votingQuorum: number
+  votingRole: string
   contractId: string
   members: IMember[]
   contracts: ContractDefinition[]
@@ -77,10 +82,17 @@ export class Jurisdiction implements IJurisdiction {
   maintainerAddress: string
   maintainerFee: ethers.BigNumber
   nftSupport: boolean
+  votingPeriod: number
+  votingApprovals: number
+  votingMajority: number
+  votingQuorum: number
+  votingRole: string
   continueDeployment: boolean = false
 
   constructor(name:string, contractId:string, members:IMember[], contracts:ContractDefinition[], titleTokenName:string, titleTokenSymbol:string, titleTokenURI:string,
-    registryAddress: string, registryFee: ethers.BigNumber, maintainerAddress: string, maintainerFee: ethers.BigNumber, nftSupport: boolean) {
+    registryAddress: string, registryFee: ethers.BigNumber, maintainerAddress: string, maintainerFee: ethers.BigNumber, nftSupport: boolean,
+    votingPeriod: number, votingApprovals: number, votingMajority: number, votingQuorum: number, votingRole: string
+  ) {
     this.jurisdictionName = name
     this.contractId = contractId
     this.members = members
@@ -93,11 +105,17 @@ export class Jurisdiction implements IJurisdiction {
     this.maintainerAddress = maintainerAddress
     this.maintainerFee = maintainerFee
     this.nftSupport = nftSupport
+    this.votingPeriod = votingPeriod
+    this.votingApprovals = votingApprovals
+    this.votingMajority = votingMajority
+    this.votingQuorum = votingQuorum
+    this.votingRole = votingRole
   }
 
   static copy(other:IJurisdiction) {
     return new Jurisdiction(other.jurisdictionName, other.contractId, other.members, other.contracts, other.titleTokenName, other.titleTokenSymbol, other.titleTokenURI,
-      other.registryAddress, other.registryFee, other.maintainerAddress, other.maintainerFee, other.nftSupport)
+      other.registryAddress, other.registryFee, other.maintainerAddress, other.maintainerFee, other.nftSupport, 
+      other.votingPeriod, other.votingApprovals, other.votingMajority, other.votingQuorum, other.votingRole)
   }
 
   setName(name:string) {
@@ -172,7 +190,12 @@ export class Jurisdiction implements IJurisdiction {
       ethers.utils.parseUnits("0.1", "gwei"),
       accountsByName["Sophia"].address,
       ethers.utils.parseUnits("0.2", "gwei"),
-      false
+      false,
+      50,
+      1,
+      0,
+      0,
+      ethers.constants.HashZero
     )
   }
     
@@ -209,6 +232,13 @@ export class Jurisdiction implements IJurisdiction {
       this.members.map((m:IMember) => m.address),
       this.members.map((m:IMember) => ethers.utils.arrayify(m.role.id)),
       deployments["IJSCGovernor"].contract.address,
+      {
+        votingPeriod: this.votingPeriod,
+        approvals: this.votingApprovals,
+        majority: this.votingMajority,
+        quorum: this.votingQuorum,
+        role: this.votingRole
+      },
       {gasLimit: 5000000})
 
     return {
@@ -232,7 +262,15 @@ export class Jurisdiction implements IJurisdiction {
       this.maintainerAddress || ethers.constants.AddressZero,
       this.maintainerFee,
       this.nftSupport,
-      deployments["IJSCGovernor"].contract.address)
+      deployments["IJSCGovernor"].contract.address,
+      {
+        votingPeriod: this.votingPeriod,
+        approvals: this.votingApprovals,
+        majority: this.votingMajority,
+        quorum: this.votingQuorum,
+        role: this.votingRole
+      }
+    )
   
     return {
       contract, 
@@ -247,7 +285,15 @@ export class Jurisdiction implements IJurisdiction {
 
     await instance.init(
       deployments["IJSCJurisdiction"].contract.address,
-      true)
+      true,
+      {
+        votingPeriod: this.votingPeriod,
+        approvals: this.votingApprovals,
+        majority: this.votingMajority,
+        quorum: this.votingQuorum,
+        role: this.votingRole
+      }
+    )
   
     return {
       contract, 
@@ -266,7 +312,15 @@ export class Jurisdiction implements IJurisdiction {
       childContracts.map((c:ContractDefinition) => c.key||""),
       childContracts.map((c:ContractDefinition) => Object.values(deployments).find((d:DeploymentResult) => d.definition.key === c.key)?.contract.address || ""),
       childContracts.map((c:ContractDefinition) => c.description),
-      true)
+      true,
+      {
+        votingPeriod: this.votingPeriod,
+        approvals: this.votingApprovals,
+        majority: this.votingMajority,
+        quorum: this.votingQuorum,
+        role: this.votingRole
+      },
+    )
   
     return {
       contract, 

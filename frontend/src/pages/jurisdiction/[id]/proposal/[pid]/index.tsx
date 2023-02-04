@@ -16,7 +16,10 @@ import MemberOnlyButton from '@/components/MemberOnlyButton';
 import { ethers } from 'ethers';
 
 // convert milliseconds to days, hours, minutes, seconds
-const msToTime = (duration:number) => {
+const msToTime = (duration:number, blocks:number) => {
+  if (duration <= 0) 
+    return "(Voting has ended)"
+    
   var minutes = parseInt(((duration/(1000*60))%60).toString(), 10)
   var hours = parseInt(((duration/(
     1000*60*60))%24).toString(), 10)
@@ -26,7 +29,7 @@ const msToTime = (duration:number) => {
     (days+hours>0 ? hours + " hours " : "" ) +
     (minutes>0 ? minutes + " minutes" : "" )
   
-  return time.length==0 ? "" : "("+ time + ")"
+  return `(${time.length==0 ? "less than one minute" : time} / ${blocks} blocks)`
 }
 
 const twodigits = (n:number) => n < 10 ? "0"+n : n
@@ -39,7 +42,7 @@ const blocksToDate = (blocks:number):string => {
   const d = new Date()
   d.setSeconds(totalSeconds)
   
-  return `${d.getFullYear()}-${twodigits(d.getMonth()+1)}-${twodigits(d.getDate())} ${twodigits(d.getHours())}:${twodigits(d.getMinutes())} ${msToTime(d.getTime()-Date.now())}`
+  return `${d.getFullYear()}-${twodigits(d.getMonth()+1)}-${twodigits(d.getDate())} ${twodigits(d.getHours())}:${twodigits(d.getMinutes())} ${msToTime(d.getTime()-Date.now(), blocks)}`
 }
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
@@ -164,7 +167,7 @@ const Proposal: NextPage = () => {
         title: 'Proposal Executed',
         description: "Your execution of this proposal has been submitted to the blockchain. It may take a few minutes to be confirmed.",
         status: 'success',
-        duration: 3000
+        duration: 8000
       })
     }
   }

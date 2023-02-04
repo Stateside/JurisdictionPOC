@@ -9,7 +9,7 @@ import deploy from './deploy'
 const deployAllContracts = async function (hre: HardhatRuntimeEnvironment, prefix:string) {
   const jscRevisionsLib = await deploy(hre, `${prefix}JSCRevisionsLib`, "JSCRevisionsLib", {})
   const jscConfigurableLib = await deploy(hre, `${prefix}JSCConfigurableLib`, "JSCConfigurableLib", { JSCRevisionsLib: jscRevisionsLib.address })
-  const jscTitleTokenLib = await deploy(hre, `${prefix}JSCTitleTokenLib`, "JSCTitleTokenLib", {})
+  const jscTitleTokenLib = await deploy(hre, `${prefix}JSCTitleTokenLib`, "JSCTitleTokenLib", { JSCConfigurableLib: jscConfigurableLib.address })
 
   const jscJurisdiction = await deploy(hre, `${prefix}JSCJurisdiction`, "JSCJurisdiction", {
       JSCRevisionsLib: jscRevisionsLib.address,

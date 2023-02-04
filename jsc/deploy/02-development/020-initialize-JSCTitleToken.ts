@@ -19,6 +19,7 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   const jscTitleTokenContract = await get("development_JSCTitleTokenTest")
   const zeroAddress = '0x0000000000000000000000000000000000000000';
 
+  log(`----------------------------------------------------`)
   log("Initializing development_JSCTitleTokenTest...")
   const jscTitleToken:tc.JSCTitleTokenTest = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
   
@@ -33,7 +34,14 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
 	    accountsByName["Sophia"].address,
 	    ethers.utils.parseUnits("0.2", "gwei"),
 	    true,
-	    zeroAddress
+	    zeroAddress,
+      {
+        votingPeriod: 50,
+        approvals: 1,
+        majority: 0,
+        quorum: 0,
+        role: ethers.constants.HashZero,
+      }
     )
   } catch (error) {
     console.log(error)
@@ -169,7 +177,6 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
 	      for (let i = 0; i < titles.length; i++) {
 	        const t = titles[i];
 	        const owner = accountsByName[name]
-	        console.log(t.titleId)
 	        await jscTitleToken.mint(owner.address, t.titleId)
 	        const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
 	        for (let b = 0; b < t.offersToBuy.length; b++) {

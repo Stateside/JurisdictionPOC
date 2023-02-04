@@ -21,7 +21,8 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
       string[] calldata contractKeys, 
       address[] calldata contracts, 
       string[] calldata descriptions,
-      bool changeOwner) external onlyOwner {
+      bool changeOwner,
+      rlib.VotingRules memory votingRules) external onlyOwner {
     require(contractKeys.length == contracts.length, "Inconsistent arguments");
     require(contractKeys.length == descriptions.length, "Inconsistent arguments");
     require(contractKeys.length >= 3, "Insufficient contracts specified");
@@ -30,9 +31,10 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     jurisdictionName = name;
     JSCConfigurable._init();
     
+    clib.addVotingParameters(_parameters, votingRules);
     for (uint i = 0; i < contracts.length; i++) {
       require(contracts[i] != address(0), "zero contract");
-      _addAddressParameter(clib.AddressParameter(contractKeys[i], descriptions[i], contracts[i]));
+      _parameters.insertAddress(clib.AddressParameter(contractKeys[i], descriptions[i], contracts[i]));
     }
     _addParameterRevisions();
     _addJurisdictionRevisions();
@@ -86,16 +88,13 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     hints[0] = "Unique key for this contract within the jurisdiction";
     hints[1] = "Description of this contract";
     hints[2] = "Address of this contract";
-    string[] memory roles = new string[](1);
-    roles[0] = "Legislative";
 
     return rlib.Revision({
       name: rname,
       description: description,
       paramNames: names,
       paramTypes: types,
-      paramHints: hints,
-      rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+      paramHints: hints
     });
   }
 
@@ -109,16 +108,13 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     string[] memory hints = new string[](2);
     hints[0] = "Unique key for this contract within the jurisdiction";
     hints[1] = "Current address of this contract";
-    string[] memory roles = new string[](1);
-    roles[0] = "Legislative";
 
     return rlib.Revision({
       name: rname,
       description: description,
       paramNames: names,
       paramTypes: types,
-      paramHints: hints,
-      rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+      paramHints: hints
     });
   }
 
@@ -127,7 +123,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     string memory description;
     address contractAddress; 
     (name, description, contractAddress) = abi.decode(pdata, (string, string, address));
-    _addAddressParameter(clib.AddressParameter({
+    _parameters.insertAddress(clib.AddressParameter({
       name: name,
       value: contractAddress,
       description: description
@@ -140,7 +136,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     address contractAddress; 
     (name, contractAddress) = abi.decode(pdata, (string, address));
     require(getAddressParameter(name) == contractAddress, "Unexpected contract address");
-    _removeAddressParameter(name);
+    _parameters.remove(name);
     emit ContractRemoved(name, contractAddress);
   }
 

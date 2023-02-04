@@ -33,7 +33,8 @@ interface IJSCTitleToken is IJSCConfigurable, IERC721, IERC721Metadata
       address maintainerAccount_,
       uint256 maintainerFee_,
       bool nftSupport_,
-      address newOwner
+      address newOwner_,
+      rlib.VotingRules memory votingRules
     ) external;
 
   /**

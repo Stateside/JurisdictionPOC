@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "contracts/production/JSCConfigurable.sol";
+import "../production/JSCConfigurable.sol";
 import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
 
@@ -10,6 +10,7 @@ import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
  */
 contract JSCConfigurableTest is JSCConfigurable {
   using rlib for rlib.RevisionMap;
+  using clib for clib.ParameterMap;
 
   constructor() {
     _addMyParameters();
@@ -17,22 +18,22 @@ contract JSCConfigurableTest is JSCConfigurable {
   }
 
   function _addMyParameters() private { 
-    _addAddressParameter(clib.AddressParameter({
+    _parameters.insertAddress(clib.AddressParameter({
         name: "JSCConfigurableTest.address",
         value: 0x111122223333444455556666777788889999aAaa,
         description: "address param"
       }));
-    _addBoolParameter(clib.BoolParameter({
+    _parameters.insertBool(clib.BoolParameter({
         name: "JSCConfigurableTest.bool",
         value: false,
         description: "bool param"
       }));
-    _addNumberParameter(clib.NumberParameter({
+    _parameters.insertNumber(clib.NumberParameter({
         name: "JSCConfigurableTest.number",
         value: 1234,
         description: "number param"
       }));
-    _addStringParameter(clib.StringParameter({
+    _parameters.insertString(clib.StringParameter({
         name: "JSCConfigurableTest.string",
         value: "string value",
         description: "string param"

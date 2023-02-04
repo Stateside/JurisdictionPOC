@@ -47,7 +47,7 @@ export type PreparedProposal = {
 }
 
 /** Calculates the description and proposal hashes */
-export const prepareProposal = async (ethers:any, governor:tc.IJSCGovernor, revs: PreparedRevision[], description: string, version:number, whoHasVoted: WhoHasVotedMap):Promise<PreparedProposal> => {
+export const prepareProposal = async (ethers:any, governor:tc.IJSCGovernor, revs: PreparedRevision[], description: string, version:number, whoHasVoted: WhoHasVotedMap = {}):Promise<PreparedProposal> => {
     const descriptionHash:string = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description))
     revs.forEach(r => {
         r.pdata = ethers.utils.defaultAbiCoder.encode(

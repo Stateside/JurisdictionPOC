@@ -65,10 +65,8 @@ const loadRevisions = async (address:string, instance:IJSCRevisioned, get:() => 
       })
       rIter = await instance.nextRevision(rIter)
     }
-  } catch (e) {
-    console.error(`Error loading revisions for ${address}`, e)
-  }
-  set({ revisions: { 
+
+    set({ revisions: { 
       ...get().revisions, 
       [address]: { 
         ...get().revisions[address],
@@ -77,6 +75,9 @@ const loadRevisions = async (address:string, instance:IJSCRevisioned, get:() => 
       } 
     } 
   })
+  } catch (e) {
+    console.error(`Error loading revisions for ${address}`, e)
+  }
 }
 
 /** Create Zustand state with collection of all likes for current user */

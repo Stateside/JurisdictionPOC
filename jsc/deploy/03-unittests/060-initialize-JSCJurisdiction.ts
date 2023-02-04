@@ -2,6 +2,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
 // @ts-ignore
 import { ethers } from "hardhat" 
+import { blocksPerWeek } from "../../utils/constants"
+import { buildRoles } from "../../utils/roles"
 
 const deployJSCJurisdictionInit: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -24,7 +26,14 @@ const deployJSCJurisdictionInit: DeployFunction = async function (hre: HardhatRu
       "Track proposals and votes",
       "Manage tokens, their owners, and the transfer of ownership"
     ],
-    false
+    false,
+    {
+      votingPeriod: blocksPerWeek,
+      approvals: 0,
+      majority: 51,
+      quorum: 51,
+      role: buildRoles(ethers).EXECUTIVE_ROLE.id,
+    }
  )
 }
 

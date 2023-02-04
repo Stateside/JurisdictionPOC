@@ -29,8 +29,6 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
   using clib for clib.ParameterMap;
 
   clib.ParameterMap internal _parameters;
-  /** Rules for creating revisions for changing parameter values. Same rules apply to all parameters for a given contract */
-  rlib.VotingRules internal _paramRules = rlib.VotingRules(0,0,0,0,new string[](0));
 
   /**
    * @dev Initializes this contract
@@ -46,32 +44,6 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
     return
       interfaceId == type(IJSCConfigurable).interfaceId ||
       super.supportsInterface(interfaceId);
-  }
-
-  function _addAddressParameter(clib.AddressParameter memory p) internal virtual {
-    _parameters.insertAddress(p);
-    emit AddressParameterAdded(p.name, p.value);
-  }
-
-  function _removeAddressParameter(string memory name) internal virtual {
-    address a = _parameters.getAddress(name);
-    _parameters.remove(name);
-    emit AddressParameterRemoved(name, a);
-  }
-
-  function _addBoolParameter(clib.BoolParameter memory p) internal {
-    _parameters.insertBool(p);
-    emit BoolParameterAdded(p.name, p.value);
-  }
-
-  function _addNumberParameter(clib.NumberParameter memory p) internal {
-    _parameters.insertNumber(p);
-    emit NumberParameterAdded(p.name, p.value);
-  }
-
-  function _addStringParameter(clib.StringParameter memory p) internal {
-    _parameters.insertString(p);
-    emit StringParameterAdded(p.name, p.value);
   }
 
   /**
@@ -139,7 +111,7 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
 
   /** Adds revisions for changing parameters */
   function _addParameterRevisions() internal { 
-    rlib.Revision[] memory revs = _parameters.getRevisions(_paramRules);
+    rlib.Revision[] memory revs = _parameters.getRevisions();
     for (uint i = 0; i < revs.length; i++) {
       _addRevision(revs[i]);
       rlib.ParamType t = revs[i].paramTypes[1];

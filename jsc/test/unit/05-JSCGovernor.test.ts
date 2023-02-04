@@ -3,19 +3,21 @@ import * as tc from "../../typechain-types"
 import { deployments, ethers, network } from "hardhat"
 import { expect } from "chai"
 import { BigNumber } from "ethers";
-import { defaultAbiCoder } from "ethers/lib/utils"
 import "@nomicfoundation/hardhat-chai-matchers/panic"
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
 
 import * as iid from "../../utils/getInterfaceId"
 import { ParamType, ProposalState, VoteType } from "../../utils/types"
 import { createProposalVersion, PreparedProposal, prepareProposal } from "../../utils/proposals";
+import { blocksPerWeek } from "../../utils/constants";
+import { buildRoles } from "../../utils/roles";
 
 /**
- * Runs a colection of tests to ensure that the JSCGovernor contract behaves as expected.
+ * Runs a collection of tests to ensure that the JSCGovernor contract behaves as expected.
  */
 describe("JSCGovernor", async () => {
   let governor: tc.IJSCGovernor
+  let titles: tc.IJSCTitleToken
   let jurisdiction: tc.IJSCJurisdiction
   let revisionsLib: tc.JSCRevisionsLib
   let configurableLib: any
@@ -30,12 +32,14 @@ describe("JSCGovernor", async () => {
   beforeEach(async () => {
     await deployments.fixture(["unittests"]); // Reset blockchain to initial state with deployed and initialized contracts
     governor = await ethers.getContract("unittests_JSCGovernor");
+    titles = await ethers.getContract("unittests_JSCTitleToken");
     jurisdiction = await ethers.getContract("unittests_JSCJurisdiction");
     revisionsLib = await ethers.getContract("unittests_JSCRevisionsLib");
     configurableLib = await ethers.getContract("unittests_JSCConfigurableLib");
     [owner, bob, jane, sara, bryan, paul, alex, ...otherAccounts] = await ethers.getSigners();
 
     await (jurisdiction as tc.JSCJurisdiction).transferOwnership(governor.address)
+    await (titles as unknown as tc.JSCTitleToken).transferOwnership(governor.address)
   });
 
   it('correctly checks interfaces IDs', async function() {
@@ -67,7 +71,13 @@ describe("JSCGovernor", async () => {
 
   it('fails on second init()', async function() {
     await expect(await governor.isFrozen()).to.equal(false);
-    await expect(governor.init(jurisdiction.address, false)).to.be.revertedWith('init() cannot be called twice');
+    await expect(governor.init(jurisdiction.address, false, {
+      votingPeriod: blocksPerWeek,
+      approvals: 0,
+      majority: 51,
+      quorum: 51,
+      role: buildRoles(ethers).EXECUTIVE_ROLE.id,
+    })).to.be.revertedWith('init() cannot be called twice');
   });
 
   const checkVotingParams = (actual:tc.IJSCGovernor.VotingParamsStructOutput|undefined, expected:tc.IJSCGovernor.VotingParamsStruct) => {
@@ -87,18 +97,18 @@ describe("JSCGovernor", async () => {
 
   /** the ceiling of the division of two numbers */
   const ceilDiv = (a:number,b:number) => Math.ceil(a/b)
-  const blocksPerWeek = () => 5*60*24*7
 
   const basicProposalTests = async (proposal:PreparedProposal, expectedQuorum:number) => {
-    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote not currently active");
+    await expect(governor.connect(bryan).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("vote not currently active");
+    await expect(governor.connect(bob).propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("missing required role")
     let proposalBlockNumber = await ethers.provider.getBlockNumber();
 
     let resultRules:tc.IJSCGovernor.VotingParamsStructOutput | undefined
     let resultRevs:tc.IJSCGovernor.RevisionCallStructOutput[] | undefined
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version))
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version))
       .to.emit(governor, 'ProposalCreated').withArgs(
         proposal.proposalHash,
-        owner.address,
+        bryan.address,
         proposalBlockNumber+1,
         (rules)=>{resultRules=rules; return true},
         (revs)=>{resultRevs=revs; return true},
@@ -106,7 +116,7 @@ describe("JSCGovernor", async () => {
         proposal.description
       )
     checkVotingParams(resultRules, {
-      votingPeriod: blocksPerWeek(),
+      votingPeriod: blocksPerWeek,
       approvals: 0,
       majority: 51,
       quorum: 51
@@ -114,11 +124,11 @@ describe("JSCGovernor", async () => {
     checkRevisionCall(resultRevs, proposal.revs)
       
     proposalBlockNumber = await ethers.provider.getBlockNumber();
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Governor: proposal already exists"); // Proposing the same thing twice will fail
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version+1)).to.not.be.reverted; // Bump version to create a new valid proposal
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("proposal already exists"); // Proposing the same thing twice will fail
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version+1)).to.not.be.reverted; // Bump version to create a new valid proposal
     await expect(await governor.state(proposal.proposalHash)).to.equal(ProposalState.Active);
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(0), BigNumber.from(0), BigNumber.from(0)]);
-    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek());
+    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek);
     await expect(await governor.quorum(proposal.proposalHash)).to.equal(expectedQuorum);
 
     // Test if votes can be made and are recorded correctly
@@ -126,25 +136,25 @@ describe("JSCGovernor", async () => {
     await expect(governor.connect(sara).castVote(proposal.proposalHash, VoteType.Against))
       .to.emit(governor, 'VoteCast').withArgs(sara.address, proposal.proposalHash, VoteType.Against);
     await expect(await governor.hasVoted(proposal.proposalHash, sara.address)).to.equal(true);
-    await expect(governor.connect(sara).castVote(proposal.proposalHash, VoteType.Against)).to.be.revertedWith("Governor: vote already cast");
+    await expect(governor.connect(sara).castVote(proposal.proposalHash, VoteType.Against)).to.be.revertedWith("vote already cast");
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(0), BigNumber.from(0)]);
 
     await expect(await governor.hasVoted(proposal.proposalHash, bob.address)).to.equal(false);
     await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For))
       .to.emit(governor, 'VoteCast').withArgs(bob.address, proposal.proposalHash, VoteType.For);
     await expect(await governor.hasVoted(proposal.proposalHash, bob.address)).to.equal(true);
-    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote already cast");
+    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("vote already cast");
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(1), BigNumber.from(0)]);
 
     await expect(await governor.hasVoted(proposal.proposalHash, jane.address)).to.equal(false);
     await expect(governor.connect(jane).castVote(proposal.proposalHash, VoteType.Abstain))
       .to.emit(governor, 'VoteCast').withArgs(jane.address, proposal.proposalHash, VoteType.Abstain);
     await expect(await governor.hasVoted(proposal.proposalHash, jane.address)).to.equal(true);
-    await expect(governor.connect(jane).castVote(proposal.proposalHash, VoteType.Abstain)).to.be.revertedWith("Governor: vote already cast");
+    await expect(governor.connect(jane).castVote(proposal.proposalHash, VoteType.Abstain)).to.be.revertedWith("vote already cast");
     await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(1), BigNumber.from(1)]);
 
     // This shouldn't change after voting
-    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek());
+    await expect(await governor.proposalDeadline(proposal.proposalHash)).to.equal(proposalBlockNumber + blocksPerWeek);
     await expect(await governor.quorum(proposal.proposalHash)).to.equal(expectedQuorum);
   }
 
@@ -169,7 +179,7 @@ describe("JSCGovernor", async () => {
   });
 
   const testWinningProposal = async (proposal:PreparedProposal) => {
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
     let bn = await ethers.provider.getBlockNumber();
 
     await expect(governor.connect(bryan).castVote(proposal.proposalHash, VoteType.Against)).to.not.be.reverted;
@@ -182,9 +192,9 @@ describe("JSCGovernor", async () => {
     await network.provider.send("hardhat_mine", [ethers.utils.hexStripZeros(ethers.utils.hexlify(deadline.toNumber()-bn+1)), "0x0"]);
     await expect(await governor.state(proposal.proposalHash)).to.equal(ProposalState.Succeeded);
 
-    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote not currently active");
+    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("vote not currently active");
 
-    await expect(await governor.connect(bob).execute(proposal.revs, proposal.descriptionHash, proposal.version))
+    await expect(await governor.execute(proposal.revs, proposal.descriptionHash, proposal.version))
       .to.emit(governor, 'ProposalExecuted').withArgs(proposal.proposalHash);
   }
 
@@ -261,8 +271,63 @@ describe("JSCGovernor", async () => {
     await expect(await jurisdiction.getAddressParameter("jsc.contracts.mycontract")).to.equal("0x111122223333444455556666777788889999aAaa")
   });
 
+  it('executes boolean parameter winning proposal', async function() {
+    const proposal1 = await prepareProposal(ethers, governor, [
+      {
+        target: titles.address,
+        name: "ChangeConfig:jsc.nft.enabled",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "name",
+            value: "jsc.nft.enabled",
+            type: ParamType.t_string,
+            hint: ""
+          },
+          {
+            name: "value",
+            value: false,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Enable NFTs", ++proposalVersion)
+
+    await expect(await titles.getBoolParameter("jsc.nft.enabled")).to.equal(true);
+    await testWinningProposal(proposal1)
+    await expect(await titles.getBoolParameter("jsc.nft.enabled")).to.equal(false);
+
+    const proposal2 = await prepareProposal(ethers, governor, [
+      {
+        target: titles.address,
+        name: "ChangeConfig:jsc.nft.enabled",
+        pdata: "",
+        description: "",
+        parameters: [
+          {
+            name: "name",
+            value: "jsc.nft.enabled",
+            type: ParamType.t_string,
+            hint: ""
+          },
+          {
+            name: "value",
+            value: true,
+            type: ParamType.t_bool,
+            hint: ""
+          }
+        ]
+      }
+    ], "Disable NFTs", ++proposalVersion)
+  
+    await testWinningProposal(proposal2)
+    await expect(await titles.getBoolParameter("jsc.nft.enabled")).to.equal(true);
+  });
+
   const testLosingProposal = async (proposal:PreparedProposal) => {
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
     let bn = await ethers.provider.getBlockNumber();
 
     await expect(governor.connect(bryan).castVote(proposal.proposalHash, VoteType.Against)).to.not.be.reverted;
@@ -275,7 +340,7 @@ describe("JSCGovernor", async () => {
     await network.provider.send("hardhat_mine", [ethers.utils.hexStripZeros(ethers.utils.hexlify(deadline.toNumber()-bn+1)), "0x0"]);
     await expect(await governor.state(proposal.proposalHash)).to.equal(ProposalState.Defeated);
 
-    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote not currently active");
+    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("vote not currently active");
   }
 
   it('processes losing proposals', async function() {
@@ -300,7 +365,7 @@ describe("JSCGovernor", async () => {
   });
 
   const testExpiredProposal = async (proposal:PreparedProposal) => {
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
     let bn = await ethers.provider.getBlockNumber();
 
     await expect(governor.connect(bryan).castVote(proposal.proposalHash, VoteType.For)).to.not.be.reverted;
@@ -311,7 +376,7 @@ describe("JSCGovernor", async () => {
     await network.provider.send("hardhat_mine", [ethers.utils.hexStripZeros(ethers.utils.hexlify(deadline.toNumber()-bn+1)), "0x0"]);
     await expect(await governor.state(proposal.proposalHash)).to.equal(ProposalState.Defeated); // Expired not currently used
 
-    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("Governor: vote not currently active");
+    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.For)).to.be.revertedWith("vote not currently active");
   }
 
   it('expires proposals', async function() {
@@ -388,7 +453,7 @@ describe("JSCGovernor", async () => {
       }
     ], "Freeze the jurisdiction contract", ++proposalVersion)
 
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
   });
 
   it('rejects simple proposal with zero contract', async function() {
@@ -409,7 +474,7 @@ describe("JSCGovernor", async () => {
       }
     ], "Freeze the jurisdiction contract", ++proposalVersion)
 
-    await expect(governor.propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
+    await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.be.revertedWith("Contract does not support revisions");
   });
 
   it('iterates all existing proposals', async function() {
@@ -434,10 +499,10 @@ describe("JSCGovernor", async () => {
     const p3 = await prepareProposal(ethers, governor, propData, "3", 3)
     const p4 = await prepareProposal(ethers, governor, propData, "4", 4)
 
-    await expect(governor.propose(p1.revs, p1.description, p1.version)).to.not.be.reverted;
-    await expect(governor.propose(p2.revs, p2.description, p2.version)).to.not.be.reverted;
-    await expect(governor.propose(p3.revs, p3.description, p3.version)).to.not.be.reverted;
-    await expect(governor.propose(p4.revs, p4.description, p4.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(p1.revs, p1.description, p1.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(p2.revs, p2.description, p2.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(p3.revs, p3.description, p3.version)).to.not.be.reverted;
+    await expect(governor.connect(bryan).propose(p4.revs, p4.description, p4.version)).to.not.be.reverted;
     
     await expect(await governor.proposalCount()).to.equal(4);
     await expect(await governor.proposalAtIndex(0)).to.equal(p1.proposalHash);

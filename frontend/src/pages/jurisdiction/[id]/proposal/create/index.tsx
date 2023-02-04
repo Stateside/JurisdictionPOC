@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Button, Divider, Heading, HStack, Input, Link, Text, Textarea, useToast, VStack } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, Divider, Heading, HStack, Input, Link, Text, Textarea, useToast, VStack } from '@chakra-ui/react';
 import AddRevisionModal, { NewRevision, ParameterValues } from './AddRevisionModal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowBackIcon } from '@chakra-ui/icons';
@@ -12,7 +12,9 @@ import DeleteIcon from '@/components/icons/deleteIcon';
 import { useGovernors } from '@/store/useGovernors';
 import { createProposalVersion } from '@/utils/proposals';
 import { ethers } from 'ethers';
-import { ParamType2SolidyType } from '@/utils/types';
+import { ParamType, ParamType2SolidyType } from '@/utils/types';
+
+const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 
 const CreateProposal: NextPage = () => {
   const { account, chainId, library } = useWeb3React();
@@ -186,13 +188,30 @@ const CreateProposal: NextPage = () => {
     if (!isValidProposal() || !jscGovernorDetails?.instance)
       return
     try {
-      // Save proposal to Blockchain
+      // Validate and convert parameters according to expected types.  This is important because the solidity code 
+      // can sometimes, without warning, decode paramaters that have been encoded with the wrong type.
+      // Lesson learned: ABI Encoding "false" or "0" as a boolean produces no error, but decoding either of them as a boolean produces true.
+      const getValue = (t:ParamType, v:string) => {
+        if (t === ParamType.t_address || t === ParamType.t_string)
+          return v
+        else if (t === ParamType.t_bool) {
+          if (v === "1")
+            return true
+          if (v === "0")
+            return false
+          throw new Error(`Cannot convert ${v} to boolean`)
+        }
+        else if (t === ParamType.t_number) {
+          return ethers.BigNumber.from(v)
+        }
+        throw new Error(`Unknown parameter type ${t}`)
+      }
 
       // Encode parameters for all revisions
       const allPdata = newRevisions.map(r => 
         ethers.utils.defaultAbiCoder.encode(
           r.paramTypes?.map(t => ParamType2SolidyType[t]) || [],
-          r.paramNames?.map(n => r.parameters[n]) || []))
+          r.paramNames?.map((n,i) => getValue(r.paramTypes?.[i]||0, r.parameters[n])) || []))
 
       // Prepare arguments for propose() method
       const revs = newRevisions.map((r,i) => ({
@@ -205,7 +224,7 @@ const CreateProposal: NextPage = () => {
       // Send transaction to blockchain
       await jscGovernorDetails.instanceWithSigner(library.getSigner()).propose(revs, description, version)
 
-      // Save to DB
+      // Save details of proposal to database
       const descriptionHash:string = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description))
       const proposalId = await jscGovernorDetails?.instance.hashProposal(revs, descriptionHash, version)
       await saveProposalToDatabase(proposalId.toHexString(), newRevisions, description, version, allPdata)
@@ -215,7 +234,7 @@ const CreateProposal: NextPage = () => {
 
       toast({
         title: 'Proposal Submitted',
-        description: "The proposal has been submitted to the blockchain. It may take a few minutes to be confirmed.",
+        description: "The proposal has been submitted to the blockchain. It may take a few minutes to be confirmed. Reload this page in a few mintues to see the proposal.",
         status: 'success',
         duration: 3000
       })
@@ -242,7 +261,7 @@ const CreateProposal: NextPage = () => {
         <VStack width="100%" alignItems="flex-start">
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Jurisdiction Name:</Text>
-            <Text>{jurisdictionName}</Text>
+            <Text>{jurisdictionName||<LoadingIcon/>}</Text>
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">

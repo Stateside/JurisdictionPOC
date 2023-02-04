@@ -7,6 +7,8 @@ import { defaultAbiCoder } from "ethers/lib/utils"
 import * as iid from "../../utils/getInterfaceId"
 import accounts from "../../utils/accounts"
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { blocksPerWeek } from "../../utils/constants";
+import { buildRoles } from "../../utils/roles";
 
 /**
  * Runs a collection of tests to ensure that the JSCTitleToken contract behaves as expected.
@@ -63,7 +65,14 @@ describe("JSCTitleTokenNoNFT", async () => {
       zeroAddress,
       0,
       false,
-      zeroAddress
+      zeroAddress,
+      {
+        votingPeriod: blocksPerWeek,
+        approvals: 0,
+        majority: 51,
+        quorum: 51,
+        role: buildRoles(ethers).EXECUTIVE_ROLE.id,
+      }
     )  
 
     return { titleTokenNoNFT };

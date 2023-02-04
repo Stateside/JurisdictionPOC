@@ -6,6 +6,8 @@ import * as helpers from "@nomicfoundation/hardhat-network-helpers";
 import { defaultAbiCoder } from "ethers/lib/utils"
 import * as iid from "../../utils/getInterfaceId"
 import accounts from "../../utils/accounts"
+import { blocksPerWeek } from "../../utils/constants";
+import { buildRoles } from "../../utils/roles";
 
 /**
  * Runs a collection of tests to ensure that the JSCTitleToken contract behaves as expected.
@@ -64,7 +66,24 @@ describe("JSCTitleToken", async () => {
 
   it('fails on second init()', async function() {
     await expect(await titleToken.isFrozen()).to.equal(false);
-    await expect(titleToken.init("name", "symbol", "uri", jurisdiction.address, zeroAddress, 0, zeroAddress, 0, true, zeroAddress)).to.be.revertedWith('init() cannot be called twice');
+    await expect(titleToken.init(
+      "name", 
+      "symbol", 
+      "uri", 
+      jurisdiction.address, 
+      zeroAddress, 
+      0, 
+      zeroAddress, 
+      0, 
+      true, 
+      zeroAddress,
+      {
+        votingPeriod: blocksPerWeek,
+        approvals: 0,
+        majority: 51,
+        quorum: 51,
+        role: buildRoles(ethers).EXECUTIVE_ROLE.id,
+      })).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('correctly checks interfaces IDs', async function() {
