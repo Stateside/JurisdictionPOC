@@ -319,10 +319,16 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     /**
      * @dev Returns the number of FOR votes required for the given proposal to be successful.
      */
-    function approvals(uint256 proposalId) external view returns (uint256) {
+    function approvals(uint256 proposalId) external view returns (uint16) {
         ProposalCore storage proposal = _proposals[proposalId];
         return proposal.params.approvals;
     }
+
+    function majority(uint256 proposalId) external view returns (uint8) {
+        ProposalCore storage proposal = _proposals[proposalId];
+        return proposal.params.majority;
+    }
+
 
     /**
      * @dev See {IJSCGovernor-proposalDeadline}.

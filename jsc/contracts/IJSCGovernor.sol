@@ -200,12 +200,12 @@ interface IJSCGovernor is IJSCConfigurable {
     /**
      * @dev Returns the number of FOR votes required for the given proposal to be successful.
      */
-    function approvals(uint256 proposalId) external view returns (uint256);
+    function approvals(uint256 proposalId) external view returns (uint16);
 
     /**
      * @dev Returns the percentage of votes that must be FOR votes for revision to pass.
      */
-    function majority(uint256 proposalId) external view returns (uint256);
+    function majority(uint256 proposalId) external view returns (uint8);
 
     /**
      * @dev Create a new proposal. Vote starts in the block after the proposal is created and ends
