@@ -5,9 +5,12 @@ import { deployments, ethers } from "hardhat"
 import { expect } from "chai"
 import { defaultAbiCoder } from "ethers/lib/utils"
 import * as iid from "../../utils/getInterfaceId"
+import { blocksPerWeek } from "../../utils/constants"
+import { buildRoles } from "../../utils/roles"
 
 describe("JSCJurisdiction", async () => {
   let jurisdiction: tc.IJSCJurisdiction
+  let roles = buildRoles(ethers)
 
   const testParameterRevision = async (r:any, name:string, description:string, type:ParamType) => {
     await expect(r.name).to.be.equal(name);
@@ -23,9 +26,77 @@ describe("JSCJurisdiction", async () => {
     await expect(r.paramHints[1]).to.be.equal("New value for the parameter");
   }
 
+  const votingParams = [
+    {
+      name: "jsc.voting.period",
+      description: "How many blocks voting lasts",
+      value: blocksPerWeek,
+      revision: {
+        name: "ChangeConfig:jsc.voting.period",
+        description: "How many blocks voting lasts",
+      }
+    },
+    {
+      name: "jsc.voting.approvals",
+      description: "How many approvals needed",
+      value: 0,
+      revision: {
+        name: "ChangeConfig:jsc.voting.approvals",
+        description: "How many approvals needed",
+      }
+    },
+    {
+      name: "jsc.voting.majority",
+      description: "% of votes that must be YES",
+      value: 51,
+      revision: {
+        name: "ChangeConfig:jsc.voting.majority",
+        description: "% of votes that must be YES",
+      }
+    },
+    {
+      name: "jsc.voting.quorum",
+      description: "% of cabinet that must vote",
+      value: 51,
+      revision: {
+        name: "ChangeConfig:jsc.voting.quorum",
+        description: "% of cabinet that must vote",
+      }
+    },
+    {
+      name: "jsc.voting.role",
+      description: "Role required for proposals",
+      value: roles.EXECUTIVE_ROLE.id,
+      revision: {
+        name: "ChangeConfig:jsc.voting.role",
+        description: "Role required for proposals",
+      }
+    }
+  ]
+
+  const testVotingParameters = async (c:tc.IJSCConfigurable, extraParamCount:number):ethers.BigNumber => {
+    await expect(await c.parameterCount()).to.be.equal(extraParamCount + votingParams.length);
+    let i = await c.iterateParameters()
+    for(let j=0; j<votingParams.length; j++) {
+      await expect(await c.isValidParameterIterator(i)).to.be.true;
+      let p = await c.parameterIteratorGet(i);
+      await expect(p.name).to.be.equal(votingParams[j].name)
+      await expect(p.description).to.be.equal(votingParams[j].description)
+      let a = await c.getNumberParameter(p.name);
+      await expect(a).to.be.equal(votingParams[j].value);  
+      i = await c.nextParameter(i)
+    }
+
+    if (extraParamCount === 0) {
+      await expect(await c.isValidParameterIterator(i)).to.be.false;
+      await expect(c.parameterIteratorGet(i)).to.be.revertedWith("Invalid iterator")
+    }
+
+    return i
+  }
+
   const testIterateParameters = async (names:string[], descriptions:string[], addresses: string[]) => {
-    await expect(await jurisdiction.parameterCount()).to.be.equal(names.length);
-    let i = await jurisdiction.iterateParameters()
+    let i = await testVotingParameters(jurisdiction, names.length)
     for(let j=0; j<names.length; j++) {
       await expect(await jurisdiction.isValidParameterIterator(i)).to.be.true;
       let p = await jurisdiction.parameterIteratorGet(i);
@@ -38,6 +109,20 @@ describe("JSCJurisdiction", async () => {
 
     await expect(await jurisdiction.isValidParameterIterator(i)).to.be.false;
     await expect(jurisdiction.parameterIteratorGet(i)).to.be.revertedWith("Invalid iterator")
+  }
+
+  const testVotingRevisions = async (c:tc.IJSCRevisioned, i:ethers.BigNumber, extraRevisionCount:number):ethers.BigNumber => {
+    await expect(await c.revisionCount()).to.be.equal(extraRevisionCount + votingParams.length);
+    
+    for(let j=0; j<votingParams.length; j++) {
+      await expect(await c.isValidRevisionIterator(i)).to.be.true;
+      let r = await c.revisionIteratorGet(i);
+      let pr = votingParams[j].revision
+      await testParameterRevision(r, pr.name, pr.description, ParamType.t_number);
+      i = await c.nextRevision(i)
+    }
+
+    return i
   }
 
   beforeEach(async () => {
@@ -59,7 +144,14 @@ describe("JSCJurisdiction", async () => {
         "Track proposals and votes",
         "Manage tokens, their owners, and the transfer of ownership"
       ],
-      false
+      false,
+      {
+        votingPeriod: blocksPerWeek,
+        approvals: 0,
+        majority: 51,
+        quorum: 51,
+        role: roles.EXECUTIVE_ROLE.id,
+      }
       )).to.be.revertedWith('init() cannot be called twice');
   });
 
@@ -99,8 +191,6 @@ describe("JSCJurisdiction", async () => {
   });
 
   it("iterates jurisdiction revisions", async () => {
-    await expect(await jurisdiction.revisionCount()).to.be.equal(6);
-    
     let i = await jurisdiction.iterateRevisions();
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     let r = await jurisdiction.revisionIteratorGet(i);
@@ -114,6 +204,8 @@ describe("JSCJurisdiction", async () => {
     await expect(r.paramHints[0]).to.be.equal("Freeze contract?");
 
     i = await jurisdiction.nextRevision(i)
+    i = await testVotingRevisions(jurisdiction, i, 6);
+
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     r = await jurisdiction.revisionIteratorGet(i);
     await testParameterRevision(r, "ChangeConfig:jsc.contracts.cabinet", "Manage the members of the jurisdiction and their roles", ParamType.t_address);
@@ -187,7 +279,6 @@ describe("JSCJurisdiction", async () => {
       ["jsc.contracts.my2ndcontract", "A second contract", "0x111122223333444455556666777788889999aAaa"]);
     let tresponse = jurisdiction.executeRevision("AddContract", revArgs);
     await expect(tresponse)
-      .to.emit(jurisdiction, "AddressParameterAdded").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
       .to.emit(jurisdiction, "ContractAdded").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
       .to.emit(jurisdiction, "RevisionExecuted").withArgs("AddContract", revArgs);
     await testIterateParameters(
@@ -206,7 +297,6 @@ describe("JSCJurisdiction", async () => {
       ["jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa"]);
     tresponse = jurisdiction.executeRevision("RemoveContract", revArgs);
     await expect(tresponse)
-      .to.emit(jurisdiction, "AddressParameterRemoved").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
       .to.emit(jurisdiction, "ContractRemoved").withArgs("jsc.contracts.my2ndcontract", "0x111122223333444455556666777788889999aAaa")
       .to.emit(jurisdiction, "RevisionExecuted").withArgs("RemoveContract", revArgs);
     await testIterateParameters(

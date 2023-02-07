@@ -8,6 +8,8 @@ import { ITokenContractDetails, useTitleTokens } from '@/store/useTitleTokens';
 import { useAliases } from '@/store/useAliases';
 import { BigNumber, ethers } from 'ethers';
 import MemberOnlyButton from '@/components/MemberOnlyButton';
+import { useGovernors } from '@/store/useGovernors';
+import { buildRoles } from '@/utils/roles';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1em" color='brand.java'/>
 type AccountGetter = (details:ITokenContractDetails) => string|undefined
@@ -24,6 +26,44 @@ const Config = () => {
   const tokensContractDetails = useTitleTokens(state => state.tokenContracts[jurisdictionAddress])
   const { getAlias, aliasesByAddress } = useAliases()
 
+  const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
+  const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
+  const loadGovernorDetails = useGovernors(state => state.get)
+  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
+  const jscGovernor = jscGovernorDetails?.instance
+
+  const [jscVotingPeriod, setJscVotingPeriod] = useState<number|undefined>()
+  const [jscVotingApprovals, setJscVotingApprovals] = useState<number|undefined>()
+  const [jscVotingMajority, setJscVotingMajority] = useState<number|undefined>()
+  const [jscVotingQuorum, setJscVotingQuorum] = useState<number|undefined>()
+  const [jscVotingRole, setJscVotingRole] = useState<string|undefined>()
+
+  // Load contracts from jurisdiciton
+  useEffect(() => { jurisdictionsLoaded && loadContracts(jurisdictionAddress, library) },
+    [jurisdictionAddress, jurisdictionsLoaded, library]);
+
+  // Load governor details
+  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
+    [jscGovernorAddress, jscGovernorDetails, library]);
+
+  useEffect(() => {
+    if (jscGovernor) {
+      const loadVoting = async () => {
+        const vp = await jscGovernor.getNumberParameter("jsc.voting.period")
+        const va = await jscGovernor.getNumberParameter("jsc.voting.approvals")
+        const vm = await jscGovernor.getNumberParameter("jsc.voting.majority")
+        const vq = await jscGovernor.getNumberParameter("jsc.voting.quorum")
+        const vr = await jscGovernor.getStringParameter("jsc.voting.role")
+        setJscVotingPeriod(vp.toNumber())
+        setJscVotingApprovals(va.toNumber())
+        setJscVotingMajority(vm.toNumber())
+        setJscVotingQuorum(vq.toNumber())
+        setJscVotingRole(vr)
+      }
+      loadVoting()
+    }
+  }, [jscGovernor])
+  
   // Get TitleToken contract details
   useEffect(() => {
     if (isTokensInitialized()) {
@@ -152,7 +192,67 @@ const Config = () => {
           ? (tokensContractDetails.nftSupport === true ? 'Enabled' : 'Disabled')
           : <LoadingIcon/>}
         </Text>
-        <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.nft.enabled&name=jsc.nft.enabled&value=${tokensContractDetails?.nftSupport?"1":"0"}`}/>
+        <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.nft.enabled&name=jsc.nft.enabled&value=${tokensContractDetails?.nftSupport?"0":"1"}`}/>
+      </HStack>
+
+      <Divider width="100%" margin="2em 0" />
+
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Period:</Text>
+        <Text width="65%">{
+          jscVotingPeriod !== undefined 
+            ? jscVotingPeriod + " blocks"
+            : <LoadingIcon/>}
+        </Text>
+        <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.period&name=jsc.voting.period&value=${jscVotingPeriod}`}/>
+      </HStack>
+
+      <Divider width="100%" margin="2em 0" />
+
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Approvals:</Text>
+        <Text width="65%">{
+          jscVotingApprovals !== undefined 
+            ? jscVotingApprovals
+            : <LoadingIcon/>}
+        </Text>
+        <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.approvals&name=jsc.voting.approvals&value=${jscVotingApprovals}`}/>
+      </HStack>
+
+      <Divider width="100%" margin="2em 0" />
+
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Majority:</Text>
+        <Text width="65%">{
+          jscVotingMajority !== undefined 
+            ? jscVotingMajority+"%"
+            : <LoadingIcon/>}
+        </Text>
+        <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.majority&name=jsc.voting.majority&value=${jscVotingMajority}`}/>
+      </HStack>
+
+      <Divider width="100%" margin="2em 0" />
+
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Quorum:</Text>
+        <Text width="65%">{
+          jscVotingQuorum !== undefined 
+            ? jscVotingQuorum+"%"
+            : <LoadingIcon/>}
+        </Text>
+        <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.approvals&name=jsc.voting.approvals&value=${jscVotingQuorum}`}/>
+      </HStack>
+
+      <Divider width="100%" margin="2em 0" />
+
+      <HStack width="100%">
+        <Text width="20%" fontSize='md'>Voting Role:</Text>
+        <Text width="65%">{
+          jscVotingRole !== undefined 
+            ? buildRoles(ethers).rolesById[jscVotingRole]?.name || jscVotingRole || "Any"
+            : <LoadingIcon/>}
+        </Text>
+        <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.role&name=jsc.voting.role&value=${jscVotingRole}`}/>
       </HStack>
 
       <Divider width="100%" margin="2em 0" />

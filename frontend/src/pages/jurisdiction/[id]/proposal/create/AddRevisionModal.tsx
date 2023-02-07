@@ -5,6 +5,7 @@ import { capitalizeString } from '@/utils/util';
 import { Button, Divider, HStack, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Select, Text, Textarea, VStack, Code } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useCallback, useEffect, useMemo } from 'react';
+import { IJSCConfigurable__factory } from '../../../../../../typechain-types';
 import Parameter from './Parameter';
 
 export type ParameterValues = {
@@ -94,6 +95,50 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
       paramHints: selectedRevision?.paramHints
     })
   }, [revision, selectedRevision, setRevision])
+
+  useEffect(() => {
+    // If the selected revision is a config paramater update, and new values have not been specified, then insert current values 
+    const loadCurrentValue = async () => {
+      if (selectedContract && selectedRevision && selectedRevision.paramTypes && selectedRevision.name.startsWith("ChangeConfig:") && revision.parameters.value === undefined) {
+        const configParamName = selectedRevision.name.split(":")[1]
+        const instance = IJSCConfigurable__factory.connect(selectedContract?.address, library)
+        let value = undefined 
+        switch(selectedRevision.paramTypes[1]) {
+          case ParamType.t_address:
+            value = await instance.getAddressParameter(configParamName)
+            break;
+          case ParamType.t_bool:
+            value = await instance.getBoolParameter(configParamName) ? "1" : "0"
+            break;
+          case ParamType.t_number:
+            value = await (await instance.getNumberParameter(configParamName)).toHexString()
+            break;
+          case ParamType.t_string:
+            value = await instance.getStringParameter(configParamName)
+            break;
+        }
+
+        if (value !== undefined)
+          setRevision({
+            ...revision,
+            parameters: {...revision.parameters, value},
+          })
+      }
+    }
+
+    loadCurrentValue()
+  }, [selectedContract?.address, selectedRevision?.name, library, setRevision])
+
+  useEffect(() => {
+    if (selectedRevision && selectedRevision.name.startsWith("ChangeConfig:")) {
+      const name = selectedRevision?.name?.split(":")[1]
+      if (name !== revision.parameters.name)
+        setRevision({
+          ...revision,
+          parameters: {...revision.parameters, name }
+        })
+    }
+  }, [selectedRevision?.name, revision.parameters.name, setRevision])
 
   useEffect(() => {
     // This is called the first time the modal is displayed with URL parameters

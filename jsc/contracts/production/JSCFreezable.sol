@@ -49,16 +49,13 @@ contract JSCFreezable is IJSCFreezable, JSCRevisioned {
     types[0] = rlib.ParamType.t_bool;
     string[] memory hints = new string[](1);
     hints[0] = "Freeze contract?";
-    string[] memory roles = new string[](1);
-    roles[0] = "Judicial";
 
     _addRevision(rlib.Revision({
         name: "FreezeContract",
         description: "Freeze or unfreeze contract {address}",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       }));
   }
 

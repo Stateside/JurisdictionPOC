@@ -192,8 +192,8 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
           const c = {name:p.name, address:a.toLowerCase(), description:p.description}
           newContracts.list.push(c)
           newContracts.byName[p.name] = c
-          i = await instance.nextParameter(i)
         }
+        i = await instance.nextParameter(i)
       }
     } catch(e) {
       console.log("Error loading contracts for jurisdiction", address, e)

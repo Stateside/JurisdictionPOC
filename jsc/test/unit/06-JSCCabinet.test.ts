@@ -8,9 +8,10 @@ import { buildRoles } from "../../utils/roles"
 import "@nomicfoundation/hardhat-chai-matchers/panic"
 import * as iid from "../../utils/getInterfaceId"
 import { PANIC_CODES } from "@nomicfoundation/hardhat-chai-matchers/panic";
+import { blocksPerWeek } from "../../utils/constants";
 
 /**
- * Runs a colection of tests to ensure that the JSCCabinet contract behaves as expected.
+ * Runs a collection of tests to ensure that the JSCCabinet contract behaves as expected.
  */
 describe("JSCCabinet", async () => {
   let cabinet: tc.IJSCCabinet
@@ -61,7 +62,13 @@ describe("JSCCabinet", async () => {
 
   it('fails on second init()', async function() {
     await expect(await cabinet.isFrozen()).to.equal(false);
-    await expect(cabinet.init(jurisdiction.address, [], [], zeroAddress)).to.be.revertedWith('init() cannot be called twice');
+    await expect(cabinet.init(jurisdiction.address, [], [], zeroAddress, {
+      votingPeriod: blocksPerWeek,
+      approvals: 0,
+      majority: 51,
+      quorum: 51,
+      role: roles.EXECUTIVE_ROLE.id,
+    })).to.be.revertedWith('init() cannot be called twice');
   });
 
   it('checks membership correctly', async function() {

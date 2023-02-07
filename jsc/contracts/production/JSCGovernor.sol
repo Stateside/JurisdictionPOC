@@ -10,6 +10,8 @@ import {JSCRevisionsLib as rlib} from "libraries/JSCRevisionsLib.sol";
 import "./JSCConfigurable.sol";
 import "../IJSCRevisioned.sol";
 import "../IJSCGovernor.sol";
+import "../IJSCJurisdiction.sol";
+import "../IJSCCabinet.sol";
 
 /**
  @dev This contract manages proposals for changes to the operation of the jurisdiction contracts.
@@ -29,11 +31,14 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     */
     function init(
             address jurisdiction,
-            bool changeOwner) external onlyOwner {
+            bool changeOwner,
+            rlib.VotingRules memory votingRules) external onlyOwner {
         require(_jurisdiction == address(0), "init() cannot be called twice");
         require(jurisdiction != address(0), "invalid jurisdiction address");
         JSCConfigurable._init();
         _jurisdiction = jurisdiction;
+        clib.addVotingParameters(_parameters, votingRules);
+        _addParameterRevisions();
 
         if (changeOwner) {
             // This contract will own itself
@@ -110,7 +115,13 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
             return ProposalState.Active;
         }
 
-        if (_quorumReached(proposalId) && _voteSucceeded(proposalId)) {
+
+        ProposalVote storage proposalvote = _proposalVotes[proposalId];
+        if (
+                quorum(proposalId) <= proposalvote.forVotes + proposalvote.abstainVotes && 
+                Math.ceilDiv((proposalvote.forVotes + proposalvote.againstVotes + proposalvote.abstainVotes) * proposal.params.majority, 100) <= proposalvote.forVotes &&
+                proposalvote.forVotes > proposalvote.againstVotes && 
+                proposalvote.forVotes >= proposal.params.approvals) {
             return ProposalState.Succeeded;
         } else {
             return ProposalState.Defeated;
@@ -123,20 +134,24 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
      * 2. make sure it implements IJSCRevisioned
      * 3. Get the voting rules and merge with others the get the most appropriate voting rules
      */
-    function _validateAndMergeRules(RevisionCall[] memory revs)
+    function _mergeRules(RevisionCall[] memory revs)
         internal
         view
         returns (rlib.VotingRules memory res)
     {
+        IJSCJurisdiction j = IJSCJurisdiction(_jurisdiction);
+        IJSCCabinet c = IJSCCabinet(j.getContractAddress("jsc.contracts.cabinet"));
         for (uint256 i = 0; i < revs.length; i++) {
             RevisionCall memory r = revs[i];
             require(
-                erc165.supportsInterface(r.target, type(IJSCRevisioned).interfaceId),
+                erc165.supportsInterface(r.target, type(IJSCConfigurable).interfaceId),
                 "Contract does not support revisions"
             );
 
-            IJSCRevisioned c = IJSCRevisioned(r.target);
-            rlib.VotingRules memory vr = c.getRevisionByName(r.name).rules;
+            // TODO: Get voting parameters from the target contract
+            // But for now always use the parameters from the governor because not all voting parameters from all contracts are configurable in the UI yet
+            IJSCConfigurable config = this; // IJSCConfigurable(r.target);
+            rlib.VotingRules memory vr = clib.getVotingParameters(config);
             res.votingPeriod = vr.votingPeriod > res.votingPeriod
                 ? vr.votingPeriod
                 : res.votingPeriod;
@@ -147,7 +162,7 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
             res.majority = vr.majority > res.majority
                 ? vr.majority
                 : res.majority;
-            // TODO: Check the roles array here to ensure caller has permission
+            require(vr.role == 0 || c.hasRole(vr.role, msg.sender), "missing required role");
         }
     }
 
@@ -160,21 +175,26 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     {
         uint256 proposalId = hashProposal(revs, keccak256(bytes(description)), version);
 
-        require(revs.length > 0, "Governor: empty proposal");
+        require(revs.length > 0, "empty proposal");
 
         ProposalCore storage proposal = _proposals[proposalId];
         require(
             proposal.params.votingPeriod == 0,
-            "Governor: proposal already exists"
+            "proposal already exists"
         );
 
-        rlib.VotingRules memory vr = _validateAndMergeRules(revs);
+        rlib.VotingRules memory vr = _mergeRules(revs);
         proposal.voteStart = block.number.toUint64();
         proposal.params.votingPeriod = vr.votingPeriod;
         proposal.params.approvals = vr.approvals;
         proposal.params.majority = vr.majority;
         proposal.params.quorum = vr.quorum;
         _proposalIds.add(proposalId);
+
+        require(
+            proposal.params.votingPeriod > 0,
+            "invalid proposal"
+        );
 
         emit ProposalCreated(
             proposalId,
@@ -200,7 +220,7 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
         ProposalState status = state(proposalId);
         require(
             status == ProposalState.Succeeded || status == ProposalState.Queued,
-            "Governor: proposal not successful"
+            "proposal not successful"
         );
         _proposals[proposalId].executed = true;
 
@@ -244,7 +264,7 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     ) internal {
         require(
             state(proposalId) == ProposalState.Active,
-            "Governor: vote not currently active"
+            "vote not currently active"
         );
 
         _countVote(proposalId, account, support);
@@ -286,17 +306,6 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     }
 
     /**
-     * @dev Amount of votes already cast passes the threshold limit.
-     */
-    function _quorumReached(uint256 proposalId) internal view returns (bool) {
-        ProposalVote storage proposalvote = _proposalVotes[proposalId];
-
-        return
-            quorum(proposalId) <=
-            proposalvote.forVotes + proposalvote.abstainVotes;
-    }
-
-    /**
      * @dev See {IJSCGovernor-quorum}.
      */
     function quorum(uint256 proposalId) public view override returns (uint256) {
@@ -306,6 +315,20 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
         uint256 membersCount = 3; // TODO get member count from JSCCabinet
         return Math.ceilDiv(membersCount * proposal.params.quorum, 100);
     }
+
+    /**
+     * @dev Returns the number of FOR votes required for the given proposal to be successful.
+     */
+    function approvals(uint256 proposalId) external view returns (uint16) {
+        ProposalCore storage proposal = _proposals[proposalId];
+        return proposal.params.approvals;
+    }
+
+    function majority(uint256 proposalId) external view returns (uint8) {
+        ProposalCore storage proposal = _proposals[proposalId];
+        return proposal.params.majority;
+    }
+
 
     /**
      * @dev See {IJSCGovernor-proposalDeadline}.
@@ -334,15 +357,6 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
     }
 
     /**
-     * @dev Is the proposal successful or not. The forVotes must be strictly over the againstVotes.
-     */
-    function _voteSucceeded(uint256 proposalId) internal view returns (bool) {
-        ProposalVote storage proposalvote = _proposalVotes[proposalId];
-
-        return proposalvote.forVotes > proposalvote.againstVotes;
-    }
-
-    /**
      * @dev Register a vote for `proposalId` by `account` with a given `support`, voting `weight` and voting `params`.
      *
      * Note: Support is generic and can represent various things depending on the voting system used.
@@ -356,7 +370,7 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
 
         require(
             !proposalvote.hasVoted[account],
-            "Governor: vote already cast"
+            "vote already cast"
         );
         proposalvote.hasVoted[account] = true;
 
@@ -367,7 +381,7 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
         } else if (support == uint8(VoteType.Abstain)) {
             proposalvote.abstainVotes += 1;
         } else {
-            revert("Governor: invalid value for enum VoteType");
+            revert("invalid value for enum VoteType");
         }
     }
 }

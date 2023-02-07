@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "./IJSCConfigurable.sol";
+import {JSCRevisionsLib as rlib} from "../libraries/JSCRevisionsLib.sol";
 
 /**
  * This is the governor interface. Although inspired by (and to some extent copied from) OpenZeppelin's governor
@@ -34,7 +35,7 @@ interface IJSCGovernor is IJSCConfigurable {
         uint16 votingPeriod;
         /** How many approvals needed (0-65535). Yes votes count as approvals. */
         uint16 approvals;
-        /** Percentage of quorum that are yes votes needed for revision to pass (0-100) */
+        /** Percentage of votes that must be yes votes for revision to pass (0-100) */
         uint8 majority;
         /** Percentage of cabinet response needed for vote to be considered valid (0-100). */
         uint8 quorum;
@@ -108,7 +109,7 @@ interface IJSCGovernor is IJSCConfigurable {
     /**
      * @dev Initializes the contract by connecting it to a jurisdiction
      */
-    function init(address jurisdiction, bool changeOwner) external;
+    function init(address jurisdiction, bool changeOwner, rlib.VotingRules memory votingRules) external;
 
     /**
      * @dev Returns the address of the jurisdicion of which this contract is a part
@@ -195,6 +196,16 @@ interface IJSCGovernor is IJSCConfigurable {
      * @dev Returns the minimum number of cast votes required for the given proposal to be successful.
      */
     function quorum(uint256 proposalId) external view returns (uint256);
+
+    /**
+     * @dev Returns the number of FOR votes required for the given proposal to be successful.
+     */
+    function approvals(uint256 proposalId) external view returns (uint16);
+
+    /**
+     * @dev Returns the percentage of votes that must be FOR votes for revision to pass.
+     */
+    function majority(uint256 proposalId) external view returns (uint8);
 
     /**
      * @dev Create a new proposal. Vote starts in the block after the proposal is created and ends

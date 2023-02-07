@@ -54,8 +54,8 @@ const showJSCJurisdiction: NextPage = () => {
           if (p.ptype == ParamType.t_address) {
             let a = await jscJurisdiction.getAddressParameter(p.name);
             _contracts.push({name:p.name, address:a, description:p.description})
-            i = await jscJurisdiction.nextParameter(i)
           }
+          i = await jscJurisdiction.nextParameter(i)
         }
         setContracts(_contracts)
       }

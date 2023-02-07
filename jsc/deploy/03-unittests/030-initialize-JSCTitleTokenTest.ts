@@ -2,6 +2,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
 // @ts-ignore
 import { ethers } from "hardhat" 
+import { blocksPerWeek } from "../../utils/constants"
+import { buildRoles } from "../../utils/roles"
 
 const deployJSCTitleTokenTestInit: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -23,7 +25,14 @@ const deployJSCTitleTokenTestInit: DeployFunction = async function (hre: Hardhat
     zeroAddress,
     0,
     true,
-    zeroAddress
+    zeroAddress,
+    {
+      votingPeriod: blocksPerWeek,
+      approvals: 0,
+      majority: 51,
+      quorum: 51,
+      role: buildRoles(ethers).JUDICIAL_ROLE.id,
+    }
   ); 
 }
 

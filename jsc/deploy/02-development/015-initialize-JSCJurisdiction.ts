@@ -15,6 +15,7 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
   const jscGovernorContract = await get("development_JSCGovernor")
   const jscJurisdictionContract = await get("development_JSCJurisdiction")
 
+  log(`----------------------------------------------------`)
   log("Initializing development_JSCJurisdiction...")
   const jscJurisdiction:tc.IJSCJurisdiction = await ethers.getContractAt("JSCJurisdiction", jscJurisdictionContract.address)
   await jscJurisdiction.init(
@@ -26,7 +27,14 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
       "Track proposals and votes",
       "Manage tokens, their owners, and the transfer of ownership"
     ],
-    true
+    true,
+    {
+      votingPeriod: 50,
+      approvals: 1,
+      majority: 0,
+      quorum: 0,
+      role: ethers.constants.HashZero,
+    }
   )
 
   log(`development_JSCJurisdiction Initialized with the following contracts:`)
@@ -37,8 +45,8 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
     if (p.ptype == ParamType.t_address) {
       let a = await jscJurisdiction.getAddressParameter(p.name);
       log(`  ${p.name}: ${a}`)
-      i = await jscJurisdiction.nextParameter(i)
     }
+    i = await jscJurisdiction.nextParameter(i)
   }
   log("\\-------------------------------------------------------------------/")
 }

@@ -33,7 +33,8 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
         address maintainerAccount_,
         uint256 maintainerFee_,
         bool nftSupport_,
-        address newOwner
+        address newOwner_,
+        rlib.VotingRules memory votingRules
       ) external onlyOwner {
     require(
       bytes(_storage.name).length == 0,
@@ -44,11 +45,8 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
     require(bytes(baseURI_).length > 0, "invalid URI");
 
     JSCConfigurable._init();
-    _addNumberParameter(tlib.getRegistryFeeParam(registryFee_));
-    _addAddressParameter(tlib.getRegistryAccountParam(registryAccount_));
-    _addNumberParameter(tlib.getMaintainerFeeParam(maintainerFee_));
-    _addAddressParameter(tlib.getMaintainerAccountParam(maintainerAccount_));
-    _addBoolParameter(tlib.getContractNFTSupportParam(nftSupport_));
+    clib.addVotingParameters(_parameters, votingRules);
+    tlib.addTitleParameters(_parameters, registryFee_, registryAccount_, maintainerFee_, maintainerAccount_, nftSupport_);
     _addParameterRevisions();
 
     _storage.name = name_;
@@ -59,9 +57,9 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
     _addTitleRevisions();
     _addTitleHandlers();
 
-    if (newOwner != address(0)) {
+    if (newOwner_ != address(0)) {
       // Change ownership of this contract to the new owner (governor usually)
-      transferOwnership(newOwner);
+      transferOwnership(newOwner_);
     }
   }
 
@@ -481,9 +479,9 @@ contract JSCTitleToken is IERC721, IERC721Metadata, IJSCTitleToken, JSCConfigura
   /** Implements the ChangeOwner revision */
   function _executeChangeOwner(bytes memory pdata) private {
       uint tokenId;
-      address newOwner;
-      (tokenId, newOwner) = abi.decode(pdata, (uint, address));
-      _safeTransfer(ownerOf(tokenId), newOwner, tokenId, "");
+      address newOwner_;
+      (tokenId, newOwner_) = abi.decode(pdata, (uint, address));
+      _safeTransfer(ownerOf(tokenId), newOwner_, tokenId, "");
   }
 
   /** Implements the FreezeToken revision */

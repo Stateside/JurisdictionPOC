@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "./IJSCConfigurable.sol";
+import { JSCRevisionsLib as rlib } from "libraries/JSCRevisionsLib.sol";
 
 /**
   This is the  interface for the top level container for all other smart contracts in the jurisdiction.
@@ -23,7 +24,8 @@ interface IJSCJurisdiction is IJSCConfigurable {
         string[] calldata contractKeys,
         address[] calldata contracts,
         string[] calldata descriptions,
-        bool changeOwner
+        bool changeOwner,
+        rlib.VotingRules memory votingRules
     ) external;
 
     /** Returns the address of the contract with the given name */

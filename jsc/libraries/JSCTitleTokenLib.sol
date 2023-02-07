@@ -12,6 +12,7 @@ import { JSCConfigurableLib as clib } from "libraries/JSCConfigurableLib.sol";
  */
 library JSCTitleTokenLib {
   using rlib for rlib.RevisionMap;
+  using clib for clib.ParameterMap;
   using Address for address;
 
   /**
@@ -74,11 +75,13 @@ library JSCTitleTokenLib {
       OfferList offersToBuy;
   }
 
-  function getRegistryFeeParam(uint256 registryFee) public pure returns(clib.NumberParameter memory) { return clib.NumberParameter("jsc.fees.registry", "Transfer fee paid to registry", registryFee); }
-  function getRegistryAccountParam(address registryAccount) public pure returns(clib.AddressParameter memory) { return clib.AddressParameter("jsc.accounts.registry", "Account where registry fees are paid", registryAccount); }
-  function getMaintainerFeeParam(uint256 maintainerFee) public pure returns(clib.NumberParameter memory) { return clib.NumberParameter("jsc.fees.maintainer", "Transfer fee paid to maintainer", maintainerFee); }
-  function getMaintainerAccountParam(address maintainerAccount) public pure returns(clib.AddressParameter memory) { return clib.AddressParameter("jsc.accounts.maintainer", "Account where maintainer fees are paid", maintainerAccount); }
-  function getContractNFTSupportParam(bool nftSupport) public pure returns(clib.BoolParameter memory) { return clib.BoolParameter("jsc.nft.enabled", "Allow owners to exchange tokens as NFTs", nftSupport); }
+  function addTitleParameters(clib.ParameterMap storage parameters, uint256 registryFee, address registryAccount, uint256 maintainerFee, address maintainerAccount, bool nftSupport) public {
+    parameters.insertNumber(clib.NumberParameter("jsc.fees.registry", "Transfer fee paid to registry", registryFee));
+    parameters.insertAddress(clib.AddressParameter("jsc.accounts.registry", "Account where registry fees are paid", registryAccount));
+    parameters.insertNumber(clib.NumberParameter("jsc.fees.maintainer", "Transfer fee paid to maintainer", maintainerFee));
+    parameters.insertAddress(clib.AddressParameter("jsc.accounts.maintainer", "Account where maintainer fees are paid", maintainerAccount));
+    parameters.insertBool(clib.BoolParameter("jsc.nft.enabled", "Allow owners to exchange tokens as NFTs", nftSupport));
+  }
 
   function requireAddress(address a) public pure {
     require(a != address(0), "address zero is not a valid owner");
@@ -500,17 +503,13 @@ library JSCTitleTokenLib {
     string[] memory hints = new string[](2);
     hints[0] = "ID of selected token";
     hints[1] = "Address of new owner";
-    string[] memory roles = new string[](2);
-    roles[0] = "Judicial";
-    roles[1] = "Judicial";
 
     return rlib.Revision({
         name: "ChangeOwner",
         description: "Change the owner of token {token} to {newOwner}",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       });
   }
 
@@ -524,17 +523,13 @@ library JSCTitleTokenLib {
     string[] memory hints = new string[](2);
     hints[0] = "ID of selected token";
     hints[1] = "Freeze token?";
-    string[] memory roles = new string[](2);
-    roles[0] = "Judicial";
-    roles[1] = "Judicial";
 
     return rlib.Revision({
         name: "FreezeToken",
         description: "Set frozen state of token {token} to {freeze}",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       });
   }
 
@@ -548,17 +543,13 @@ library JSCTitleTokenLib {
     string[] memory hints = new string[](2);
     hints[0] = "Address of selected owner";
     hints[1] = "Freeze owner?";
-    string[] memory roles = new string[](2);
-    roles[0] = "Judicial";
-    roles[1] = "Judicial";
-
+  
     return rlib.Revision({
         name: "FreezeOwner",
         description: "Set frozen state of owner {owner} to {freeze}",
         paramNames: names,
         paramTypes: types,
-        paramHints: hints,
-        rules: rlib.VotingRules(rlib.BlocksPerWeek,0,51,51,roles)
+        paramHints: hints
       });
   }
 }

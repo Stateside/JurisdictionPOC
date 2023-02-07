@@ -132,7 +132,7 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
         const newProposalDetails = { 
           detailsLoading: false,
           startBlock: newProposal.startBlock,
-          deadline: newProposal.deadline,
+          deadline: await (await instance.proposalDeadline(proposalId)).toNumber(),
           proposer: newProposal.proposer,
           version: newProposal.version,
           status: await instance.state(proposalId),
@@ -243,7 +243,7 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
       deadline: 0,
       proposer: '',
       version: 0,
-      description: 'Not Found. If this is a new proposal, then please wait a few minjutes for the proposal to be confirmed on the blockchain.',
+      description: 'Not Found. If this is a new proposal, then please wait a few minutes for the proposal to be confirmed on the blockchain, and then reload this page.',
       status: ProposalState.Expired,
       revisions: [],
       detailsLoading: false,

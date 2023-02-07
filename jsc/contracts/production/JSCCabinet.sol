@@ -20,10 +20,6 @@ contract JSCCabinet is
 {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    bytes32 public constant JUDICIAL_ROLE = keccak256("JUDICIAL_ROLE");
-    bytes32 public constant LEGISLATIVE_ROLE = keccak256("LEGISLATIVE_ROLE");
-    bytes32 public constant EXECUTIVE_ROLE = keccak256("EXECUTIVE_ROLE");
-
     address private _jurisdiction;
     mapping(address => uint) private _roleCounts; // Count roles for each member
     EnumerableSet.Bytes32Set private _roles; // Keep track of roles in use
@@ -35,7 +31,8 @@ contract JSCCabinet is
         address jurisdiction,
         address[] memory accounts,
         bytes32[] memory roles,
-        address newOwner
+        address newOwner,
+        rlib.VotingRules memory votingRules
     ) external onlyOwner {
         require(_jurisdiction == address(0), "init() cannot be called twice");
         require(jurisdiction != address(0), "invalid jurisdiction address");
@@ -47,14 +44,15 @@ contract JSCCabinet is
             _grantRole(roles[i], accounts[i]);
         }
 
+        clib.addVotingParameters(_parameters, votingRules);
         _addParameterRevisions();
         _addCabinetRevisions();
 
         if (newOwner != address(0)) {
-            // Change ownership of this contract to the new owner (governor usually)
+            // Change onership of this contract to the new owner (governor usually)
             transferOwnership(newOwner);
         }
-    }
+ }
 
     /**
      * @dev See {IJSCCabinet-getJurisdiction}.
@@ -148,8 +146,6 @@ contract JSCCabinet is
         string[] memory hints = new string[](2);
         hints[0] = "Address of member's account";
         hints[1] = "New role for this member";
-        string[] memory roles = new string[](1);
-        roles[0] = "Judicial";
 
         return
             rlib.Revision({
@@ -157,8 +153,7 @@ contract JSCCabinet is
                 description: description,
                 paramNames: names,
                 paramTypes: types,
-                paramHints: hints,
-                rules: rlib.VotingRules(rlib.BlocksPerWeek, 0, 51, 51, roles)
+                paramHints: hints
             });
     }
 
@@ -175,8 +170,6 @@ contract JSCCabinet is
         string[] memory hints = new string[](2);
         hints[0] = "Address of member's account";
         hints[1] = "Revoked role for this member";
-        string[] memory roles = new string[](1);
-        roles[0] = "Judicial";
 
         return
             rlib.Revision({
@@ -184,8 +177,7 @@ contract JSCCabinet is
                 description: description,
                 paramNames: names,
                 paramTypes: types,
-                paramHints: hints,
-                rules: rlib.VotingRules(rlib.BlocksPerWeek, 0, 51, 51, roles)
+                paramHints: hints
             });
     }
 
@@ -199,8 +191,6 @@ contract JSCCabinet is
         types[0] = rlib.ParamType.t_address;
         string[] memory hints = new string[](1);
         hints[0] = "Address of member's account";
-        string[] memory roles = new string[](1);
-        roles[0] = "Judicial";
 
         return
             rlib.Revision({
@@ -208,8 +198,7 @@ contract JSCCabinet is
                 description: description,
                 paramNames: names,
                 paramTypes: types,
-                paramHints: hints,
-                rules: rlib.VotingRules(rlib.BlocksPerWeek, 0, 51, 51, roles)
+                paramHints: hints
             });
     }
 

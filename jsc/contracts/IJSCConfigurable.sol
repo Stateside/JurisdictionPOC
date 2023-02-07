@@ -12,17 +12,10 @@ import "./IJSCFreezable.sol";
   governor to modify the values of the parameters using the Jurisdictions governance protocol.
  */
 interface IJSCConfigurable is IJSCFreezable {
-  event AddressParameterAdded(string name, address value);
-  event BoolParameterAdded(string name, bool value);
-  event NumberParameterAdded(string name, uint value);
-  event StringParameterAdded(string name, string value);
-
   event AddressParameterUpdated(string name, address value);
   event BoolParameterUpdated(string name, bool value);
   event NumberParameterUpdated(string name, uint value);
   event StringParameterUpdated(string name, string value);
-
-  event AddressParameterRemoved(string name, address value);
 
   /** Returns the address value stored in the given paramater */
   function getAddressParameter(string memory name) external view returns (address);

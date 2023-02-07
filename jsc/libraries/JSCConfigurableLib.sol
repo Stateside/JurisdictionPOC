@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import { JSCRevisionsLib as rlib } from "../libraries/JSCRevisionsLib.sol";
+import "../contracts/IJSCConfigurable.sol";
 
 /**
   @dev This library contains code for use by the JSCConfigurable smart contract. It's purpose is primarily to reduce the size of 
@@ -66,28 +67,28 @@ library JSCConfigurableLib {
   type Iterator is uint;
 
   /** Adds the given address parameter. Fails if another address parameter with the same name already exists */
-  function insertAddress(ParameterMap storage self, AddressParameter calldata r) public {
+  function insertAddress(ParameterMap storage self, AddressParameter memory r) public {
     checkCanAdd(self, r.name);
     self.addressValues[r.name] = r.value;
     _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_address));
   }
 
   /** Adds the given bool parameter. Fails if another bool parameter with the same name already exists */
-  function insertBool(ParameterMap storage self, BoolParameter calldata r) public {
+  function insertBool(ParameterMap storage self, BoolParameter memory r) public {
     checkCanAdd(self, r.name);
     self.boolValues[r.name] = r.value;
     _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_bool));
   }
 
   /** Adds the given number parameter. Fails if another number parameter with the same name already exists */
-  function insertNumber(ParameterMap storage self, NumberParameter calldata r) public {
+  function insertNumber(ParameterMap storage self, NumberParameter memory r) public {
     checkCanAdd(self, r.name);
     self.numberValues[r.name] = r.value;
     _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_number));
   }
 
   /** Adds the given string parameter. Fails if another string parameter with the same name already exists */
-  function insertString(ParameterMap storage self, StringParameter calldata r) public {
+  function insertString(ParameterMap storage self, StringParameter memory r) public {
     checkCanAdd(self, r.name);
     self.stringValues[r.name] = r.value;
     _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_string));
@@ -103,7 +104,7 @@ library JSCConfigurableLib {
   }
 
   /** Removes the given parameter. Fails if the given parameter does not exist */
-  function remove(ParameterMap storage self, string calldata name) public {
+  function remove(ParameterMap storage self, string memory name) public {
     uint keyIndex = self.paramInfos[name].keyIndex;
     require(keyIndex > 0, "Trying to remove non-existant parameter");
 
@@ -119,22 +120,22 @@ library JSCConfigurableLib {
     self.size--;
   }
 
-  function getAddress(ParameterMap storage self, string calldata name) public view returns (address value) {
+  function getAddress(ParameterMap storage self, string memory name) public view returns (address value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.addressValues[name];
   }
 
-  function getBool(ParameterMap storage self, string calldata name) public view returns (bool value) {
+  function getBool(ParameterMap storage self, string memory name) public view returns (bool value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.boolValues[name];
   }
 
-  function getNumber(ParameterMap storage self, string calldata name) public view returns (uint value) {
+  function getNumber(ParameterMap storage self, string memory name) public view returns (uint value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.numberValues[name];
   }
 
-  function getString(ParameterMap storage self, string calldata name) public view returns (string storage value) {
+  function getString(ParameterMap storage self, string memory name) public view returns (string storage value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.stringValues[name];
   }
@@ -160,11 +161,11 @@ library JSCConfigurableLib {
   }
 
   /** Determines if a parameter with the given name already exists. */
-  function contains(ParameterMap storage self, string calldata name) public view returns (bool) {
+  function contains(ParameterMap storage self, string memory name) public view returns (bool) {
     return self.paramInfos[name].keyIndex > 0;
   }
   
-  function checkCanAdd(ParameterMap storage self, string calldata name) public view {
+  function checkCanAdd(ParameterMap storage self, string memory name) public view {
     require(bytes(name).length > 0, "Missing parameter name");
     require(!contains(self, name), "Parameter with same name already exists");
   }
@@ -195,18 +196,18 @@ library JSCConfigurableLib {
   }
 
   /** Create revisions and handlers for all existing parameters */
-  function getRevisions(ParameterMap storage self, rlib.VotingRules storage rules) public view returns (rlib.Revision[] memory result) {
+  function getRevisions(ParameterMap storage self) public view returns (rlib.Revision[] memory result) {
     result = new rlib.Revision[](self.size);
     uint r = 0;
     Iterator i = iterateStart(self);
     while(iterateValid(self, i)) {
       ParameterInfo storage pi = iterateGet(self, i);
-      result[r++] = getRevisionForParameter(pi, rules);
+      result[r++] = getRevisionForParameter(pi);
       i = iterateNext(self, i);
     }
   }
 
-  function getRevisionForParameter(ParameterInfo storage pi, rlib.VotingRules storage rules) public view returns (rlib.Revision memory) {
+  function getRevisionForParameter(ParameterInfo storage pi) public view returns (rlib.Revision memory) {
     string[] memory names = new string[](2);
     names[0] = "name";
     names[1] = "value";
@@ -222,8 +223,23 @@ library JSCConfigurableLib {
       description: pi.description,
       paramNames: names,
       paramTypes: types,
-      paramHints: hints,
-      rules: rules
+      paramHints: hints
     });
+  }
+
+  function addVotingParameters(ParameterMap storage parameters, rlib.VotingRules memory rules) public {
+    insertNumber(parameters, NumberParameter("jsc.voting.period", "How many blocks voting lasts", rules.votingPeriod));
+    insertNumber(parameters, NumberParameter("jsc.voting.approvals", "How many approvals needed", rules.approvals));
+    insertNumber(parameters, NumberParameter("jsc.voting.majority", "% of votes that must be YES", rules.majority));
+    insertNumber(parameters, NumberParameter("jsc.voting.quorum", "% of cabinet that must vote", rules.quorum));
+    insertNumber(parameters, NumberParameter("jsc.voting.role", "Role required for proposals", uint(rules.role)));
+  }
+
+  function getVotingParameters(IJSCConfigurable c) public view returns (rlib.VotingRules memory rules) {
+    rules.votingPeriod = uint16(c.getNumberParameter("jsc.voting.period"));
+    rules.approvals = uint16(c.getNumberParameter("jsc.voting.approvals"));
+    rules.majority = uint8(c.getNumberParameter("jsc.voting.majority"));
+    rules.quorum = uint8(c.getNumberParameter("jsc.voting.quorum"));
+    rules.role = bytes32(c.getNumberParameter("jsc.voting.role"));
   }
 }

@@ -7,9 +7,7 @@ import "./IJSCConfigurable.sol";
 /**
  * This is the cabinet interface. It keeps track of the members of the jurisdiction cabinet and their roles
  */
-interface IJSCCabinet is IAccessControlEnumerable, IJSCConfigurable {  
-    enum Role {Judicial, Legislative, Executive }
-
+interface IJSCCabinet is IAccessControlEnumerable, IJSCConfigurable {
     /**
      * @dev Initializes the contract by connecting it to a jurisdiction and adding initial members
      */
@@ -17,7 +15,8 @@ interface IJSCCabinet is IAccessControlEnumerable, IJSCConfigurable {
         address jurisdiction,
         address[] memory accounts,
         bytes32[] memory roles,
-        address newOwner) external;
+        address newOwner,
+        rlib.VotingRules memory votingRules) external;
 
     /**
      * @dev Returns the address of the jurisdicion of which this contract is a part
