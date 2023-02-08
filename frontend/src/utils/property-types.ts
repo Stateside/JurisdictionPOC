@@ -1,3 +1,4 @@
+import { AlertStatus } from '@chakra-ui/react';
 import { BigNumber } from 'ethers';
 import { ChangeEvent, ReactNode } from 'react';
 
@@ -31,9 +32,11 @@ export type SellFormModel = {
 
 export type OfferInfo = {
   tokenId: string;
-  fromAddress: string;
-  price: string | number | null;
-  expiresAfter: string | number | null;
+  address: string;
+  price: number;
+  expiresAfter: number;
+  expiresOn: number;
+  daysLeft: number;
   type: string;
 };
 
@@ -53,12 +56,16 @@ export type ModelFieldSetter = {
   newModel: FormInputModel;
 };
 
-export type ActionNames = '' | 'sell' | 'accept';
+export type ActionNames = '' | 
+  'OfferToSell' | 'ViewOfferToSell' | 'AcceptOfferToSell' | 'RetractOfferToSell' | 
+  'OfferToBuy' | 'ViewOfferToBuy' | 'AcceptOfferToBuy' | 'RetractOfferToBuy'
 
 export type PropertyMapInfo = {
   lat: number,
   lon: number,
 }
+
+export type OnDoneFunction = (msg:string, type:AlertStatus) => void
 
 export type PropertyDetailsContextDefoTypes = {
   dataReady: boolean;
@@ -67,20 +74,20 @@ export type PropertyDetailsContextDefoTypes = {
   jurisdiction: string
   tokenId: string;
   propertyId: string;
+  ownerAddress: string;
   propertyInfo: PropertyInfo[];
   propertyImages: PropertyImage[];
   propertyMapInfo: PropertyMapInfo,
   sellFormModel: SellFormModel;
   actionButtonDisabled: boolean;
-  selectedOfferIndex: number | null;
-  activeOffers: OfferInfo[];
+  selectedOffer: OfferInfo | null;
+  offersToBuy: OfferInfo[];
+  offersToSell: OfferInfo[];
   handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  setSellModelField: (params: ModelFieldSetter) => void;
-  postSellForm: () => void;
-  propertyDetailsModalAction: () => void;
-  showSellModal: () => void;
-  showAcceptOfferModal: (index: number) => void;
+  setSellFormModel: (newModel: SellFormModel) => void;
+  propertyDetailsModalAction: (onDone:OnDoneFunction) => void
+  showModal: (action:ActionNames, offer?:OfferInfo) => void;
   buildActivity: (activity: OfferInfo) => ReactNode | string;
   onOpen: () => void;
   onClose: () => void;
