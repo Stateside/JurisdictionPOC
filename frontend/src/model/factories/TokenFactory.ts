@@ -2,6 +2,7 @@ import {BigNumber} from 'bignumber.js';
 import { jscJurisdictionInfo, thisPropertyInfo, locationData, gpsCoordinates, degreeCoordinates, imageInfo } from '@/utils/types';
 import { PropertyInfo, OfferInfo } from '@/utils/property-types';
 import { Token } from '@/store/useTitleTokens';
+import { ethers } from 'ethers';
 
 function padCoordinates(num:number):string {
   const len = num > 0 ? 9 : 10;
@@ -92,31 +93,26 @@ export const buildPropertyInfo = (
 
 export const buildActiveOffersInfo = (
   titleInfo:Token,
-  offerType: 'buy' | 'sell'
+  type: 'OfferToBuy' | 'OfferToSell'
 ):OfferInfo[]  => {
-  let activeOffersInfo: OfferInfo[] = [];
-  const offers =
-      offerType === 'sell' ? titleInfo.offersToSell : titleInfo.offersToBuy;
-  const type = offerType === 'sell' ? 'made' : 'received';
+  const offers = (type === 'OfferToSell' ? titleInfo.offersToSell : titleInfo.offersToBuy) || []
+  return offers?.map((offer) => {
+    // Convert price to ETH
+    const ammount = parseFloat(ethers.utils.formatEther(offer.amount));
+    const expiresAfter = 7
+    const expiresOn = offer.offeredOn.toNumber() + 7*24*60*60
+    const daysLeft = Math.ceil((expiresOn - Date.now()/1000)/60/60/24)
 
-  if (offers) {
-    for (let oi = 0; oi < offers.length; ++oi) {
-      const offer = offers[oi];
-      const am = offer.amount.toString();
-      const ammount = new BigNumber(am).toNumber();
-  
-      activeOffersInfo.push({
-        tokenId: titleInfo.titleId,
-        fromAddress: offer.buyer,
-        price: ammount,
-        expiresAfter: 7,
-        type,
-      });
+    return {
+      tokenId: titleInfo.titleId,
+      address: offer.buyer,
+      price: ammount,
+      expiresAfter,
+      expiresOn,
+      daysLeft,
+      type,
     }
-  }
-
-
-  return activeOffersInfo;
+  })
 }
 
 export const buildTokenInfoByTitleId = (

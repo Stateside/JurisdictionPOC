@@ -108,6 +108,14 @@ yarn hardhat save-proposals --network staging --prefix development
 
 - Change connect button to alias if known
 - Add functionality to offers to buy and sell
+- SpecialSelect should include the address field beside it always
+  - changing alias dropdown should update the address field
+  - editing the alias dropdown should do one of the following
+    - if the alias is not known, save it as an alias in the DB for the address in the address field once the containing form is submitted
+    - if the alias is known, update the address field with the known address
+  - editing the address field should do one of the following
+    - if the address has an alias then auto select it in the dropdown
+    - if the address is new and an alias is specified, save it as an alias in the DB for the address in the address field once the containing form is submitted
 - Add SELECT component for roles in UI
 - Add Unit Tests for different voting rules
 - Calculate quorum from number of members in cabinet

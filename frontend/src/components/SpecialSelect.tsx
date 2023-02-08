@@ -25,7 +25,7 @@ export default function SpecialSelect(props: { width: any, value: any, options: 
                 value={props.value}
                 defaultValue={props.value}
                 options={addressesForSelect}
-                onChange={address => {
+                onChange={(address:any) => {
                     const {label , value} = address || { label: '', value: ''};
                     return props.onChange({ label, value })
                 }} />

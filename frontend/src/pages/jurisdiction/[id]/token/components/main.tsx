@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Box, Spacer } from '@chakra-ui/layout';
 import {
   Image,
@@ -12,6 +12,8 @@ import {
   Text,
   Skeleton,
   SkeletonText,
+  useToast,
+  AlertStatus,
 } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 import RealStateAgentIcon from '@/components/icons/realStateAgentIcon';
@@ -19,14 +21,14 @@ import ArrowBack from '@/components/icons/smallArrowBackIcon';
 import CallReceivedIcon from '@/components/icons/callReceivedIcon';
 import PropertyDetailsModal from '../modal';
 import PropertyDetailsModalHeader from '../modal/modalHeader';
-import SellPropertyModal from '../modal/sellPropertyModal';
-import AcceptOfferModal from '../modal/acceptOfferModal';
+import PropertyModal from '../modal/PropertyModal';
 import PropertyDetailsModalActions from '../modal/modalActions';
 import { PropertyDetailsContext } from '../PropertyDetailsContext';
-import { PropertyInfo } from '@/utils/property-types';
+import { ActionNames, PropertyInfo } from '@/utils/property-types';
 import FavoriteTokenButton from '@/components/FavoriteTokenButton';
 import { Link } from '@/components/Link';
 import Gmaps from './Gmaps';
+import { useWeb3React } from '@web3-react/core';
 
 const gridLayout = 'repeat(12, 1fr)';
 
@@ -58,15 +60,40 @@ export default function PropertyDetailsMain() {
     actionName,
     jurisdiction,
     propertyId,
+    ownerAddress,
     propertyInfo,
     propertyImages,
     propertyMapInfo,
-    activeOffers,
-    showSellModal,
-    showAcceptOfferModal,
+    offersToBuy,
+    offersToSell,
+    actionButtonDisabled,
+    showModal,
     buildActivity,    
   } = useContext(PropertyDetailsContext);
   const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo.lat},${propertyMapInfo.lon}&z=12&amp;output=embed`;
+
+  const [ isOwner, setIsOwner ] = useState<boolean>(false);
+  const { account } = useWeb3React()
+  const toast = useToast();
+
+  const allOffers = useMemo(() => {
+    const all = [...offersToBuy, ...offersToSell]
+    all.sort((a, b) => b.expiresOn - a.expiresOn)
+    return all
+  }, [offersToBuy, offersToSell])
+  
+  useEffect(() => {
+    if (ownerAddress && account)
+      setIsOwner(ownerAddress?.toLowerCase() === account?.toLowerCase())
+  }, [ownerAddress, account])
+
+  const showToast = (msg:string, type:AlertStatus) => {
+    toast({
+      title: msg,
+      status: type,
+      duration: 5000
+    })
+  }
 
   return (
     <>
@@ -125,12 +152,12 @@ export default function PropertyDetailsMain() {
                     <Button
                       variant="Header"
                       rightIcon={<RealStateAgentIcon w={{ base: '25px' }} />}
-                      onClick={showSellModal}
+                      onClick={() => showModal(isOwner ? 'OfferToSell' : 'OfferToBuy')}
                       _hover={{
                         background: 'brand.javaHover',
                       }}
                     >
-                      Sell this Property
+                      {isOwner ? "Offer for Sale" : "Offer to Buy"}
                     </Button>
                   </Skeleton>
                 </GridItem>
@@ -181,61 +208,71 @@ export default function PropertyDetailsMain() {
           </Box>
         </GridItem>
         <GridItem colSpan={12}>
-          {activeOffers.length <= 0 && (
+          {allOffers.length <= 0 && (
             <>
               <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>a</Skeleton>
               <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>a</Skeleton>
               <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>a</Skeleton>
             </>
           )}
-          {activeOffers.map(
-            ({ tokenId, price, fromAddress, expiresAfter, type }, i) => {
+          {allOffers.map(
+            (offer,i) => {
+              const { address, price, daysLeft, type } = offer
+              let actionName:ActionNames = ""
+
+              if (type === 'OfferToSell') {
+                // An offer to sell can be
+                // 1. View an offer by me to sell my property to someone else - RetractOfferToSell
+                // 2. View an offer by a different owner to sell their property to me - AcceptOfferToSell
+                // 3. View an offer by a different owner to sell their property to someone else - ViewOfferToSell
+                if (ownerAddress === account && address !== account)
+                  actionName = "RetractOfferToSell"
+                else if (ownerAddress !== account && address === account)
+                  actionName = "AcceptOfferToSell"
+                else
+                  actionName = "ViewOfferToSell"
+              }
+              else {
+                // An offer to buy can be
+                // 1. An offer by me to buy a property from someone else - RetractOfferToBuy
+                // 2. An offer by someone else to buy my property - AcceptOfferToBuy
+                // 3. An offer by someone else to buy someone owners property - ViewOfferToSell
+                if (address === account && ownerAddress !== account)
+                  actionName = "RetractOfferToBuy"
+                else if (address !== account && ownerAddress === account)
+                  actionName = "AcceptOfferToBuy"
+                else
+                  actionName = "ViewOfferToBuy"
+              }
+
               return (
-                <Tag type={type} key={i} caret={null}>
-                  <Flex
-                    width={{ base: '100%' }}
-                    align="center"
-                    justify="middle"
-                  >
-                    <Box height={{ base: '100%' }}>
-                      <CallReceivedIcon />
-                    </Box>
-                    <Box height={{ base: '100%' }}>
-                      <Text m={{ base: '0 20px' }}>
-                        {buildActivity({
-                          tokenId,
-                          price,
-                          fromAddress,
-                          expiresAfter,
-                          type,
-                        })}
-                      </Text>
-                    </Box>
-                    <Box>
-                      <Text>Expires in {expiresAfter} days</Text>
-                    </Box>
-                    <Spacer />
-                    <Box height={{ base: '100%' }}>
-                      <Text mr="8px" fontWeight="700">
-                        {price} ETH
-                      </Text>
-                    </Box>
-                    <Box height={{ base: '100%' }}>
-                      <Button
-                        h={{ base: '30px' }}
-                        variant="Header"
-                        onClick={() => {
-                          showAcceptOfferModal(i);
-                        }}
-                        _hover={{
-                          background: 'brand.javaHover',
-                        }}
-                      >
-                        Accept
-                      </Button>
-                    </Box>
-                  </Flex>
-                </Tag>
+                <Link onClick={() => showModal(actionName, offer)} key={i}>
+                  <Tag type={type} caret={null}>
+                    <Flex
+                      width={{ base: '100%' }}
+                      align="center"
+                      justify="middle"
+                    >
+                      <Box height={{ base: '100%' }}>
+                        <CallReceivedIcon />
+                      </Box>
+                      <Box height={{ base: '100%' }}>
+                        <Text m={{ base: '0 20px' }}>
+                          {buildActivity(offer)}
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text>Expires in {daysLeft} days</Text>
+                      </Box>
+                      <Spacer />
+                      <Box height={{ base: '100%' }}>
+                        <Text mr="8px" fontWeight="700">
+                          {price} ETH
+                        </Text>
+                      </Box>
+                    </Flex>
+                  </Tag>
+                </Link>
               );
             }
           )}
@@ -244,16 +281,12 @@ export default function PropertyDetailsMain() {
 
       <PropertyDetailsModal
         modalHeader={
-          <PropertyDetailsModalHeader headerContent="Sell Property" />
+          <PropertyDetailsModalHeader type={actionName} />
         }
         modalBody={
-          actionName === 'sell' ? (
-            <SellPropertyModal gridLayout={gridLayout} />
-          ) : (
-            <AcceptOfferModal gridLayout={gridLayout} />
-          )
+            <PropertyModal gridLayout={gridLayout} type={actionName} />
         }
-        modalFooter={<PropertyDetailsModalActions />}
+        modalFooter={<PropertyDetailsModalActions type={actionName} onDone={showToast} actionButtonDisabled={actionButtonDisabled}/>}
       />
     </>
   );
