@@ -295,40 +295,42 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
         }
       }
 
-      // Add a sample expired proposal
-      const hex = '0x0000000000000000000000000000000000000000000000000000000000000000'
-      if (!proposalIds.includes(hex)) {
-        proposalIds.push(hex)
-        proposals[hex] = { 
-          id: hex,
-          detailsLoading: false,
-          startBlock: 0,
-          deadline: 0,
-          proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          version: 0,
-          status: ProposalState.Expired,
-          description: "Sample expired proposal",
-          whoHasVoted: {},
-          votes: {
-            againstVotes: ethers.constants.Zero,
-            forVotes: ethers.constants.Zero,
-            abstainVotes: ethers.constants.Zero,
-          },
-          revisions: [{
-            id:0,
-            target: '0x0000000000000000000000000000000000000000000000000000000000000000',
-            description: "Sample revision",
-            name: "SampleRevision",
-            pdata: "",
-            parameters: [{
-              name: "SampleParameter",
-              type: ParamType.t_string,
-              hint: "Sample parameter",
-              value: "Sample value",
+      // Add sample expired proposals
+      for (let i = 10; i < 35; i++) {
+        const hex = '0x00000000000000000000000000000000000000000000000000000000000000' + i.toString(16)
+        if (!proposalIds.includes(hex)) {
+          proposalIds.push(hex)
+          proposals[hex] = { 
+            id: hex,
+            detailsLoading: false,
+            startBlock: 0,
+            deadline: 0,
+            proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            version: 0,
+            status: ProposalState.Expired,
+            description: "Sample expired proposal",
+            whoHasVoted: {},
+            votes: {
+              againstVotes: ethers.constants.Zero,
+              forVotes: ethers.constants.Zero,
+              abstainVotes: ethers.constants.Zero,
+            },
+            revisions: [{
+              id:0,
+              target: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              description: "Sample revision",
+              name: "SampleRevision",
+              pdata: "",
+              parameters: [{
+                name: "SampleParameter",
+                type: ParamType.t_string,
+                hint: "Sample parameter",
+                value: "Sample value",
+              }],
             }],
-          }],
-          loadDetails: async () => {},
-          hasVoted: async (account:string) => false
+            loadDetails: async () => {},
+            hasVoted: async (account:string) => false
+          }
         }
       }
       updateGovernorDetails(get, set, instance, { proposalIds, proposals, proposalsLoading: false, allProposalsLoaded: true })

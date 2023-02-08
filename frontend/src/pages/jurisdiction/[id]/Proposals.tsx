@@ -93,14 +93,14 @@ const Proposals = () => {
               <Text flexGrow="1" variant={'15/20-BOLD'} marginBottom="20px">
                 Closed proposals
               </Text>
-              <Link>
+              <Link href={jurisdictionAddress+"/closed-proposals"}>
                 <Text variant={'15/20-BOLD'} marginBottom="20px">
                  View all <ChevronRightIcon h={6} w={6}/>
                 </Text>
               </Link>
             </HStack>
             <Box>
-              {proposalIds.filter(id => !activeOrLoading(proposals[id])).map(id => {
+              {proposalIds.filter(id => !activeOrLoading(proposals[id])).slice(0, 3).map(id => {
                 const p = proposals[id];
                 return p.description ? (
                   getTag(id, p.description, p.status!==undefined?ProposalState[p.status]:'checking...')
@@ -114,8 +114,8 @@ const Proposals = () => {
           </Box>
         </VStack>
       )}
-      {jscGovernorDetails?.proposalsLoading && <Tag justify="center" caret={null}><LoadingIcon /></Tag>}
-      {!jscGovernorDetails?.proposalsLoading && (!proposalIds || proposalIds.length===0) && <Text>No proposals found</Text>}
+      {(jscGovernorDetails?.proposalsLoading || proposalIds === undefined) && <Tag justify="center" caret={null}><LoadingIcon /></Tag>}
+      {!jscGovernorDetails?.proposalsLoading && (proposalIds && proposalIds.length===0) && <Text>No proposals found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
         <MemberOnlyButton variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create`)}>Create New Proposal</MemberOnlyButton>
