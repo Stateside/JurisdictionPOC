@@ -2,7 +2,6 @@ import mockedData from '../../../model/data/mockedData.json';
 import { NextApiRequest, NextApiResponse } from "next";
 import { thisPropertyInfo } from '@/utils/types';
 
-const DATA_FILE = "src/model/data/mockedData.json"
 type TitleData = {
   [titlelId: string]: thisPropertyInfo
 }
@@ -22,7 +21,7 @@ const loadData = async () => {
   return properties;
 }
 
-/** Gets all known contract addresses from the database */
+/** Gets details of requested titleId */
 const get = async (req: NextApiRequest, res: NextApiResponse) => {
   const globals:any = global
   if (globals.jsc === undefined)

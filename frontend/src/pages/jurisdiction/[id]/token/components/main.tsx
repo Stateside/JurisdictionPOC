@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { Box, Spacer } from '@chakra-ui/layout';
+import { Box, HStack, Spacer } from '@chakra-ui/layout';
 import {
   Image,
   Button,
@@ -29,6 +29,9 @@ import FavoriteTokenButton from '@/components/FavoriteTokenButton';
 import { Link } from '@/components/Link';
 import Gmaps from './Gmaps';
 import { useWeb3React } from '@web3-react/core';
+import MemberOnlyButton from '@/components/MemberOnlyButton';
+import { EditIcon } from '@chakra-ui/icons';
+import { useRouter } from 'next/router';
 
 const gridLayout = 'repeat(12, 1fr)';
 
@@ -60,6 +63,7 @@ export default function PropertyDetailsMain() {
     actionName,
     jurisdiction,
     propertyId,
+    tokenId,
     ownerAddress,
     propertyInfo,
     propertyImages,
@@ -70,8 +74,7 @@ export default function PropertyDetailsMain() {
     showModal,
     buildActivity,    
   } = useContext(PropertyDetailsContext);
-  const mapUrl = `https://maps.google.com/maps?q=${propertyMapInfo.lat},${propertyMapInfo.lon}&z=12&amp;output=embed`;
-
+  const router = useRouter();
   const [ isOwner, setIsOwner ] = useState<boolean>(false);
   const { account } = useWeb3React()
   const toast = useToast();
@@ -143,7 +146,7 @@ export default function PropertyDetailsMain() {
                 </GridItem>
                 <GridItem colSpan={12}>
                   <SkeletonText noOfLines={10} isLoaded={dataReady} />
-                  {propertyInfo.map(({ infoLabel, infoValue, isURL }:PropertyInfo) => (
+                  {propertyInfo.filter(pi => pi.infoLabel !== 'Frozen:').map(({ infoLabel, infoValue, isURL }:PropertyInfo) => (
                     <Grid
                       templateColumns={gridLayout}
                       key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
@@ -155,6 +158,30 @@ export default function PropertyDetailsMain() {
                           ? <Link href={infoValue} isExternal>{infoValue}</Link> 
                           : infoValue
                         }
+                      </GridItem>
+                    </Grid>
+                  ))}
+                  {propertyInfo.filter(pi => pi.infoLabel === 'Frozen:').map(({ infoLabel, infoValue }:PropertyInfo) => (
+                    <Grid
+                      templateColumns={gridLayout}
+                      key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
+                      mb={{ base: '6px'}}
+                    >
+                      <GridItem colSpan={3}>{infoLabel}</GridItem>
+                      <GridItem colSpan={9}>
+                        <HStack>
+                          <Text mr="2rem">{infoValue}</Text>
+                          <MemberOnlyButton hideIfDisabled={true} width="7rem" height="1.5rem" fontSize="1rem" variant="Transparent" p=""  
+                            onClick={() => router.push(`/jurisdiction/${jurisdiction}/proposal/create?p=jsc.contracts.tokens/FreezeToken&token=${tokenId}&freeze=${infoValue!=='true'?1:0}`)}
+                          >
+                            <Box display="flex" flexDirection="row" alignItems="center">
+                              <Text mr=".5rem">{infoValue==='true'?"Unfreeze":"Freeze"}</Text>
+                              <Box mt="-.2rem">
+                                <EditIcon height={3} width={3} />
+                              </Box>
+                            </Box>
+                          </MemberOnlyButton>
+                        </HStack>
                       </GridItem>
                     </Grid>
                   ))}
