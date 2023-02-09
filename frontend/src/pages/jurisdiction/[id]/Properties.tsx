@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Box, Button, Divider, Text } from '@chakra-ui/react';
+import { Box, Button, CircularProgress, Divider, Text } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 import Paginator from '../Paginator';
 import { useRouter } from 'next/router';
 import { useTitleTokens } from '@/store/useTitleTokens';
 import { Link } from '@/components/Link';
 import MemberOnlyButton from '@/components/MemberOnlyButton';
+
+const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java' />
 
 const Properties = () => {
   const { library } = useWeb3React();
@@ -54,8 +56,9 @@ const Properties = () => {
   return (
     <>
       <Box marginBottom="20px" width="70%">
-        {tokenCount > 12 && paginator}
+        {!tokensLoading && tokenCount > 12 && paginator}
 
+        {tokensLoading && <LoadingIcon /> }
         {tokenIds.map(tokenId => {
           const titleId = tokensById?.[tokenId]?.titleId || tokenId 
           return (
@@ -65,9 +68,9 @@ const Properties = () => {
           );
         })}
 
-        {tokenCount > 12 && paginator}
+        {!tokensLoading && tokenCount > 12 && paginator}
       </Box>
-      {(!tokenIds || tokenIds.length === 0) && <Text>No properties found</Text>}
+      {tokenCount === 0 && <Text>No properties found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
         <MemberOnlyButton 

@@ -2,11 +2,13 @@ import { IContract } from '@/store/useJurisdictions';
 import { IRevision, useRevisions } from '@/store/useRevisions';
 import { ParamType } from '@/utils/types';
 import { capitalizeString } from '@/utils/util';
-import { Button, Divider, HStack, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Select, Text, Textarea, VStack, Code } from '@chakra-ui/react';
+import { Button, Divider, HStack, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Select, Text, Textarea, VStack, Code, CircularProgress } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useCallback, useEffect, useMemo } from 'react';
 import { IJSCConfigurable__factory } from '../../../../../../typechain-types';
 import Parameter from './Parameter';
+
+const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 
 export type ParameterValues = {
   [name: string]: string
@@ -186,11 +188,15 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
               <Text width="15%">Revision Name:</Text>
-              <Select width="85%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
-                {
-                  revisions?.sort((a, b) => a.name.localeCompare(b.name)).map(r => (<option value={r.name} key={r.name}>{r.name}</option>))
-                }
-              </Select>
+              {
+                revisions === undefined || revisionsLoading
+                  ? <LoadingIcon/> 
+                  : <Select width="85%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
+                      {
+                        revisions?.sort((a, b) => a.name.localeCompare(b.name)).map(r => (<option value={r.name} key={r.name}>{r.name}</option>))
+                      }
+                    </Select>
+              }
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">

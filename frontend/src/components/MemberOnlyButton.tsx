@@ -1,20 +1,17 @@
-import { getAccountShortName } from '@/utils/util';
-import { Button, Tooltip, useDisclosure } from '@chakra-ui/react';
-import WalletIcon from '@/components/icons/walletIcon';
-import SelectWalletModal from "@/components/Modal";
-import useBlockchain from "hooks/useBlockchain";
+import { Button, Tooltip } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCabinets } from '@/store/useCabinets';
 
 type Props = {
+  hideIfDisabled?: boolean
   [key: string]: any
 }
 
 /**
- * Component that connects to MetaMask and displays a button with the account number or "Connect".
+ * Component that displays a button which is enable only if the user is a member of the current jurisdiction.
  */
 const MemberOnlyButton = (props: Props) => {
   const { account, library } = useWeb3React();
@@ -48,16 +45,15 @@ const MemberOnlyButton = (props: Props) => {
       cabinet?.isMember(account).then(res => res !== undefined && setUserIsMember(res))
   }, [cabinet, account])
 
-  const children = props.children
-  const propsWithoutChidren = { ...props, children: undefined }
-
   const tooltip = props.tooltip || (userIsMember ? '' : 'You must be a member to use this feature')
+  const disabled = props.disabled || !userIsMember
+  const display = disabled && props.hideIfDisabled===true ? 'none' : 'flex'
 
   return tooltip ? 
     <Tooltip label={tooltip}>
-      <Button {...props} disabled={props.disabled || !userIsMember}/>
+      <Button {...props} disabled={disabled} display={display}/>
     </Tooltip> : 
-    <Button {...props} disabled={props.disabled || !userIsMember}/>
+    <Button {...props} disabled={disabled}/>
 }
 
 export default MemberOnlyButton
