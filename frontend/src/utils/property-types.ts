@@ -10,6 +10,7 @@ export type PropertyImage = {
 export type PropertyInfo = {
   infoLabel: string;
   infoValue: string | number | null;
+  isURL?: boolean;
 };
 
 export type InputValue = string;
