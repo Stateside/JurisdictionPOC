@@ -18,9 +18,8 @@ import {
   buildActiveOffersInfo,
   buildPropertyInfo
 } from '@/model/factories/TokenFactory';
-import {getTokenInformationByTitleId} from '@/model/services/DataService';
 import useJSCJurisdiction from '@/hooks/useJSCJurisdiction';
-import {jscJurisdictionInfo} from '@/utils/types';
+import {jscJurisdictionInfo, thisPropertyInfo} from '@/utils/types';
 import { useWeb3React } from '@web3-react/core';
 import { useTitleTokens } from '@/store/useTitleTokens';
 import { useAliases } from '@/store/useAliases';
@@ -139,6 +138,7 @@ const PropertyDetailsProvider = function ({
     null
   );
   const [jscJurisdictionInfo, setJscJurisdictionInfo] = useState<jscJurisdictionInfo | undefined>(undefined);
+  const [propertyDetails, setPropertyDetails] = useState<thisPropertyInfo|undefined>();
 
   const [dataReady, setDataReady] = useState<boolean>(false);
   const [titleTokenContract, setTitleTokenContract] = useState<IJSCTitleToken|undefined>();
@@ -383,20 +383,53 @@ const PropertyDetailsProvider = function ({
   }, [jurisdictionAddress, library, isTokensInitialized()]);
 
   useEffect(() => {
-    if (tokenInfo) {
-      const thisPropertyInfo = getTokenInformationByTitleId(tid);
-      const pInfo = buildPropertyInfo(tokenInfo, thisPropertyInfo,  jurisdictionAddress, jscJurisdictionInfo, aliasesByAddress[tokenInfo?.owner?.toLowerCase() || '']?.alias);
+    if (tokenInfo !== undefined) {
+      const setBadURL = () => {
+        setPropertyDetails({
+          titleId: tokenInfo.titleId,
+          ownerInfo: {
+            id: "Details unavaliable",
+            fname: "Details unavaliable",
+            lname: "Details unavaliable"
+          },
+          propertyDescription: "Details unavaliable",
+          url: tokenInfo.url || "Missing URI",
+          locationData: {
+            address: "Details unavaliable",
+            gpsCoordinates: {},
+            lat: 0, 
+            lon: 0
+          },
+          images: []
+        })
+      }
+
+      if (tokenInfo?.url) 
+        fetch(tokenInfo?.url)
+          .then(res => res.json())
+          .then(json => setPropertyDetails(json))
+          .catch(err => {
+            setBadURL()
+          })
+      else
+        setBadURL()
+    }
+  }, [tokenInfo?.url])
+
+  useEffect(() => {
+    if (tokenInfo && propertyDetails) {
+      const pInfo = buildPropertyInfo(tokenInfo, propertyDetails,  jurisdictionAddress, jscJurisdictionInfo, aliasesByAddress[tokenInfo?.owner?.toLowerCase() || '']?.alias);
 
       setTokenId(tokenInfo.tokenId);
       setPropertyId(tid);
       setPropertyInfo(pInfo);
       setOffersToBuy(buildActiveOffersInfo(tokenInfo,'OfferToBuy'));
       setOffersToSell(buildActiveOffersInfo(tokenInfo,'OfferToSell'));
-      setPropertyMapInfo(thisPropertyInfo.locationData);
-      setPropertyImages(thisPropertyInfo.images);
+      setPropertyMapInfo(propertyDetails.locationData);
+      setPropertyImages(propertyDetails.images);
       setDataReady(true);
     }
-  }, [tokenInfo]);
+  }, [tokenInfo, propertyDetails]);
 
   return (
     <PropertyDetailsContext.Provider

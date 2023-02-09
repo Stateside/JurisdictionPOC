@@ -1,4 +1,3 @@
-import {BigNumber} from 'bignumber.js';
 import { jscJurisdictionInfo, thisPropertyInfo, locationData, gpsCoordinates, degreeCoordinates, imageInfo } from '@/utils/types';
 import { PropertyInfo, OfferInfo } from '@/utils/property-types';
 import { Token } from '@/store/useTitleTokens';
@@ -33,11 +32,15 @@ export const buildDegreeString = (gpsCoordinates: gpsCoordinates):string => {
     }
   }
 
+  if (!result)
+    result = 'Details unavaliable';
+
   return result.trimStart();
 }
 
 export const buildCartesianString = (lat: number, lon: number):string => {
-
+  if (lat === 0 && lon === 0) 
+    return 'Details unavaliable';
   return `${padCoordinates(lat)},${padCoordinates(lon)}`;
 }
 
@@ -73,6 +76,7 @@ export const buildPropertyInfo = (
     {
       infoLabel: 'URI:',
       infoValue: titleInfo.url || '',
+      isURL: true,
     },
     {
       infoLabel: 'Location:',
@@ -145,8 +149,8 @@ export const buildTokenInfoByTitleId = (
       },
       {
         infoLabel: 'URI:',
-        infoValue:
-        thisPropertyInfo.url,
+        infoValue: thisPropertyInfo.url,
+        isURL: true,
       },
       {
         infoLabel: 'Location:',

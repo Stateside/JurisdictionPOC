@@ -135,15 +135,27 @@ export default function PropertyDetailsMain() {
             <GridItem colSpan={{base: 12, lg: 7}}>
               <Grid templateColumns={gridLayout}>
                 <GridItem colSpan={12}>
-                  <SkeletonText noOfLines={3} isLoaded={dataReady} />
-                  {propertyInfo.map(({ infoLabel, infoValue }:PropertyInfo) => (
+                  <SkeletonText noOfLines={1} isLoaded={dataReady} />
+                  <Grid templateColumns={gridLayout} mb={{ base: '6px'}} visibility={dataReady?"visible":"hidden"}>
+                    <GridItem colSpan={3}>Type:</GridItem>
+                    <GridItem colSpan={9}>Property</GridItem>
+                  </Grid>
+                </GridItem>
+                <GridItem colSpan={12}>
+                  <SkeletonText noOfLines={10} isLoaded={dataReady} />
+                  {propertyInfo.map(({ infoLabel, infoValue, isURL }:PropertyInfo) => (
                     <Grid
                       templateColumns={gridLayout}
                       key={`${infoLabel.toLowerCase()}-${infoValue?.toString()}`}
                       mb={{ base: '6px'}}
                     >
                       <GridItem colSpan={3}>{infoLabel}</GridItem>
-                      <GridItem colSpan={9}>{infoValue}</GridItem>
+                      <GridItem colSpan={9}>
+                        {isURL 
+                          ? <Link href={infoValue} isExternal>{infoValue}</Link> 
+                          : infoValue
+                        }
+                      </GridItem>
                     </Grid>
                   ))}
                 </GridItem>
@@ -184,9 +196,9 @@ export default function PropertyDetailsMain() {
           <Grid templateColumns={gridLayout} gap={6}>
             {propertyImages.length <= 0 &&
               <GridItem colSpan={12}>
-                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}>a</Skeleton>
-                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}>a</Skeleton>
-                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}>a</Skeleton>
+                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}></Skeleton>
+                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}></Skeleton>
+                <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}></Skeleton>
               </GridItem>
             }
             {propertyImages.map(({ src, alt }, i) => {

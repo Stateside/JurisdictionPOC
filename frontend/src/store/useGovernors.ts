@@ -296,7 +296,7 @@ const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<I
       }
 
       // Add sample expired proposals
-      for (let i = 10; i < 35; i++) {
+      for (let i = 16; i < 46; i++) {
         const hex = '0x00000000000000000000000000000000000000000000000000000000000000' + i.toString(16)
         if (!proposalIds.includes(hex)) {
           proposalIds.push(hex)
