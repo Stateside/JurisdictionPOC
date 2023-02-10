@@ -106,6 +106,7 @@ yarn hardhat save-proposals --network staging --prefix development
 
 # TO DO
 
+- Some buttons do not have a hover or click style
 - SpecialSelect should include the address field beside it always
   - changing alias dropdown should update the address field
   - editing the alias dropdown should do one of the following

@@ -11,7 +11,7 @@ import "../contracts/IJSCConfigurable.sol";
   Supported parameter types are: address, uint, and string.
  */
 library JSCConfigurableLib {
-  struct AddressParameter {
+  struct AccountParameter {
     /** Name of this parameter */
     string name;
     /** Description of this parameter */
@@ -27,7 +27,23 @@ library JSCConfigurableLib {
     /** Holds current value of this parameter */
     bool value;
   }
+  struct ContractParameter {
+    /** Name of this parameter */
+    string name;
+    /** Description of this parameter */
+    string description;
+    /** Holds current value of this parameter */
+    address value;
+  }
   struct NumberParameter {
+    /** Name of this parameter */
+    string name;
+    /** Description of this parameter */
+    string description;
+    /** Holds current value of this parameter */
+    uint value;
+  }
+  struct RoleParameter {
     /** Name of this parameter */
     string name;
     /** Description of this parameter */
@@ -57,9 +73,11 @@ library JSCConfigurableLib {
   struct KeyFlag { string key; bool deleted; }
   struct ParameterMap {
     mapping(string => IndexInfoValue) paramInfos;
-    mapping(string => address) addressValues;
+    mapping(string => address) accountValues;
+    mapping(string => address) contractValues;
     mapping(string => bool) boolValues;
     mapping(string => uint) numberValues;
+    mapping(string => uint) roleValues;
     mapping(string => string) stringValues;
     KeyFlag[] keys;
     uint size;
@@ -67,10 +85,17 @@ library JSCConfigurableLib {
   type Iterator is uint;
 
   /** Adds the given address parameter. Fails if another address parameter with the same name already exists */
-  function insertAddress(ParameterMap storage self, AddressParameter memory r) public {
+  function insertAccount(ParameterMap storage self, AccountParameter memory r) public {
     checkCanAdd(self, r.name);
-    self.addressValues[r.name] = r.value;
-    _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_address));
+    self.accountValues[r.name] = r.value;
+    _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_account));
+  }
+
+  /** Adds the given address parameter. Fails if another address parameter with the same name already exists */
+  function insertContract(ParameterMap storage self, ContractParameter memory r) public {
+    checkCanAdd(self, r.name);
+    self.contractValues[r.name] = r.value;
+    _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_contract));
   }
 
   /** Adds the given bool parameter. Fails if another bool parameter with the same name already exists */
@@ -85,6 +110,13 @@ library JSCConfigurableLib {
     checkCanAdd(self, r.name);
     self.numberValues[r.name] = r.value;
     _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_number));
+  }
+
+  /** Adds the given role parameter. Fails if another role parameter with the same name already exists */
+  function insertRole(ParameterMap storage self, RoleParameter memory r) public {
+    checkCanAdd(self, r.name);
+    self.roleValues[r.name] = r.value;
+    _insertInfo(self, ParameterInfo(r.name, r.description, rlib.ParamType.t_role));
   }
 
   /** Adds the given string parameter. Fails if another string parameter with the same name already exists */
@@ -109,9 +141,13 @@ library JSCConfigurableLib {
     require(keyIndex > 0, "Trying to remove non-existant parameter");
 
     ParameterInfo storage pi = self.paramInfos[name].value;
-    if (pi.ptype == rlib.ParamType.t_address)
-      delete self.addressValues[name];
+    if (pi.ptype == rlib.ParamType.t_account)
+      delete self.accountValues[name];
+    else if (pi.ptype == rlib.ParamType.t_contract)
+      delete self.contractValues[name];
     else if (pi.ptype == rlib.ParamType.t_number)
+      delete self.roleValues[name];
+    else if (pi.ptype == rlib.ParamType.t_role)
       delete self.numberValues[name];
     else if (pi.ptype == rlib.ParamType.t_string)
       delete self.stringValues[name];
@@ -120,9 +156,9 @@ library JSCConfigurableLib {
     self.size--;
   }
 
-  function getAddress(ParameterMap storage self, string memory name) public view returns (address value) {
+  function getAccount(ParameterMap storage self, string memory name) public view returns (address value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
-    return self.addressValues[name];
+    return self.accountValues[name];
   }
 
   function getBool(ParameterMap storage self, string memory name) public view returns (bool value) {
@@ -130,19 +166,28 @@ library JSCConfigurableLib {
     return self.boolValues[name];
   }
 
+  function getContract(ParameterMap storage self, string memory name) public view returns (address value) {
+    require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
+    return self.contractValues[name];
+  }
+
   function getNumber(ParameterMap storage self, string memory name) public view returns (uint value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.numberValues[name];
   }
 
+  function getRole(ParameterMap storage self, string memory name) public view returns (uint value) {
+    require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
+    return self.roleValues[name];
+  }
   function getString(ParameterMap storage self, string memory name) public view returns (string storage value) {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     return self.stringValues[name];
   }
 
-  function setAddress(ParameterMap storage self, string memory name, address value) internal {
+  function setAccount(ParameterMap storage self, string memory name, address value) internal {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
-    self.addressValues[name] = value;
+    self.accountValues[name] = value;
   }
 
   function setBool(ParameterMap storage self, string memory name, bool value) internal {
@@ -150,9 +195,19 @@ library JSCConfigurableLib {
     self.boolValues[name] = value;
   }
 
+  function setContract(ParameterMap storage self, string memory name, address value) internal {
+    require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
+    self.contractValues[name] = value;
+  }
+
   function setNumber(ParameterMap storage self, string memory name, uint value) internal {
     require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
     self.numberValues[name] = value;
+  }
+
+  function setRole(ParameterMap storage self, string memory name, uint value) internal {
+    require(self.paramInfos[name].keyIndex > 0, "Trying to access non-existant parameter");
+    self.roleValues[name] = value;
   }
 
   function setString(ParameterMap storage self, string memory name, string memory value) internal {
@@ -232,7 +287,7 @@ library JSCConfigurableLib {
     insertNumber(parameters, NumberParameter("jsc.voting.approvals", "How many approvals needed", rules.approvals));
     insertNumber(parameters, NumberParameter("jsc.voting.majority", "% of votes that must be YES", rules.majority));
     insertNumber(parameters, NumberParameter("jsc.voting.quorum", "% of cabinet that must vote", rules.quorum));
-    insertNumber(parameters, NumberParameter("jsc.voting.role", "Role required for proposals", uint(rules.role)));
+    insertRole(parameters, RoleParameter("jsc.voting.role", "Role required for proposals", uint(rules.role)));
   }
 
   function getVotingParameters(IJSCConfigurable c) public view returns (rlib.VotingRules memory rules) {
@@ -240,6 +295,6 @@ library JSCConfigurableLib {
     rules.approvals = uint16(c.getNumberParameter("jsc.voting.approvals"));
     rules.majority = uint8(c.getNumberParameter("jsc.voting.majority"));
     rules.quorum = uint8(c.getNumberParameter("jsc.voting.quorum"));
-    rules.role = bytes32(c.getNumberParameter("jsc.voting.role"));
+    rules.role = bytes32(c.getRoleParameter("jsc.voting.role"));
   }
 }

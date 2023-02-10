@@ -110,14 +110,14 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
     if (!details) {
       try {
         const jscJurisdiction = IJSCJurisdiction__factory.connect(jurisdictionAddress, provider);
-        const titleTokenContractAddress = await jscJurisdiction.getAddressParameter("jsc.contracts.tokens")
+        const titleTokenContractAddress = await jscJurisdiction.getContractParameter("jsc.contracts.tokens")
         const instance = IJSCTitleToken__factory.connect(titleTokenContractAddress, provider)
         const tokenCount = (await instance.totalSupply()).toNumber()
         const tokenName = await instance.name()
         const tokenSymbol = await instance.symbol()
         const tokenBaseURI = (await instance.baseTokenURI()) + "<titleId>"
-        const registryAccount = await instance.getAddressParameter("jsc.accounts.registry")
-        const maintainerAccount = await instance.getAddressParameter("jsc.accounts.maintainer")
+        const registryAccount = await instance.getContractParameter("jsc.accounts.registry")
+        const maintainerAccount = await instance.getContractParameter("jsc.accounts.maintainer")
         details = {
           address: titleTokenContractAddress.toLowerCase(), 
           instance, 
@@ -233,10 +233,10 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
         instance.getNumberParameter("jsc.fees.maintainer").then((fee) => {
           set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], maintainerFee: fee } } }))
         })
-        instance.getAddressParameter("jsc.accounts.registry").then((acc) => {
+        instance.getAccountParameter("jsc.accounts.registry").then((acc) => {
           set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], registryAccount: acc } } }))
         })
-        instance.getAddressParameter("jsc.accounts.maintainer").then((acc) => {
+        instance.getAccountParameter("jsc.accounts.maintainer").then((acc) => {
           set((state) => ({ tokenContracts: { ...state.tokenContracts, [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], maintainerAccount: acc } } }))
         })
       }

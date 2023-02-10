@@ -88,7 +88,8 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
 const Parameter = (props: Props) => {
   const controls = useMemo(() => {
     switch (props.type) {
-      case ParamType.t_address:
+      case ParamType.t_account:
+      case ParamType.t_contract:
         return (
           <AliasAndAddress tooltip={props.hint} value={props.value||""} onChange={address => props.onChange(address)}/>
         )

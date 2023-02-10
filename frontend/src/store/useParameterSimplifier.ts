@@ -18,13 +18,15 @@ export const useParameterSimplifier = (): ParameterSimplifierHook => {
   const simplifyValue = (param: IRevisionParameter): any => {
     let value: string = param.value
     switch (param.type) {
-      case ParamType.t_address:
-        // Check for contracts
+      case ParamType.t_account:
         // Check for account aliases
         if (aliasesByAddress[value])
           value = aliasesByAddress[value].alias
         break;
-      case ParamType.t_number:
+      case ParamType.t_contract:
+        // Check for contracts
+        break;
+      case ParamType.t_role:
         const roles = buildRoles(ethers)
         if (roles.rolesById[value])
           value = roles.rolesById[value].friendlyName
@@ -32,7 +34,7 @@ export const useParameterSimplifier = (): ParameterSimplifierHook => {
       case ParamType.t_bool:
         value = value === '1' ? 'True' : 'False'
         break;
-      case ParamType.t_string:
+      default:
         break;
     }
     return value

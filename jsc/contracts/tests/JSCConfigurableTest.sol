@@ -18,20 +18,30 @@ contract JSCConfigurableTest is JSCConfigurable {
   }
 
   function _addMyParameters() private { 
-    _parameters.insertAddress(clib.AddressParameter({
-        name: "JSCConfigurableTest.address",
+    _parameters.insertAccount(clib.AccountParameter({
+        name: "JSCConfigurableTest.account",
         value: 0x111122223333444455556666777788889999aAaa,
-        description: "address param"
+        description: "account param"
       }));
     _parameters.insertBool(clib.BoolParameter({
         name: "JSCConfigurableTest.bool",
         value: false,
         description: "bool param"
       }));
+    _parameters.insertContract(clib.ContractParameter({
+        name: "JSCConfigurableTest.contract",
+        value: 0x111122223333444455556666777788889999Bbbb,
+        description: "contract param"
+      }));
     _parameters.insertNumber(clib.NumberParameter({
         name: "JSCConfigurableTest.number",
         value: 1234,
         description: "number param"
+      }));
+    _parameters.insertRole(clib.RoleParameter({
+        name: "JSCConfigurableTest.role",
+        value: 0x111122223333444455556666777788889999aaaabbbbccccddddeeeeffff0000,
+        description: "role param"
       }));
     _parameters.insertString(clib.StringParameter({
         name: "JSCConfigurableTest.string",

@@ -1,14 +1,18 @@
 export enum ParamType {
-    t_address,
+    t_account,
     t_bool,
+    t_contract,
     t_number,
+    t_role,
     t_string
 }
 
 export const ParamType2SolidyType = {
-    [ParamType.t_address]: "address",
+    [ParamType.t_account]: "address",
     [ParamType.t_bool]: "bool",
+    [ParamType.t_contract]: "address",
     [ParamType.t_number]: "uint256",
+    [ParamType.t_role]: "uint256",
     [ParamType.t_string]: "string"
 }
 

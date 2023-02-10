@@ -116,7 +116,7 @@ contract JSCRevisionedTest is JSCRevisioned {
     string[] memory names = new string[](1);
     names[0] = "myAddress";
     rlib.ParamType[] memory types = new rlib.ParamType[](1);
-    types[0] = rlib.ParamType.t_address;
+    types[0] = rlib.ParamType.t_account;
     string[] memory hints = new string[](1);
     hints[0] = "Any address";
 

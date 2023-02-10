@@ -141,8 +141,8 @@ contract JSCCabinet is
         names[0] = "account";
         names[1] = "role";
         rlib.ParamType[] memory types = new rlib.ParamType[](2);
-        types[0] = rlib.ParamType.t_address;
-        types[1] = rlib.ParamType.t_number;
+        types[0] = rlib.ParamType.t_account;
+        types[1] = rlib.ParamType.t_role;
         string[] memory hints = new string[](2);
         hints[0] = "Address of member's account";
         hints[1] = "New role for this member";
@@ -165,8 +165,8 @@ contract JSCCabinet is
         names[0] = "account";
         names[1] = "role";
         rlib.ParamType[] memory types = new rlib.ParamType[](2);
-        types[0] = rlib.ParamType.t_address;
-        types[1] = rlib.ParamType.t_number;
+        types[0] = rlib.ParamType.t_account;
+        types[1] = rlib.ParamType.t_role;
         string[] memory hints = new string[](2);
         hints[0] = "Address of member's account";
         hints[1] = "Revoked role for this member";
@@ -188,7 +188,7 @@ contract JSCCabinet is
         string[] memory names = new string[](1);
         names[0] = "account";
         rlib.ParamType[] memory types = new rlib.ParamType[](1);
-        types[0] = rlib.ParamType.t_address;
+        types[0] = rlib.ParamType.t_account;
         string[] memory hints = new string[](1);
         hints[0] = "Address of member's account";
 

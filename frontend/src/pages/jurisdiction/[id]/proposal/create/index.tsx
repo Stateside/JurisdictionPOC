@@ -192,7 +192,7 @@ const CreateProposal: NextPage = () => {
       // can sometimes, without warning, decode paramaters that have been encoded with the wrong type.
       // Lesson learned: ABI Encoding "false" or "0" as a boolean produces no error, but decoding either of them as a boolean produces true.
       const getValue = (t:ParamType, v:string) => {
-        if (t === ParamType.t_address || t === ParamType.t_string)
+        if ([ParamType.t_account, ParamType.t_contract, ParamType.t_string].includes(t))
           return v
         else if (t === ParamType.t_bool) {
           if (v === "1")
@@ -201,7 +201,7 @@ const CreateProposal: NextPage = () => {
             return false
           throw new Error(`Cannot convert ${v} to boolean`)
         }
-        else if (t === ParamType.t_number) {
+        else if ([ParamType.t_role, ParamType.t_number].includes(t)) {
           return ethers.BigNumber.from(v)
         }
         throw new Error(`Unknown parameter type ${t}`)
