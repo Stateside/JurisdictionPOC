@@ -15,6 +15,7 @@ import { useRouter } from 'next/router';
 import { JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
 import { useAliases } from '@/store/useAliases';
 import { ethers } from 'ethers';
+import SelectRole from '@/components/SelectRole';
 
 // Use Zustand for managing state changes to Jurisdiction
 
@@ -74,33 +75,7 @@ const useNewJurisdiction = create<IJurisdictionState>((set) => ({
 const greenButtonProps = { _hover: { background: "brand.javaHover" }, variant: 'Header' }
 const invalidProps = { borderColor: "red", color: "red" }
 
-/** Props for RoleSelector component */
-type RoleSelectorProps = {
-  required: boolean
-  value: string
-  isValid: boolean
-  width: string
-  disabled?: boolean
-  onChange: ChangeEventHandler<HTMLSelectElement>
-}
-
 const roles = buildRoles(ethers)
-
-/** Select component for selecting a role */
-const RoleSelector = (props: RoleSelectorProps) =>
-  <Select
-    placeholder="Role?"
-    bg="white"
-    {...(props.isValid ? {} : invalidProps)}
-    borderWidth={1}
-    required={props.required}
-    value={props.value}
-    width={props.width}
-    onChange={props.onChange}
-    disabled={props.disabled}
-  >
-    {roles.rolesArray.map((r: Role) => (<option key={r.id} value={r.friendlyName}>{r.friendlyName}</option>))}
-  </Select>
 
 /** Component for creating a new jurisdiction */
 const CreateJurisdiction: NextPage = () => {
@@ -652,7 +627,7 @@ const CreateJurisdiction: NextPage = () => {
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Role:</Text>
-        <Input width="80%" value={jurisdiction.votingRole} onChange={(e) => setVotingRole(e.target.value)} />
+        <SelectRole isValid={jurisdiction.votingRole !== undefined} value={jurisdiction.votingRole} onChange={role => setVotingRole(role)} />
       </HStack>
     </>
   ), [jurisdiction.votingPeriod, jurisdiction.votingApprovals, votingPeriodUI, votingApprovalsUI, votingMajorityUI, votingQuorumUI, jurisdiction.votingMajority, jurisdiction.votingQuorum, jurisdiction.votingRole])
@@ -673,7 +648,7 @@ const CreateJurisdiction: NextPage = () => {
             }}
           />
       <Input width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidProps} />
-      <RoleSelector isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <SelectRole isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" value={newMemberRole?.id || ""} onChange={setNewMemberRole} />
       <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
   ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
@@ -682,7 +657,7 @@ const CreateJurisdiction: NextPage = () => {
     <HStack width="100%">
       <Input disabled width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
       <Input disabled width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidProps} />
-      <RoleSelector disabled isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" required={true} value={newMemberRole?.friendlyName || ""} onChange={(e) => setNewMemberRole(roles.rolesByFriendlyName[e.target.value])} />
+      <SelectRole disabled isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" value={newMemberRole?.id || ""} onChange={setNewMemberRole} />
       <Tooltip label={`You've reached maximum number of members`}>
         <Button disabled width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
       </Tooltip>
@@ -708,7 +683,7 @@ const CreateJurisdiction: NextPage = () => {
             }}
           />
           <Input width="55%" value={m.address} onChange={(e) => updateMemberAddress(i, m, e.target.value)}  {...(jurisdiction.isValidAddress(m.address) && !jurisdiction.existsMemberAddress(m.address, 2)) ? {} : invalidProps} />
-          <RoleSelector width="15%" isValid={m.role !== undefined} required={true} value={m.role.friendlyName || ""} onChange={(e) => replaceMember(i, { ...m, role: roles.rolesByFriendlyName[e.target.value] })} />
+          <SelectRole width="15%" isValid={m.role !== undefined} value={m.role.id || ""} onChange={role => replaceMember(i, { ...m, role })} />
           <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeMember(i)}>Remove</Button>
         </HStack>
       ))}

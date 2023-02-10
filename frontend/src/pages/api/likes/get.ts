@@ -16,7 +16,7 @@ const get = async (req: NextApiRequest, res: NextApiResponse) => {
     filter.frontend = req.query.frontend as string
 
   try {
-    likes = await likesRepo.find(filter)
+    likes = await likesRepo.findBy(filter)
   } catch (err) {
     console.error("Error getting likes", err)
   }
