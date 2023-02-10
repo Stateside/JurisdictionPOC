@@ -187,8 +187,8 @@ export const useJurisdictions = create<IJurisdictionsState>((set, get) => ({
       let i = await instance.iterateParameters()
       while(await instance.isValidParameterIterator(i)){
         const p = await instance.parameterIteratorGet(i);
-        if (p.ptype == ParamType.t_address) {
-          const a = await instance.getAddressParameter(p.name);
+        if (p.ptype == ParamType.t_contract) {
+          const a = await instance.getContractParameter(p.name);
           const c = {name:p.name, address:a.toLowerCase(), description:p.description}
           newContracts.list.push(c)
           newContracts.byName[p.name] = c

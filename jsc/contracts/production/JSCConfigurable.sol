@@ -47,10 +47,17 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
   }
 
   /**
-   * @dev See {IJSCConfigurable-getAddressParameter}.
+   * @dev See {IJSCConfigurable-getAccountParameter}.
    */
-  function getAddressParameter(string memory name) public view override returns (address) {
-    return _parameters.getAddress(name);
+  function getAccountParameter(string memory name) public view override returns (address) {
+    return _parameters.getAccount(name);
+  }
+
+  /**
+   * @dev See {IJSCConfigurable-getContractParameter}.
+   */
+  function getContractParameter(string memory name) public view override returns (address) {
+    return _parameters.getContract(name);
   }
 
   /**
@@ -65,6 +72,13 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
    */
   function getNumberParameter(string memory name) public view override returns (uint) {
     return _parameters.getNumber(name);
+  }
+
+  /**
+   * @dev See {IJSCConfigurable-getRoleParameter}.
+   */
+  function getRoleParameter(string memory name) public view override returns (uint) {
+    return _parameters.getRole(name);
   }
 
   /**
@@ -115,28 +129,28 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
     for (uint i = 0; i < revs.length; i++) {
       _addRevision(revs[i]);
       rlib.ParamType t = revs[i].paramTypes[1];
-      if (t == rlib.ParamType.t_address)
-        _addHandler(revs[i].name, _updateAddressParameter);
+      if (t == rlib.ParamType.t_account)
+        _addHandler(revs[i].name, _updateAccountParameter);
+      else if (t == rlib.ParamType.t_contract)
+        _addHandler(revs[i].name, _updateContractParameter);
       else if (t == rlib.ParamType.t_bool)
         _addHandler(revs[i].name, _updateBoolParameter);
       else if (t == rlib.ParamType.t_number)
         _addHandler(revs[i].name, _updateNumberParameter);
+      else if (t == rlib.ParamType.t_role)
+        _addHandler(revs[i].name, _updateRoleParameter);
       else if (t == rlib.ParamType.t_string)
         _addHandler(revs[i].name, _updateStringParameter);      
     }
   }
 
-  function _updateAddressParameter(bytes memory pdata) internal virtual {
+  function _updateAccountParameter(bytes memory pdata) internal virtual {
     string memory name;
     address value; 
     (name, value) = abi.decode(pdata, (string, address));
-    address oldValue = _parameters.getAddress(name);
-    _parameters.setAddress(name, value);
-    emit AddressParameterUpdated(name, value);
-    _onUpdateAddressParameter(name, oldValue, value);
+    _parameters.setAccount(name, value);
+    emit AccountParameterUpdated(name, value);
   }
-
-  function _onUpdateAddressParameter(string memory name, address oldValue, address newValue) internal virtual {}
 
   function _updateBoolParameter(bytes memory pdata) internal {
       string memory name;
@@ -146,12 +160,32 @@ abstract contract JSCConfigurable is IJSCConfigurable, JSCFreezable {
     emit BoolParameterUpdated(name, value);
   }
 
+  function _updateContractParameter(bytes memory pdata) internal virtual {
+    string memory name;
+    address value; 
+    (name, value) = abi.decode(pdata, (string, address));
+    address oldValue = _parameters.getContract(name);
+    _parameters.setContract(name, value);
+    emit ContractParameterUpdated(name, value);
+    _onUpdateContractParameter(name, oldValue, value);
+  }
+
+  function _onUpdateContractParameter(string memory name, address oldValue, address newValue) internal virtual {}
+
   function _updateNumberParameter(bytes memory pdata) internal {
       string memory name;
       uint value; 
       (name, value) = abi.decode(pdata, (string, uint));
       _parameters.setNumber(name, value);
     emit NumberParameterUpdated(name, value);
+  }
+
+  function _updateRoleParameter(bytes memory pdata) internal {
+      string memory name;
+      uint value; 
+      (name, value) = abi.decode(pdata, (string, uint));
+      _parameters.setRole(name, value);
+    emit RoleParameterUpdated(name, value);
   }
 
   function _updateStringParameter(bytes memory pdata) internal {

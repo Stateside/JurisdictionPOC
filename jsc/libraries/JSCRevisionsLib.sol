@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
   the smart contract and centralize the type and functionality definitions.
  */
 library JSCRevisionsLib {
-  enum ParamType { t_address, t_bool, t_number, t_string }
+  enum ParamType { t_account, t_bool, t_contract, t_number, t_role, t_string }
   uint16 public constant BlocksPerDay = 24 * 60 * 5; // Assuming a block every 12 seconds
   uint16 public constant BlocksPerWeek = BlocksPerDay * 7;
   struct VotingRules {

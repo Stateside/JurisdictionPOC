@@ -106,14 +106,20 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
         const instance = IJSCConfigurable__factory.connect(selectedContract?.address, library)
         let value = undefined 
         switch(selectedRevision.paramTypes[1]) {
-          case ParamType.t_address:
-            value = await instance.getAddressParameter(configParamName)
+          case ParamType.t_account:
+            value = await instance.getAccountParameter(configParamName)
+            break;
+          case ParamType.t_contract:
+            value = await instance.getContractParameter(configParamName)
             break;
           case ParamType.t_bool:
             value = await instance.getBoolParameter(configParamName) ? "1" : "0"
             break;
           case ParamType.t_number:
             value = await (await instance.getNumberParameter(configParamName)).toHexString()
+            break;
+          case ParamType.t_role:
+            value = await (await instance.getRoleParameter(configParamName)).toHexString()
             break;
           case ParamType.t_string:
             value = await instance.getStringParameter(configParamName)

@@ -34,22 +34,22 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     clib.addVotingParameters(_parameters, votingRules);
     for (uint i = 0; i < contracts.length; i++) {
       require(contracts[i] != address(0), "zero contract");
-      _parameters.insertAddress(clib.AddressParameter(contractKeys[i], descriptions[i], contracts[i]));
+      _parameters.insertContract(clib.ContractParameter(contractKeys[i], descriptions[i], contracts[i]));
     }
     _addParameterRevisions();
     _addJurisdictionRevisions();
 
     if (changeOwner) {
       // Change ownership of this contract to the governor
-      address governor = getAddressParameter("jsc.contracts.governor");
+      address governor = getContractParameter("jsc.contracts.governor");
       require(governor != address(0), "Governor contract not found");
       transferOwnership(governor);
     }
 
     // These calls will revert the transaction if any contract is missing
-    getAddressParameter("jsc.contracts.governor");
-    getAddressParameter("jsc.contracts.tokens");
-    getAddressParameter("jsc.contracts.cabinet");
+    getContractParameter("jsc.contracts.governor");
+    getContractParameter("jsc.contracts.tokens");
+    getContractParameter("jsc.contracts.cabinet");
   }
 
   /**
@@ -65,7 +65,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
    * @dev See {IJSCJurisdiction.getContractAddress} 
    */
   function getContractAddress(string memory name) external view returns (address) {
-    return getAddressParameter(name);
+    return getContractParameter(name);
   }
 
   function _addJurisdictionRevisions() internal {
@@ -83,7 +83,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     rlib.ParamType[] memory types = new rlib.ParamType[](3);
     types[0] = rlib.ParamType.t_string;
     types[1] = rlib.ParamType.t_string;
-    types[2] = rlib.ParamType.t_address;
+    types[2] = rlib.ParamType.t_contract;
     string[] memory hints = new string[](3);
     hints[0] = "Unique key for this contract within the jurisdiction";
     hints[1] = "Description of this contract";
@@ -104,7 +104,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     names[1] = "address";
     rlib.ParamType[] memory types = new rlib.ParamType[](2);
     types[0] = rlib.ParamType.t_string;
-    types[1] = rlib.ParamType.t_address;
+    types[1] = rlib.ParamType.t_contract;
     string[] memory hints = new string[](2);
     hints[0] = "Unique key for this contract within the jurisdiction";
     hints[1] = "Current address of this contract";
@@ -123,7 +123,7 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     string memory description;
     address contractAddress; 
     (name, description, contractAddress) = abi.decode(pdata, (string, string, address));
-    _parameters.insertAddress(clib.AddressParameter({
+    _parameters.insertContract(clib.ContractParameter({
       name: name,
       value: contractAddress,
       description: description
@@ -135,12 +135,12 @@ contract JSCJurisdiction is IJSCJurisdiction, JSCConfigurable {
     string memory name;
     address contractAddress; 
     (name, contractAddress) = abi.decode(pdata, (string, address));
-    require(getAddressParameter(name) == contractAddress, "Unexpected contract address");
+    require(getContractParameter(name) == contractAddress, "Unexpected contract address");
     _parameters.remove(name);
     emit ContractRemoved(name, contractAddress);
   }
 
-  function _onUpdateAddressParameter(string memory name, address oldValue, address newValue) internal override {
+  function _onUpdateContractParameter(string memory name, address oldValue, address newValue) internal override {
     emit ContractReplaced(name, oldValue, newValue);
   }
 

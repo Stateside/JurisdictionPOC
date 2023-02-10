@@ -77,9 +77,9 @@ library JSCTitleTokenLib {
 
   function addTitleParameters(clib.ParameterMap storage parameters, uint256 registryFee, address registryAccount, uint256 maintainerFee, address maintainerAccount, bool nftSupport) public {
     parameters.insertNumber(clib.NumberParameter("jsc.fees.registry", "Transfer fee paid to registry", registryFee));
-    parameters.insertAddress(clib.AddressParameter("jsc.accounts.registry", "Account where registry fees are paid", registryAccount));
+    parameters.insertAccount(clib.AccountParameter("jsc.accounts.registry", "Account where registry fees are paid", registryAccount));
     parameters.insertNumber(clib.NumberParameter("jsc.fees.maintainer", "Transfer fee paid to maintainer", maintainerFee));
-    parameters.insertAddress(clib.AddressParameter("jsc.accounts.maintainer", "Account where maintainer fees are paid", maintainerAccount));
+    parameters.insertAccount(clib.AccountParameter("jsc.accounts.maintainer", "Account where maintainer fees are paid", maintainerAccount));
     parameters.insertBool(clib.BoolParameter("jsc.nft.enabled", "Allow owners to exchange tokens as NFTs", nftSupport));
   }
 
@@ -499,7 +499,7 @@ library JSCTitleTokenLib {
     names[1] = "newOwner";
     rlib.ParamType[] memory types = new rlib.ParamType[](2);
     types[0] = rlib.ParamType.t_number;
-    types[1] = rlib.ParamType.t_address;
+    types[1] = rlib.ParamType.t_account;
     string[] memory hints = new string[](2);
     hints[0] = "ID of selected token";
     hints[1] = "Address of new owner";
@@ -538,7 +538,7 @@ library JSCTitleTokenLib {
     names[0] = "owner";
     names[1] = "freeze";
     rlib.ParamType[] memory types = new rlib.ParamType[](2);
-    types[0] = rlib.ParamType.t_address;
+    types[0] = rlib.ParamType.t_account;
     types[1] = rlib.ParamType.t_bool;
     string[] memory hints = new string[](2);
     hints[0] = "Address of selected owner";

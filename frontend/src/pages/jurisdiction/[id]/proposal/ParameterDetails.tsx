@@ -18,7 +18,8 @@ const ParameterDetails = ({param, width}:Props) => {
   const { aliasesByAddress } = useAliases()
 
   switch(param.type) {
-    case ParamType.t_address:
+    case ParamType.t_contract:
+    case ParamType.t_account:
       return (
         <HStack width={width}>
           <Text variant="break-word">
@@ -29,7 +30,7 @@ const ParameterDetails = ({param, width}:Props) => {
           </Text>
         </HStack>
       )
-    case ParamType.t_bool:
+      case ParamType.t_bool:
       return (
         <Switch width={width} isChecked={param.value === '1'} disabled={true}/>
       )

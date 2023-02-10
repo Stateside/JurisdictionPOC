@@ -52,13 +52,13 @@ export const createSampleProposals = async (ethers: any, jscGovernor: tc.IJSCGov
           parameters: [
             {
               name: "account",
-              type: ParamType.t_address,
+              type: ParamType.t_account,
               hint: "Address of member's account",
               value: Mary.address
             },
             {
               name: "role",
-              type: ParamType.t_number,
+              type: ParamType.t_role,
               hint: "New role for this member",
               value: roles.LEGISLATIVE_ROLE.id
             }
@@ -79,13 +79,13 @@ export const createSampleProposals = async (ethers: any, jscGovernor: tc.IJSCGov
           parameters: [
             {
               name: "account",
-              type: ParamType.t_address,
+              type: ParamType.t_account,
               hint: "Address of member's account",
               value: Jane.address
             },
             {
               name: "role",
-              type: ParamType.t_number,
+              type: ParamType.t_role,
               hint: "Revoked role for this member",
               value: roles.LEGISLATIVE_ROLE.id
             }
@@ -106,7 +106,7 @@ export const createSampleProposals = async (ethers: any, jscGovernor: tc.IJSCGov
           parameters: [
             {
               name: "owner",
-              type: ParamType.t_address,
+              type: ParamType.t_account,
               hint: "Address of selected owner",
               value: Rich.address
             },
@@ -133,7 +133,7 @@ export const createSampleProposals = async (ethers: any, jscGovernor: tc.IJSCGov
           parameters: [
             {
               name: "owner",
-              type: ParamType.t_address,
+              type: ParamType.t_account,
               hint: "Address of selected owner",
               value: Peter.address
             },

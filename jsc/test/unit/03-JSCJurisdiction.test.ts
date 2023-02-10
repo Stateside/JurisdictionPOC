@@ -82,8 +82,13 @@ describe("JSCJurisdiction", async () => {
       let p = await c.parameterIteratorGet(i);
       await expect(p.name).to.be.equal(votingParams[j].name)
       await expect(p.description).to.be.equal(votingParams[j].description)
-      let a = await c.getNumberParameter(p.name);
-      await expect(a).to.be.equal(votingParams[j].value);  
+      if (p.name === "jsc.voting.role") {
+        let a = await c.getRoleParameter(p.name);
+        await expect(a).to.be.equal(votingParams[j].value);
+      } else {
+        let a = await c.getNumberParameter(p.name);
+        await expect(a).to.be.equal(votingParams[j].value);
+      }
       i = await c.nextParameter(i)
     }
 
@@ -102,7 +107,7 @@ describe("JSCJurisdiction", async () => {
       let p = await jurisdiction.parameterIteratorGet(i);
       await expect(p.name).to.be.equal(names[j])
       await expect(p.description).to.be.equal(descriptions[j])
-      let a = await jurisdiction.getAddressParameter(p.name);
+      let a = await jurisdiction.getContractParameter(p.name);
       await expect(a).to.be.equal(addresses[j]);  
       i = await jurisdiction.nextParameter(i)
     }
@@ -118,7 +123,10 @@ describe("JSCJurisdiction", async () => {
       await expect(await c.isValidRevisionIterator(i)).to.be.true;
       let r = await c.revisionIteratorGet(i);
       let pr = votingParams[j].revision
-      await testParameterRevision(r, pr.name, pr.description, ParamType.t_number);
+      if (pr.name === "ChangeConfig:jsc.voting.role")
+        await testParameterRevision(r, pr.name, pr.description, ParamType.t_role);
+      else
+        await testParameterRevision(r, pr.name, pr.description, ParamType.t_number);
       i = await c.nextRevision(i)
     }
 
@@ -208,15 +216,15 @@ describe("JSCJurisdiction", async () => {
 
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     r = await jurisdiction.revisionIteratorGet(i);
-    await testParameterRevision(r, "ChangeConfig:jsc.contracts.cabinet", "Manage the members of the jurisdiction and their roles", ParamType.t_address);
+    await testParameterRevision(r, "ChangeConfig:jsc.contracts.cabinet", "Manage the members of the jurisdiction and their roles", ParamType.t_contract);
     i = await jurisdiction.nextRevision(i)
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     r = await jurisdiction.revisionIteratorGet(i);
-    await testParameterRevision(r, "ChangeConfig:jsc.contracts.governor", "Track proposals and votes", ParamType.t_address);
+    await testParameterRevision(r, "ChangeConfig:jsc.contracts.governor", "Track proposals and votes", ParamType.t_contract);
     i = await jurisdiction.nextRevision(i)
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
     r = await jurisdiction.revisionIteratorGet(i);
-    await testParameterRevision(r, "ChangeConfig:jsc.contracts.tokens", "Manage tokens, their owners, and the transfer of ownership", ParamType.t_address);
+    await testParameterRevision(r, "ChangeConfig:jsc.contracts.tokens", "Manage tokens, their owners, and the transfer of ownership", ParamType.t_contract);
     
     i = await jurisdiction.nextRevision(i)
     await expect(await jurisdiction.isValidRevisionIterator(i)).to.be.true;
@@ -230,7 +238,7 @@ describe("JSCJurisdiction", async () => {
     await expect(r.paramTypes.length, "r.paramTypes Length").to.be.equal(3);
     await expect(r.paramTypes[0], "incorrect type for key parameter in revision").to.be.equal(ParamType.t_string);
     await expect(r.paramTypes[1], "incorrect type for description parameter in revision").to.be.equal(ParamType.t_string);
-    await expect(r.paramTypes[2], "incorrect type for address parameter in revision").to.be.equal(ParamType.t_address);
+    await expect(r.paramTypes[2], "incorrect type for account parameter in revision").to.be.equal(ParamType.t_contract);
     await expect(r.paramHints.length, "r.paramHints Length").to.be.equal(3);
     await expect(r.paramHints[0]).to.be.equal("Unique key for this contract within the jurisdiction");
     await expect(r.paramHints[1]).to.be.equal("Description of this contract");
@@ -246,18 +254,18 @@ describe("JSCJurisdiction", async () => {
     await expect(r.paramNames[1]).to.be.equal("address");
     await expect(r.paramTypes.length, "r.paramTypes Length").to.be.equal(2);
     await expect(r.paramTypes[0], "incorrect type for name parameter in revision").to.be.equal(ParamType.t_string);
-    await expect(r.paramTypes[1], "incorrect type for address parameter in revision").to.be.equal(ParamType.t_address);
+    await expect(r.paramTypes[1], "incorrect type for contract parameter in revision").to.be.equal(ParamType.t_contract);
     await expect(r.paramHints.length, "r.paramHints Length").to.be.equal(2);
     await expect(r.paramHints[0]).to.be.equal("Unique key for this contract within the jurisdiction");
     await expect(r.paramHints[1]).to.be.equal("Current address of this contract");
   })
 
-  it("executes address parameter revision", async () => {
+  it("executes account parameter revision", async () => {
     const jscCabinetContract = await ethers.getContract("unittests_JSCCabinet")
     const jscGovernorContract = await ethers.getContract("unittests_JSCGovernor")
     let revArgs:string = defaultAbiCoder.encode(["string", "address"],["jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB"]);
     let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contracts.tokens", revArgs);
-    await expect(tresponse).to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB");
+    await expect(tresponse).to.emit(jurisdiction, "ContractParameterUpdated").withArgs("jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB");
     await expect(tresponse).to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contracts.tokens", revArgs);
     await testIterateParameters(
       ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
@@ -319,7 +327,7 @@ describe("JSCJurisdiction", async () => {
       ["jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB"]);
     let tresponse = jurisdiction.executeRevision("ChangeConfig:jsc.contracts.tokens", revArgs);
     await expect(tresponse)
-      .to.emit(jurisdiction, "AddressParameterUpdated").withArgs("jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB")
+      .to.emit(jurisdiction, "ContractParameterUpdated").withArgs("jsc.contracts.tokens", "0x111122223333444455556666777788889999AaaB")
       .to.emit(jurisdiction, "ContractReplaced").withArgs("jsc.contracts.tokens", jscTitleTokenContract.address, "0x111122223333444455556666777788889999AaaB")
       .to.emit(jurisdiction, "RevisionExecuted").withArgs("ChangeConfig:jsc.contracts.tokens", revArgs);
     await testIterateParameters(

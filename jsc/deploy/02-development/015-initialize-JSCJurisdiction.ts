@@ -42,8 +42,8 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
   let i = await jscJurisdiction.iterateParameters()
   while(await jscJurisdiction.isValidParameterIterator(i)){
     const p = await jscJurisdiction.parameterIteratorGet(i);
-    if (p.ptype == ParamType.t_address) {
-      let a = await jscJurisdiction.getAddressParameter(p.name);
+    if (p.ptype == ParamType.t_contract) {
+      let a = await jscJurisdiction.getContractParameter(p.name);
       log(`  ${p.name}: ${a}`)
     }
     i = await jscJurisdiction.nextParameter(i)

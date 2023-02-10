@@ -241,9 +241,9 @@ describe("JSCGovernor", async () => {
             hint: ""
           },
           {
-            name: "address",
+            name: "account",
             value: "0x111122223333444455556666777788889999aAaa",
-            type: ParamType.t_address,
+            type: ParamType.t_account,
             hint: ""
           }
         ]
@@ -265,10 +265,10 @@ describe("JSCGovernor", async () => {
     ], "Add a contract and then freeze the jurisdiction contract", ++proposalVersion)
 
     await expect(await jurisdiction.isFrozen()).to.equal(false);
-    await expect(jurisdiction.getAddressParameter("jsc.contracts.mycontract")).to.be.revertedWith("Trying to access non-existant parameter")
+    await expect(jurisdiction.getContractParameter("jsc.contracts.mycontract")).to.be.revertedWith("Trying to access non-existant parameter")
     await testWinningProposal(proposal)
     await expect(await jurisdiction.isFrozen()).to.equal(true);
-    await expect(await jurisdiction.getAddressParameter("jsc.contracts.mycontract")).to.equal("0x111122223333444455556666777788889999aAaa")
+    await expect(await jurisdiction.getContractParameter("jsc.contracts.mycontract")).to.equal("0x111122223333444455556666777788889999aAaa")
   });
 
   it('executes boolean parameter winning proposal', async function() {
