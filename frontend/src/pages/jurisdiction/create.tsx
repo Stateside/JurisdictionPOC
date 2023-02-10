@@ -627,7 +627,7 @@ const CreateJurisdiction: NextPage = () => {
       </HStack>
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Role:</Text>
-        <SelectRole isValid={jurisdiction.votingRole !== undefined} value={jurisdiction.votingRole} onChange={role => setVotingRole(role)} />
+        <SelectRole isValid={jurisdiction.votingRole !== undefined} value={jurisdiction.votingRole} onChange={role => setVotingRole(role.id)} />
       </HStack>
     </>
   ), [jurisdiction.votingPeriod, jurisdiction.votingApprovals, votingPeriodUI, votingApprovalsUI, votingMajorityUI, votingQuorumUI, jurisdiction.votingMajority, jurisdiction.votingQuorum, jurisdiction.votingRole])
