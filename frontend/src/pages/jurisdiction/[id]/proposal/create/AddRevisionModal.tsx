@@ -195,7 +195,7 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
               <Text width="15%">Revision Name:</Text>
               {
-                revisions === undefined || revisionsLoading
+                selectedContract?.address && (revisions === undefined || revisionsLoading)
                   ? <LoadingIcon/> 
                   : <Select width="65%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
                       {
