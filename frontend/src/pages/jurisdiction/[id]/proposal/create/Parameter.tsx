@@ -96,9 +96,7 @@ const Parameter = (props: Props) => {
         )
       case ParamType.t_bool:
         return (
-          <Tooltip label={props.hint}>
-            <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")}/>
-          </Tooltip>
+          <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")} variant={props.value === '1' ? 'java' : ''} size="lg" mt=".4rem"/>
         )
       case ParamType.t_role:
         return (

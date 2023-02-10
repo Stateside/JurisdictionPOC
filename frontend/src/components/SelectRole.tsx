@@ -1,4 +1,4 @@
-import { Button, Select, Tooltip } from '@chakra-ui/react';
+import { Select, Tooltip } from '@chakra-ui/react';
 import { Role, buildRoles } from '@/utils/roles';
 import { ethers } from 'ethers';
 
@@ -12,13 +12,12 @@ type SelectRoleProps = {
 }
 
 const invalidProps = { borderColor: "red", color: "red" }
+const roles = buildRoles(ethers)
 
 /**
  * Component that displays a role ID in a dropdown menu.
  */
 const SelectRole = (props: SelectRoleProps) => {
-  const roles = buildRoles(ethers)
-
   const select =     
     <Select
       bg="white"
