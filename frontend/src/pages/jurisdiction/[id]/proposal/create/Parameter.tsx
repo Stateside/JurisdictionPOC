@@ -1,4 +1,5 @@
 import DeleteIcon from "@/components/icons/deleteIcon";
+import SelectRole from "@/components/SelectRole";
 import SpecialSelect from "@/components/SpecialSelect";
 import { useAliases } from "@/store/useAliases";
 import { ParamType } from "@/utils/types";
@@ -10,7 +11,7 @@ export type Props = {
   hint: string
   type: ParamType
   value: string
-  width: string
+  width?: string
   onChange: (value: string) => void
 }
 
@@ -59,10 +60,10 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
 
   return (
 
-    <HStack width="100%">
+    <HStack >
       <Tooltip label="Optional alias for this account">
       <SpecialSelect
-          width='40%'
+          width='12rem'
           value={(address || alias) ? { label: alias, value: address } :{ label: '', value: '' } }
           options={aliasesByAddress}
           onChange={(selectedOption: any) => {
@@ -77,7 +78,7 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
         />
       </Tooltip>
       <Tooltip label={props.tooltip}>
-        <Input width="75%" value={address||""} onChange={e => updateAddress(e.target.value)}/>
+        <Input width="26rem" value={address||""} onChange={e => updateAddress(e.target.value)}/>
       </Tooltip>
 
     </HStack>
@@ -98,6 +99,10 @@ const Parameter = (props: Props) => {
           <Tooltip label={props.hint}>
             <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")}/>
           </Tooltip>
+        )
+      case ParamType.t_role:
+        return (
+          <SelectRole tooltip={props.hint} value={props.value} onChange={role => props.onChange(role.id)} />
         )
       default:
         return (

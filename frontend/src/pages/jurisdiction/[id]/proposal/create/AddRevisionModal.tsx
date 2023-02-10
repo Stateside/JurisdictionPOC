@@ -158,8 +158,8 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
   const parameterComponents = useMemo(() => {
     return selectedRevision?.paramNames.map((p, i) => (
       <HStack alignItems="flex-start" padding="20px 0" width="100%" key={p}>
-        <Text width="15%">{capitalizeString(p)}:</Text>
-        <Parameter width="85%"
+        <Text width="5rem">{capitalizeString(p)}:</Text>
+        <Parameter 
           name={p}
           hint={selectedRevision.paramHints[i]}
           type={selectedRevision.paramTypes[i]}
@@ -185,7 +185,7 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
               <Text width="15%">Contract Name:</Text>
-              <Select width="85%" placeholder="Choose a contract" value={selectedContract?.address || ""} onChange={o => updateSelection(o.target.value, "")}>
+              <Select width="65%" placeholder="Choose a contract" value={selectedContract?.address || ""} onChange={o => updateSelection(o.target.value, "")}>
                 {
                   contracts?.map(c => (<option value={c.address} key={c.address}>{c.name}</option>))
                 }
@@ -197,7 +197,7 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
               {
                 revisions === undefined || revisionsLoading
                   ? <LoadingIcon/> 
-                  : <Select width="85%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
+                  : <Select width="65%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
                       {
                         revisions?.sort((a, b) => a.name.localeCompare(b.name)).map(r => (<option value={r.name} key={r.name}>{r.name}</option>))
                       }
@@ -207,12 +207,12 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
               <Text width="15%">Description:</Text>
-              <Textarea width="85%" value={selectedRevision?.description || ""} readOnly={true} />
+              <Textarea width="65%" value={selectedRevision?.description || ""} readOnly={true} />
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
               <Text width="15%">Parameters:</Text>
-              <VStack alignItems="flex-start" width="85%">
+              <VStack alignItems="flex-start" width="65%">
                 {parameterComponents}
               </VStack>
             </HStack>
