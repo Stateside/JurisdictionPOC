@@ -157,16 +157,21 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
 
   const parameterComponents = useMemo(() => {
     return selectedRevision?.paramNames.map((p, i) => (
-      <HStack alignItems="flex-start" padding="20px 0" width="100%" key={p}>
-        <Text width="5rem">{capitalizeString(p)}:</Text>
-        <Parameter 
-          name={p}
-          hint={selectedRevision.paramHints[i]}
-          type={selectedRevision.paramTypes[i]}
-          value={revision.parameters[p] || ""}
-          onChange={value => updateRevision(p, value, selectedRevision) }
-        />
-      </HStack>
+      <VStack width="100%"spacing="0px">
+        <HStack alignItems="flex-start" width="100%" key={p}>
+          <Text width="5rem" mt=".4rem">{capitalizeString(p)}:</Text>
+          <Parameter 
+            name={p}
+            hint={selectedRevision.paramHints[i]}
+            type={selectedRevision.paramTypes[i]}
+            value={revision.parameters[p] || ""}
+            onChange={value => updateRevision(p, value, selectedRevision) }
+          />        
+        </HStack>
+        <Text variant="break-word" width="100%" fontSize="sm" color="brand.grey.grey03">
+          {selectedRevision.paramHints[i]}
+        </Text>
+      </VStack>
     ))
   }, [selectedRevision, updateRevision, revision])
 
@@ -179,13 +184,13 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
           <ModalCloseButton />
           <ModalBody>
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="15%">Jurisdiction Name:</Text>
+              <Text width="15%">Jurisdiction name:</Text>
               <Text>{jurisdictionName}</Text>
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="15%">Contract Name:</Text>
-              <Select width="65%" placeholder="Choose a contract" value={selectedContract?.address || ""} onChange={o => updateSelection(o.target.value, "")}>
+              <Text width="15%">Contract name:</Text>
+              <Select width="50%" placeholder="Choose a contract" value={selectedContract?.address || ""} onChange={o => updateSelection(o.target.value, "")}>
                 {
                   contracts?.map(c => (<option value={c.address} key={c.address}>{c.name}</option>))
                 }
@@ -193,11 +198,11 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="15%">Revision Name:</Text>
+              <Text width="15%">Revision name:</Text>
               {
                 selectedContract?.address && (revisions === undefined || revisionsLoading)
                   ? <LoadingIcon/> 
-                  : <Select width="65%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
+                  : <Select width="50%" placeholder="Choose a revision" value={selectedRevision?.name || ""} onChange={o => updateSelection(selectedContract?.address || "", o.target.value)}>
                       {
                         revisions?.sort((a, b) => a.name.localeCompare(b.name)).map(r => (<option value={r.name} key={r.name}>{r.name}</option>))
                       }
@@ -207,12 +212,12 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
               <Text width="15%">Description:</Text>
-              <Textarea width="65%" value={selectedRevision?.description || ""} readOnly={true} />
+              <Text width="50%">{selectedRevision?.description || ""}</Text>
             </HStack>
             <Divider />
             <HStack alignItems="flex-start" padding="20px 0" width="100%">
-              <Text width="15%">Parameters:</Text>
-              <VStack alignItems="flex-start" width="65%">
+              <Text width="15%" mt=".4rem">Parameters:</Text>
+              <VStack alignItems="flex-start" width="75%" spacing="2rem">
                 {parameterComponents}
               </VStack>
             </HStack>

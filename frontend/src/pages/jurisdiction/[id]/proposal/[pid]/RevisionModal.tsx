@@ -50,15 +50,15 @@ const RevisionModal = ({
 
         <ModalBody>
           <Divider />
-          <Box marginBottom="1em">
+          <Box mb="3em" mt=".5rem">
             <VStack width="100%" alignItems="flex-start">
               <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
-                <Text width="10%">Jurisdiction:</Text>
+                <Text width="15%">Jurisdiction name:</Text>
                 <Text>{jurisdictionName || <LoadingIcon />}</Text>
               </HStack>
               <Divider />
               <HStack alignItems="flex-start" width="100%" p="1rem 0rem">
-                <Text width="10%">Description:</Text>
+                <Text width="15%">Description:</Text>
                 <Text>
                   {unknownRevision
                     ? 'Not Found'
@@ -68,8 +68,8 @@ const RevisionModal = ({
               <Divider />
               {/*Parameters*/}
               <HStack width="100%" alignItems={'flex-start'} p="1rem 0rem">
-                <Text width="10%">Parameters</Text>
-                <VStack width="90%">
+                <Text width="15%">Parameters</Text>
+                <VStack width="85%">
                   {unknownRevision ? (
                     <Text>Not Found</Text>
                   ) : revision ? (
@@ -78,7 +78,7 @@ const RevisionModal = ({
                         key={parameter.name}
                         width="100%"
                         alignItems={'flex-start'}
-                        mb=".5rem"
+                        mb=".8rem"
                       >
                         <HStack width="100%" mb="-.5rem">
                           <Text width="10%">
@@ -96,7 +96,6 @@ const RevisionModal = ({
                   )}
                 </VStack>
               </HStack>
-              <Divider />
             </VStack>
           </Box>
         </ModalBody>

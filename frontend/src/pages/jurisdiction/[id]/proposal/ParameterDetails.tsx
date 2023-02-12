@@ -7,16 +7,20 @@ import {
 import { useParameterSimplifier } from '@/store/useParameterSimplifier';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
 import { useAliases } from '@/store/useAliases';
+import { buildRoles } from '@/utils/roles';
+import { ethers } from 'ethers';
 
 export type Props = {
   param: IRevisionParameter
   width: string
 };
 
+const roles = buildRoles(ethers)
+
 const ParameterDetails = ({param, width}:Props) => {
   const { simplifyValue } = useParameterSimplifier();
   const { aliasesByAddress } = useAliases()
-
+console.log(param)
   switch(param.type) {
     case ParamType.t_contract:
     case ParamType.t_account:
@@ -30,9 +34,13 @@ const ParameterDetails = ({param, width}:Props) => {
           </Text>
         </HStack>
       )
-      case ParamType.t_bool:
+    case ParamType.t_bool:
       return (
-        <Switch width={width} isChecked={param.value === '1'} disabled={true}/>
+        <Switch width={width} isChecked={param.value === '1'} disabled={true} variant={param.value === '1' ? 'java' : ''} size="lg"/>
+      )
+    case ParamType.t_role:
+      return (
+        <Text>{roles.rolesById[param.value].friendlyName}</Text>
       )
     default:
       return (
