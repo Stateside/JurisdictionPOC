@@ -1,4 +1,4 @@
-import { Select, Tooltip } from '@chakra-ui/react';
+import { color, Select, Tooltip } from '@chakra-ui/react';
 import { Role, buildRoles } from '@/utils/roles';
 import { ethers } from 'ethers';
 
@@ -20,6 +20,7 @@ const roles = buildRoles(ethers)
 const SelectRole = (props: SelectRoleProps) => {
   const select =     
     <Select
+      placeholder="-"
       bg="white"
       {...(props.isValid===false ? invalidProps : {})}
       borderWidth={1}
