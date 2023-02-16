@@ -134,14 +134,19 @@ export default function PropertyModal({ gridLayout, type }: PropertyModal) {
                       value={(recipientName || sellFormModel.fields.recipientAddress.value) ? { label: recipientName, value: sellFormModel.fields.recipientAddress.value } : { label: '', value: '' }}
                       options={aliasesByAddress}
                       onChange={(selectedOption: any) => {
-                        setRecipientName(selectedOption.label); 
-                        if (selectedOption.label !== selectedOption.value)
-                          handleInputChange({
-                            currentTarget: {
-                              value:selectedOption.value, 
-                              name:"recipientAddress", 
-                              required: true,
-                            } as any} as any)
+                        if (selectedOption === undefined) {
+                          setRecipientName("");
+                        }
+                        else {
+                          setRecipientName(selectedOption.label); 
+                          if (selectedOption.label !== selectedOption.value)
+                            handleInputChange({
+                              currentTarget: {
+                                value:selectedOption.value, 
+                                name:"recipientAddress", 
+                                required: true,
+                              } as any} as any)
+                        }
                       }}
                     />
                 }

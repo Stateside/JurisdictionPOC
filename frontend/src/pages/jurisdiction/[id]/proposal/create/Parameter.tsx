@@ -64,10 +64,14 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
       <Tooltip label="Optional alias for this account">
       <SpecialSelect
           width='12rem'
-          value={(address || alias) ? { label: alias, value: address } :{ label: '', value: '' } }
+          value={(address || alias) ? { label: alias, value: address } : undefined }
           options={aliasesByAddress}
           onChange={(selectedOption: any) => {
-            if(selectedOption.label === selectedOption.value) {
+            if (selectedOption === undefined) {
+              updateAlias("")
+              updateAddress("")
+            }
+            else if(selectedOption.label === selectedOption.value) {
               updateAlias(selectedOption.label)
             } else {
               updateAlias(selectedOption.label)
