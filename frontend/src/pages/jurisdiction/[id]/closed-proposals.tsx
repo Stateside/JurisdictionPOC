@@ -1,17 +1,15 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { ArrowBackIcon } from '@chakra-ui/icons';
 import { Link } from '@/components/Link';
 import { Box, Heading, Text, CircularProgress } from '@chakra-ui/react';
-
 import { useRouter } from 'next/router';
-import { useJurisdictions } from '@/store/useJurisdictions';
 import { useEffect, useMemo, useState } from 'react';
 import { IProposalDetails, useGovernors } from '@/store/useGovernors';
 import { useWeb3React } from '@web3-react/core';
 import Paginator from '../Paginator';
 import Tag from '@/components/Tag';
 import { ProposalState } from '@/utils/types';
+import Breadcrumb from '@/components/Breadcrumb';
 
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
 const PAGE_SIZE = 12
@@ -24,11 +22,9 @@ const ClosedProposals: NextPage = () => {
   // If this page was saved as a bookmark, then none of the above may be loaded yet.
 
   const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
-  const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
 
-  const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
   const loadGovernorDetails = useGovernors(state => state.get)
-  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
+  const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const proposalIds = jscGovernorDetails?.proposalIds
   const proposals = jscGovernorDetails?.proposals
   
@@ -38,13 +34,9 @@ const ClosedProposals: NextPage = () => {
 
   const [ page, setPage ] = useState(1)
 
-  // Load contracts from jurisdiciton
-  useEffect(() => { jurisdictionsLoaded && loadContracts(jurisdictionAddress, library) },
-    [jurisdictionAddress, jurisdictionsLoaded, library]);
-
   // Load governor details
-  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
-    [jscGovernorAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, library]);
 
   // Load governor proposals
   useEffect(() => {
@@ -87,10 +79,10 @@ const ClosedProposals: NextPage = () => {
         <Head>
           <title>Closed Proposals</title>
         </Head>
-        <Link href="/" display="flex" fontWeight="bold">
-          <ArrowBackIcon marginRight="10px" marginTop="5px" />
-          <Text>Back to Dashboard / Jurisdiction</Text>
-        </Link>
+        <Breadcrumb items={[
+          {label:"Jurisdiction", href:`/jurisdiction/${jurisdictionAddress}`},
+          {label:"Closed Proposals", href:""},
+        ]}/>
         <Heading whiteSpace="pre-line" variant="80" my={4} marginBottom="48px">
           Closed Proposals
         </Heading>

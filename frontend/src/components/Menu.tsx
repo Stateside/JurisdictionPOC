@@ -1,18 +1,12 @@
 import React from 'react'
 import { Menu as MenuChakra, MenuButton, MenuList, MenuItem, IconButton, Text, Box, MenuGroup, MenuDivider, useToast } from '@chakra-ui/react'
 import MenuIcon from '@/components/icons/menuIcon'
-import { MenuItemInterface} from '@/interfaces/index';
 import { Link } from './Link';
+import useMenu, { MenuItemInterface } from '@/hooks/useMenu';
 
-type Props = {
-    items: Array<MenuItemInterface>
-}
-
-const Menu = (props: Props) => {
-    const { items } = props;
+const Menu = () => {
+    const items = useMenu();
     const toast = useToast();
-
-    const filterItems = (items:MenuItemInterface[]|undefined) => items === undefined? [] : items.filter(item => item.chainIds === undefined || item.chainIds?.includes(parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '')))
 
     const getMenuItem = (item: MenuItemInterface, ml:number) => (
       item.label.startsWith("divider")
@@ -48,12 +42,12 @@ const Menu = (props: Props) => {
 
     const getSubMenu = (item: MenuItemInterface, ml:number) => (
       <MenuGroup title={item.label} key={item.label}>
-        {filterItems(item.children).map((item) => getMenuItem(item, ml+3))}
+        {item.children?.map((item) => getMenuItem(item, ml+3))}
       </MenuGroup>
     )
     
     return (
-      <MenuChakra variant={'mainMenu'} {...props}>
+      <MenuChakra variant={'mainMenu'}>
         <MenuButton
           width="54px"
           background="brand.grey.grey04"
@@ -71,7 +65,7 @@ const Menu = (props: Props) => {
           top="15px"
           boxShadow="0px -5px 10px -15px rgb(0 0 0 / 10%), 0px 5px 10px 5px rgb(0 0 0 / 10%)"
         >
-          {filterItems(items).map((item, key) => getMenuItem(item, 0))}
+          {items?.map((item, key) => getMenuItem(item, 0))}
           <Box
             position="absolute"
             top="-14px"

@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect } from 'react'
 import { Container, Box } from '@chakra-ui/react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { siteLayoutData, siteMainMenu } from '@/store/initial'
+import { siteLayoutData } from '@/store/initial'
 import ConnectCheck from './ConnectCheck'
 import { useWeb3React } from '@web3-react/core'
 import { useAliases } from '@/store/useAliases'
@@ -73,7 +73,7 @@ export function Layout(props: Props) {
         minHeight={'100vh'}
         padding="0"
       >
-        <Header siteTitle={title} ctaText={ctaConnect} menu={siteMainMenu} />
+        <Header siteTitle={title} ctaText={ctaConnect} />
         <ConnectCheck />
         <Box flexGrow={1}>{props.children}</Box>
         <Footer />

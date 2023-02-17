@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Box, Button, Divider, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import LockIcon from '@/components/icons/lockIcon';

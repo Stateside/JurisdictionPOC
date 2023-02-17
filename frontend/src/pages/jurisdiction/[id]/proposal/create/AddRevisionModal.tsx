@@ -157,7 +157,7 @@ const AddRevisionModal = ({ jurisdictionName, revision, setRevision, contracts, 
 
   const parameterComponents = useMemo(() => {
     return selectedRevision?.paramNames.map((p, i) => (
-      <VStack width="100%"spacing="0px">
+      <VStack width="100%"spacing="0px" key={p}>
         <HStack alignItems="flex-start" width="100%" key={p}>
           <Text width="5rem" mt=".4rem">{capitalizeString(p)}:</Text>
           <Parameter 

@@ -14,7 +14,7 @@ const Paginator = (props:Props) => {
   const endItem = Math.min(startItem + pageSize - 1, totalItems);
 
   return (
-    <HStack padding="10px" justify="end">
+    <HStack justify="end">
       <Text>{startItem} - {endItem} of {totalItems}</Text>
       <IconButton
         aria-label="Back"

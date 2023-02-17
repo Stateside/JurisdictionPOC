@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
 import { useEffect, useState } from 'react';
 import { useCabinets } from '@/store/useCabinets';
+import usePersona from '@/store/usePersona';
 
 type Props = {
   hideIfDisabled?: boolean
@@ -16,6 +17,7 @@ type Props = {
 const MemberOnlyButton = (props: Props) => {
   const { account, library } = useWeb3React();
   const router = useRouter();
+  const { isOwnerPersona: personaIsAnOwner } = usePersona()
 
   // First load jurisdiction, then Cabinet...
 
@@ -45,15 +47,16 @@ const MemberOnlyButton = (props: Props) => {
       cabinet?.isMember(account).then(res => res !== undefined && setUserIsMember(res))
   }, [cabinet, account])
 
+  const { hideIfDisabled, ...rest } = props
   const tooltip = props.tooltip || (userIsMember ? '' : 'You must be a member to use this feature')
   const disabled = props.disabled || !userIsMember
-  const display = disabled && props.hideIfDisabled===true ? 'none' : 'flex'
+  const display = personaIsAnOwner() || (disabled && hideIfDisabled===true) ? 'none' : 'flex'
 
-  return tooltip ? 
-    <Tooltip label={tooltip}>
-      <Button {...props} disabled={disabled} display={display}/>
-    </Tooltip> : 
-    <Button {...props} disabled={disabled}/>
+  return tooltip 
+    ? <Tooltip label={tooltip}>
+        <Button {...rest} disabled={disabled} display={display}/>
+      </Tooltip> 
+    : <Button {...rest} disabled={disabled} display={display}/>
 }
 
 export default MemberOnlyButton

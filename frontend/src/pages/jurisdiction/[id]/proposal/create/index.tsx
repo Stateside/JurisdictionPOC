@@ -13,6 +13,7 @@ import { useGovernors } from '@/store/useGovernors';
 import { createProposalVersion } from '@/utils/proposals';
 import { ethers } from 'ethers';
 import { ParamType, ParamType2SolidyType } from '@/utils/types';
+import Breadcrumb from '@/components/Breadcrumb';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 
@@ -32,7 +33,7 @@ const CreateProposal: NextPage = () => {
   const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
   const loadGovernorDetails = useGovernors(state => state.get)
   const refreshGovernorDetails = useGovernors(state => state.refresh)
-  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
+  const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const [contracts, setContracts] = useState<IContract[]>(childContracts)
 
   // Get list of contracts
@@ -52,8 +53,8 @@ const CreateProposal: NextPage = () => {
     [jurisdictionAddress, loadedJurisdictions, library]);
 
   // Load governor details
-  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
-    [jscGovernorAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, library]);
 
   // Builds a NewRevision object from the data requested in the URL
   const requestedRevision:NewRevision|undefined = useMemo(() => {
@@ -103,6 +104,7 @@ const CreateProposal: NextPage = () => {
   }, [requestedRevision, autoOpenedRevisionModel])
 
   const isValidProposal = useCallback(() => {
+    console.log("isValidProposal", jscGovernorDetails, description, newRevisions.length)
     return (
       jscGovernorDetails?.instance &&
       description !== "" &&
@@ -249,10 +251,10 @@ const CreateProposal: NextPage = () => {
       <Head>
         <title>Create a Proposal</title>
       </Head>
-      <Link onClick={() => router.back()} display="flex" fontWeight="bold">
-        <ArrowBackIcon marginRight="10px" marginTop="5px" />
-        <Text>Back to Dashboard</Text>
-      </Link>
+      <Breadcrumb items={[
+        {label:"Jurisdiction", href:`/jurisdiction/${jurisdictionAddress}`},
+        {label:"Create Proposal", href:""},
+        ]}/>
       <Heading whiteSpace="pre-line" my={4} variant="80" marginBottom="48px">
         Create Proposal
       </Heading>
@@ -261,7 +263,7 @@ const CreateProposal: NextPage = () => {
         <VStack width="100%" alignItems="flex-start">
           <HStack alignItems="flex-start" padding="20px 0" width="100%">
             <Text width="20%">Jurisdiction Name:</Text>
-            <Text>{jurisdictionName||<LoadingIcon/>}</Text>
+            <Box>{jurisdictionName||<LoadingIcon/>}</Box>
           </HStack>
           <Divider />
           <HStack alignItems="flex-start" padding="20px 0" width="100%">

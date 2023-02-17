@@ -1,6 +1,9 @@
 import mockedData from '../../../model/data/mockedData.json';
+import houseImages from '../../../model/data/house.json';
+import kitchenImages from '../../../model/data/kitchen.json';
+import bedroomImages from '../../../model/data/bedroom.json';
 import { NextApiRequest, NextApiResponse } from "next";
-import { thisPropertyInfo } from '@/utils/types';
+import { thisPropertyInfo, imageInfo } from '@/utils/types';
 
 type TitleData = {
   [titlelId: string]: thisPropertyInfo
@@ -8,16 +11,29 @@ type TitleData = {
 
 const loadData = async () => {
   const properties:TitleData = {}
-  mockedData.data.forEach(t => {
-    properties[t.titleId] = t
-    t.images = []
-    for (let i = 1; i <= 3; i++) {
-      t.images.push({
-        src: `https://picsum.photos/seed/${t.titleId}-${i}/297/198`,
-        alt: `Image ${i} of ${t.locationData.address}`,
+  mockedData.data.forEach((t,ti) => {
+    const images:imageInfo[] = []
+    const imageData = [
+      houseImages[ti % houseImages.length],
+      kitchenImages[ti % kitchenImages.length],
+      bedroomImages[ti % bedroomImages.length],
+    ]
+
+    for (let i = 0; i < imageData.length; i++) {
+      const img = imageData[i]
+      images.push({
+        thumbSrc: `${img.urls.raw}&w=297&h=198&fit=scale`,
+        src: `${img.urls.raw}&w=1200`,
+        alt: img.alt_description || "The house",
       })
     }
+
+    properties[t.titleId] = {
+      ...t,
+      images
+    }
   })
+
   return properties;
 }
 

@@ -16,8 +16,6 @@ const Marker = ({ text }: Marker) => <img style={{transform: 'translate(-50%, -5
 
 const key = process.env.NEXT_PUBLIC_GMAPS_API || '';
 
-console.log('maps api:', process.env.NEXT_PUBLIC_GMAPS_API);
-
 export default function Gmaps({lat, lng}: GmapsProps) {
   const defaultProps = {
     center: {

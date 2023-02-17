@@ -20,6 +20,7 @@ export type TokenJSON = {
 }
 
 export type Token = {
+  jurisdiction: string;
   tokenId: string;
   titleId: string;
   owner?: string;
@@ -41,6 +42,7 @@ export type Tokens = {
 }
 
 export type ITokenContractDetails = { 
+  jurisdiction: string
   address: string 
   instance: IJSCTitleToken
   tokenCount: number
@@ -56,7 +58,7 @@ export type ITokenContractDetails = {
   tokensLoading: boolean
 
   /** Loads the details of an individual token and stores it in tokens.tokensById */
-  loadToken: (tokenId:string) => Promise<void>
+  loadToken: (tokenId:string) => Promise<Token|undefined>
   
   /** Loades a page of tokenIds. */
   loadPage: (page:number) => Promise<void>
@@ -119,6 +121,7 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
         const registryAccount = await instance.getContractParameter("jsc.accounts.registry")
         const maintainerAccount = await instance.getContractParameter("jsc.accounts.maintainer")
         details = {
+          jurisdiction: jurisdictionAddress,
           address: titleTokenContractAddress.toLowerCase(), 
           instance, 
           tokenCount,
@@ -130,21 +133,21 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
           tokens: { pages: {}, tokensById: {} },
           tokensLoading: false,
 
-          loadToken: async (titleId:string) => {
+          loadToken: async (tokenId:string) => {
             // Set the loading flag
             set((state) => ({ 
               tokenContracts: { ...state.tokenContracts, 
                 [jurisdictionAddress]: { ...state.tokenContracts[jurisdictionAddress], 
+                  jurisdiction: jurisdictionAddress,
                   tokensLoading: true 
                 } 
               }
             }));
   
+            let t:Token|undefined = undefined
             try {
-              const tokenId = await instance.titleToTokenId(titleId);
-              const tokenIdAsHex = tokenId.toHexString();
-  
-              await updateStateTitlesById(jurisdictionAddress,instance,tokenIdAsHex,set, titleId);
+              const titleId = await instance.tokenToTitleId(tokenId);
+              t = await updateStateTitlesById(jurisdictionAddress,instance,tokenId,get,set,titleId);
             } catch (error) {
               console.log(error);
             }
@@ -157,6 +160,8 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
                 } 
               }
             }));
+
+            return t
           },
 
           loadPage: async (page:number) => {
@@ -174,6 +179,7 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
 
             try {
               const newIds: string[] = []
+              const titleIds: string[] = []
               const tokensById = { ...get().tokenContracts[jurisdictionAddress].tokens.tokensById }
               const newTokensById = { } as TokenIdMap
 
@@ -184,8 +190,9 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
                   const tokenId = await (await instance.tokenAtIndex(ti)).toHexString()
                   const titleId = await instance.tokenToTitleId(tokenId)
                   newIds.push(tokenId)
+                  titleIds.push(titleId)
                   if (!tokensById[tokenId])
-                    newTokensById[tokenId] = { tokenId, titleId, loading: true } as Token
+                    newTokensById[tokenId] = { jurisdiction:jurisdictionAddress, tokenId, titleId, loading: true } as Token
               }
 
               // Add tokenIds and new incomplete Token objects but leave loading flag in true
@@ -205,9 +212,11 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
               }))
 
               // Now load the details for these tokens
-              newIds.forEach(async (tokenId) => {
-                await updateStateTitlesById(jurisdictionAddress,instance,tokenId,set);
-              })
+              for (let i = 0; i < newIds.length; i++) {
+                const tokenId = newIds[i];
+                const titleId = titleIds[i];
+                await updateStateTitlesById(jurisdictionAddress,instance,tokenId,get,set, titleId);
+              }
             }
             catch (err) {
               console.log(err)
@@ -222,6 +231,7 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
             }))
         },
         }
+        
         set({ tokenContracts: { ...get().tokenContracts, [jurisdictionAddress]: details } })
 
         instance.getBoolParameter("jsc.nft.enabled").then((enabled) => {
@@ -248,9 +258,8 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
   },
 }))
 
-const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSCTitleToken, tokenIdAsHex: string, set: any, titleId?: string ) => {
+const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSCTitleToken, tokenIdAsHex: string, get:() => ITitleTokensState, set: (state:any) => void, titleId: string ) => {
   jurisdictionAddress = jurisdictionAddress.toLowerCase()
-  const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenIdAsHex);
 
   set((state: ITitleTokensState) => ({ 
     tokenContracts: { ...state.tokenContracts, 
@@ -260,13 +269,9 @@ const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSC
             ...state.tokenContracts[jurisdictionAddress].tokens.tokensById,
             [tokenIdAsHex]: {
               ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[tokenIdAsHex],
+              jurisdiction: jurisdictionAddress,
               tokenId: tokenIdAsHex,
-              owner,
-              offersToBuy,
-              offersToSell,
-              frozen,
-              url,
-              loading: false
+              loading: true
             }
           }
         } 
@@ -274,36 +279,39 @@ const updateStateTitlesById = async (jurisdictionAddress: string, instance: IJSC
     } 
   }));
 
-  if (titleId) {
-    set((state: ITitleTokensState) => {
-      const tokensById = {
-        ... state.tokenContracts[jurisdictionAddress].tokens.tokensById,
-        [titleId]: {
-          ...state.tokenContracts[jurisdictionAddress].tokens.tokensById[titleId],
-          tokenId: tokenIdAsHex,
-          owner,
-          offersToBuy,
-          offersToSell,
-          frozen,
-          url,
-          titleId,
-          loading: false
-        }
-      };
+  const { owner, offersToBuy, offersToSell, frozen, url } = await getTokenData(instance, tokenIdAsHex);
 
-      return { 
-        tokenContracts: { ...state.tokenContracts, 
-          [jurisdictionAddress]: { 
-            ...state.tokenContracts[jurisdictionAddress], 
-            tokens: {
-              tokensById,
-              pages: state.tokenContracts[jurisdictionAddress].tokens.pages
-            }
-          } 
-        }
-      };
-    });
+  const newToken:Token = {
+    jurisdiction: jurisdictionAddress,
+    tokenId: tokenIdAsHex,
+    owner,
+    offersToBuy,
+    offersToSell,
+    frozen,
+    url,
+    titleId,
+    loading: false
   }
+  set((state: ITitleTokensState) => {
+    const tokensById = {
+      ... state.tokenContracts[jurisdictionAddress].tokens.tokensById,
+      [tokenIdAsHex]: newToken
+    };
+
+    return { 
+      tokenContracts: { ...state.tokenContracts, 
+        [jurisdictionAddress]: { 
+          ...state.tokenContracts[jurisdictionAddress], 
+          tokens: {
+            tokensById,
+            pages: state.tokenContracts[jurisdictionAddress].tokens.pages
+          }
+        } 
+      }
+    };
+  });
+
+  return newToken
 }
 
 const getTokenData = async (jscTitleToken: IJSCTitleToken, token: string) => {

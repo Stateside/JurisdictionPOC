@@ -106,6 +106,8 @@ yarn hardhat save-proposals --network staging --prefix development
 
 # TO DO
 
+- Calculate quorum from number of members in cabinet - currently hardcoded to 3
+- 
 - Some buttons do not have a hover or click style
 - SpecialSelect should include the address field beside it always
   - changing alias dropdown should update the address field
@@ -115,24 +117,24 @@ yarn hardhat save-proposals --network staging --prefix development
   - editing the address field should do one of the following
     - if the address has an alias then auto select it in the dropdown
     - if the address is new and an alias is specified, save it as an alias in the DB for the address in the address field once the containing form is submitted
-- Add SELECT component for roles in UI
+- Add Token ID as a type to revisions
+- Cache the suggested properties and proposals that are shown at the bottom of the home page inside the appropriate zustand state 
 - Add Unit Tests for different voting rules
-- Calculate quorum from number of members in cabinet
 - Add a boolean to the individual tokens to enable NFT support
 - Reformat comments to follow the NatSpec format...https://docs.soliditylang.org/en/v0.8.15/natspec-format.html
 - Add tests for contracts when the governor is the owner
 - Test frozen jurisdiction, cabinet, and governor contracts
+- Test pages with jurisdiciton address that is not in the database
 - Switch RevisionMap implementation in JSCRevisioned to use OpenZeppelins EnumerableSet
 - Switch TokenIdList and OfferList implementations in JSCTitleTokens to use OpenZeppelins EnumerableSet
 - Analyze contracts with some vulnerability scanners like Mythril, Slither, and Securify
-- Add parameters to contracts to control voting rules for revisions
 - Add mechanism to contracts to allow the registry to pay for operations performed by members
   - This can be done by the member signing a request to perform some operation and sending the request to 
     the registry front end that then performs the operation on the member´s behalf. This can be done
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
 - add jurisdiction to titletoken and cabinet and make sure this is is validated properly inside contracts
 - add function to validate jurisdictions (make sure they are properly initialized and secured)
-- Add support for parameter types: role, Wei, contract
+- Add support for parameter types: token id
 - Add button to jump forward in time to the next voting period for Geth
 Payments
 1. Pay registry fees

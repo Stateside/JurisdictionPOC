@@ -1,9 +1,9 @@
-import DeleteIcon from "@/components/icons/deleteIcon";
 import SelectRole from "@/components/SelectRole";
 import SpecialSelect from "@/components/SpecialSelect";
 import { useAliases } from "@/store/useAliases";
 import { ParamType } from "@/utils/types";
-import { HStack, Input, Switch, Tooltip } from "@chakra-ui/react"
+import { HStack, Input, Switch } from "@chakra-ui/react"
+import { BigNumber } from "ethers";
 import { useEffect, useMemo, useState } from "react";
 
 export type Props = {
@@ -15,8 +15,7 @@ export type Props = {
   onChange: (value: string) => void
 }
 
-
-const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue:string) => void}) => {
+const AliasAndAddress = (props:{value:string, onChange:(newValue:string) => void}) => {
 
   const { aliasesByAddress, aliasesByName } = useAliases()
   const [alias, setAlias] = useState<string>("")
@@ -59,34 +58,26 @@ const AliasAndAddress = (props:{value:string, tooltip:string, onChange:(newValue
   }, [address, alias, aliasesByAddress])
 
   return (
-
     <HStack >
-      <Tooltip label="Optional alias for this account">
       <SpecialSelect
-          width='12rem'
-          value={(address || alias) ? { label: alias, value: address } : undefined }
-          options={aliasesByAddress}
-          onChange={(selectedOption: any) => {
-            if (selectedOption === undefined) {
-              updateAlias("")
-              updateAddress("")
-            }
-            else if(selectedOption.label === selectedOption.value) {
-              updateAlias(selectedOption.label)
-            } else {
-              updateAlias(selectedOption.label)
-              updateAddress(selectedOption.value)
-            }
-            
-          }}
-        />
-      </Tooltip>
-      <Tooltip label={props.tooltip}>
-        <Input width="26rem" value={address||""} onChange={e => updateAddress(e.target.value)}/>
-      </Tooltip>
-
+        width='12rem'
+        value={(address || alias) ? { label: alias, value: address } : undefined }
+        options={aliasesByAddress}
+        onChange={(selectedOption: any) => {
+          if (selectedOption === undefined) {
+            updateAlias("")
+            updateAddress("")
+          }
+          else if(selectedOption.label === selectedOption.value) {
+            updateAlias(selectedOption.label)
+          } else {
+            updateAlias(selectedOption.label)
+            updateAddress(selectedOption.value)
+          }
+        }}
+      />
+      <Input width="26rem" value={address||""} onChange={e => updateAddress(e.target.value)}/>
     </HStack>
-
   )
 }
 
@@ -96,27 +87,30 @@ const Parameter = (props: Props) => {
       case ParamType.t_account:
       case ParamType.t_contract:
         return (
-          <AliasAndAddress tooltip={props.hint} value={props.value||""} onChange={address => props.onChange(address)}/>
+          <AliasAndAddress value={props.value||""} onChange={address => props.onChange(address)}/>
         )
       case ParamType.t_bool:
         return (
           <Switch isChecked={props.value === "1"} onChange={e => props.onChange(props.value === "1" ? "0" : "1")} variant={props.value === '1' ? 'java' : ''} size="lg" mt=".4rem"/>
         )
+      case ParamType.t_number:
+        const value = props.name == "token" ?  BigNumber.from(props.value || "0").toHexString() : BigNumber.from(props.value || "0").toString()
+        return (
+          <Input value={value} onChange={e => props.onChange(e.target.value)} />
+        )
       case ParamType.t_role:
         return (
-          <SelectRole tooltip={props.hint} value={props.value} onChange={role => props.onChange(role.id)} />
+          <SelectRole value={props.value} onChange={role => props.onChange(role.id)} />
         )
       default:
         return (
-          <Tooltip label={props.hint}>
-            <Input value={props.value || ""} onChange={e => props.onChange(e.target.value)}/>
-          </Tooltip>
+          <Input value={props.value || ""} onChange={e => props.onChange(e.target.value)} />
         )
     }
   }, [props.type, props.value, props.onChange])
 
   return (
-    <HStack width={props.width}>
+    <HStack width="55%">
       {controls}
     </HStack>
   );
