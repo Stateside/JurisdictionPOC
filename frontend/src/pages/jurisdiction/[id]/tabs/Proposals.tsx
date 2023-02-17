@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import { Box, Button, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
@@ -23,9 +23,8 @@ const Proposals = () => {
   const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
 
-  const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
   const loadGovernorDetails = useGovernors(state => state.get)
-  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
+  const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const proposalIds = jscGovernorDetails?.proposalIds
   const proposals = jscGovernorDetails?.proposals
 
@@ -34,8 +33,8 @@ const Proposals = () => {
     [jurisdictionAddress, jurisdictionsLoaded, library]);
 
   // Load governor details
-  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
-    [jscGovernorAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, library]);
 
   // Load governor proposals
   useEffect(() => {

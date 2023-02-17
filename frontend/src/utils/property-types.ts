@@ -1,10 +1,10 @@
 import { AlertStatus } from '@chakra-ui/react';
-import { BigNumber } from 'ethers';
 import { ChangeEvent, ReactNode } from 'react';
 
 export type PropertyImage = {
-  src: string;
-  alt: string;
+  src: string,
+  thumbSrc: string,
+  alt: string
 };
 
 export type PropertyInfo = {

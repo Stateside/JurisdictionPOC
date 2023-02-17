@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Box, Button, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, CircularProgress, Divider, HStack, Text, VStack } from '@chakra-ui/react';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { useJurisdictions } from '@/store/useJurisdictions';
@@ -26,10 +26,8 @@ const Config = () => {
   const tokensContractDetails = useTitleTokens(state => state.tokenContracts[jurisdictionAddress])
   const { getAlias, aliasesByAddress } = useAliases()
 
-  const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
-  const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
   const loadGovernorDetails = useGovernors(state => state.get)
-  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
+  const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const jscGovernor = jscGovernorDetails?.instance
 
   const [jscVotingPeriod, setJscVotingPeriod] = useState<number|undefined>()
@@ -38,13 +36,9 @@ const Config = () => {
   const [jscVotingQuorum, setJscVotingQuorum] = useState<number|undefined>()
   const [jscVotingRole, setJscVotingRole] = useState<string|undefined>()
 
-  // Load contracts from jurisdiciton
-  useEffect(() => { jurisdictionsLoaded && loadContracts(jurisdictionAddress, library) },
-    [jurisdictionAddress, jurisdictionsLoaded, library]);
-
   // Load governor details
-  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
-    [jscGovernorAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, library]);
 
   useEffect(() => {
     if (jscGovernor) {
@@ -109,7 +103,7 @@ const Config = () => {
     <VStack alignItems="flex-start">
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Jurisdiction name:</Text>
-        <Text width="65%">{name||<LoadingIcon/>}</Text>
+        <Box width="65%">{name||<LoadingIcon/>}</Box>
         <ChangeButton proposal='jsc.contracts.jurisdiction/ChangeName' disabled tooltip="Coming soon"/>
       </HStack>
  
@@ -125,7 +119,7 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Title Token Name:</Text>
-        <Text width="65%">{tokensContractDetails?.tokenName||<LoadingIcon/>}</Text>
+        <Box width="65%">{tokensContractDetails?.tokenName||<LoadingIcon/>}</Box>
         <ChangeButton proposal='jsc.contracts.tokens/ChangeName' disabled tooltip="Coming soon"/>
       </HStack>
 
@@ -133,7 +127,7 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Title Token Symbol:</Text>
-        <Text width="65%">{tokensContractDetails?.tokenSymbol||<LoadingIcon/>}</Text>
+        <Box width="65%">{tokensContractDetails?.tokenSymbol||<LoadingIcon/>}</Box>
         <ChangeButton proposal='jsc.contracts.tokens/ChangeSymbol' disabled tooltip="Coming soon"/>
       </HStack>
 
@@ -141,7 +135,7 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Base Token URI:</Text>
-        <Text width="65%">{tokensContractDetails?.tokenBaseURI||<LoadingIcon/>}</Text>
+        <Box width="65%">{tokensContractDetails?.tokenBaseURI||<LoadingIcon/>}</Box>
         <ChangeButton proposal='jsc.contracts.tokens/ChangeURI' disabled tooltip="Coming soon"/>
       </HStack>
 
@@ -150,7 +144,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Account:</Text>
         <HStack width="65%">
-          <Text>{registryAccountName || <LoadingIcon/>}</Text>
+          <Box>{registryAccountName || <LoadingIcon/>}</Box>
           <Text color={"brand.grey.grey03"} pl="3rem">{tokensContractDetails?.registryAccount === registryAccountName ? "" : tokensContractDetails?.registryAccount}</Text>
         </HStack>
         <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.accounts.registry&name=jsc.accounts.registry&value=${tokensContractDetails?.registryAccount}`}/>
@@ -160,7 +154,7 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Registry Fee:</Text>
-        <Text width="65%">{getFee(d => d?.registryFee) || <LoadingIcon/>}</Text>
+        <Box width="65%">{getFee(d => d?.registryFee) || <LoadingIcon/>}</Box>
         <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.fees.registry&name=jsc.fees.registry&value=${tokensContractDetails?.registryFee}`}/>
       </HStack>
 
@@ -169,7 +163,7 @@ const Config = () => {
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Account:</Text>
         <HStack width="65%">
-          <Text>{maintainerAccountName || <LoadingIcon/>}</Text>
+          <Box>{maintainerAccountName || <LoadingIcon/>}</Box>
           <Text color={"brand.grey.grey03"} pl="3rem">{tokensContractDetails?.maintainerAccount === maintainerAccountName ? "" : tokensContractDetails?.maintainerAccount}</Text>
         </HStack>
         <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.accounts.maintainer&name=jsc.accounts.maintainer&value=${tokensContractDetails?.maintainerAccount}`}/>
@@ -179,7 +173,7 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Maintainer Fee:</Text>
-        <Text width="65%">{getFee(d => d?.maintainerFee) || <LoadingIcon/>}</Text>
+        <Box width="65%">{getFee(d => d?.maintainerFee) || <LoadingIcon/>}</Box>
         <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.fees.maintainer&name=jsc.fees.maintainer&value=${tokensContractDetails?.maintainerFee}`}/>
       </HStack>
 
@@ -187,11 +181,11 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>NFT Support:</Text>
-        <Text width="65%">{
+        <Box width="65%">{
           tokensContractDetails !== undefined && tokensContractDetails.nftSupport !== undefined 
           ? (tokensContractDetails.nftSupport === true ? 'Enabled' : 'Disabled')
           : <LoadingIcon/>}
-        </Text>
+        </Box>
         <ChangeButton proposal={`jsc.contracts.tokens/ChangeConfig:jsc.nft.enabled&name=jsc.nft.enabled&value=${tokensContractDetails?.nftSupport?"0":"1"}`}/>
       </HStack>
 
@@ -199,11 +193,11 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Period:</Text>
-        <Text width="65%">{
+        <Box width="65%">{
           jscVotingPeriod !== undefined 
             ? jscVotingPeriod + " blocks"
             : <LoadingIcon/>}
-        </Text>
+        </Box>
         <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.period&name=jsc.voting.period&value=${jscVotingPeriod}`}/>
       </HStack>
 
@@ -211,11 +205,11 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Approvals:</Text>
-        <Text width="65%">{
+        <Box width="65%">{
           jscVotingApprovals !== undefined 
             ? jscVotingApprovals
             : <LoadingIcon/>}
-        </Text>
+        </Box>
         <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.approvals&name=jsc.voting.approvals&value=${jscVotingApprovals}`}/>
       </HStack>
 
@@ -223,11 +217,11 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Majority:</Text>
-        <Text width="65%">{
+        <Box width="65%">{
           jscVotingMajority !== undefined 
             ? jscVotingMajority+"%"
             : <LoadingIcon/>}
-        </Text>
+        </Box>
         <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.majority&name=jsc.voting.majority&value=${jscVotingMajority}`}/>
       </HStack>
 
@@ -235,11 +229,11 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Quorum:</Text>
-        <Text width="65%">{
+        <Box width="65%">{
           jscVotingQuorum !== undefined 
             ? jscVotingQuorum+"%"
             : <LoadingIcon/>}
-        </Text>
+        </Box>
         <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.approvals&name=jsc.voting.approvals&value=${jscVotingQuorum}`}/>
       </HStack>
 
@@ -247,11 +241,11 @@ const Config = () => {
 
       <HStack width="100%">
         <Text width="20%" fontSize='md'>Voting Role:</Text>
-        <Text width="65%">{
+        <Box width="65%">{
           jscVotingRole !== undefined 
             ? buildRoles(ethers).rolesById[jscVotingRole]?.name || jscVotingRole || "Any"
             : <LoadingIcon/>}
-        </Text>
+        </Box>
         <ChangeButton proposal={`jsc.contracts.governor/ChangeConfig:jsc.voting.role&name=jsc.voting.role&value=${jscVotingRole}`}/>
       </HStack>
 

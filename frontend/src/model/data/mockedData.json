@@ -28,20 +28,7 @@
         "lat": 10.294472,
         "lon": -85.712
       },
-      "images": [
-        {
-          "src": "/imgs/mock-property-images/property-image-01.png",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "/imgs/mock-property-images/property-image-02.png",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "/imgs/mock-property-images/property-image-03.png",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-2",
@@ -71,20 +58,7 @@
         "lat": 41.389926835327614,
         "lon": 2.167135487703919
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-3",
@@ -114,20 +88,7 @@
         "lat": 37.4223384815328,
         "lon": -122.08436965942383
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-4",
@@ -157,20 +118,7 @@
         "lat": 37.3349,
         "lon": -122.00902
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-5",
@@ -200,20 +148,7 @@
         "lat": 40.74107602670487,
         "lon": -73.98886051223886
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-6",
@@ -243,20 +178,7 @@
         "lat": 19.43161510532414,
         "lon": -99.13453112210273
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-7",
@@ -286,20 +208,7 @@
         "lat": 9.939686192335659,
         "lon": -84.14491603266808
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-8",
@@ -329,20 +238,7 @@
         "lat": 35.06523631213406,
         "lon": -106.64506076055581
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-9",
@@ -372,20 +268,7 @@
         "lat": 23.632307009222853,
         "lon": -75.9171413823595
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-10",
@@ -415,20 +298,7 @@
         "lat": 23.632307009222853,
         "lon": -75.9171413823595
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-11",
@@ -458,20 +328,7 @@
         "lat": 16.373066084261122,
         "lon": -86.46024221684006
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-12",
@@ -501,20 +358,7 @@
         "lat": -34.604013536967166,
         "lon": -58.38318595443976
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-13",
@@ -544,20 +388,7 @@
         "lat": 63.46840716850248,
         "lon": -20.175421316697307
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-14",
@@ -587,20 +418,7 @@
         "lat": 40.42206635438914,
         "lon": -3.7154360861135225
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-15",
@@ -630,20 +448,7 @@
         "lat": 38.14694919249673,
         "lon": 13.370207709408175
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-16",
@@ -673,20 +478,7 @@
         "lat": 51.523760143250875,
         "lon": -0.158531505417136
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-17",
@@ -716,20 +508,7 @@
         "lat": 52.51249035219583,
         "lon": 13.377634214198661
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-18",
@@ -759,20 +538,7 @@
         "lat": 37.50662944996621,
         "lon": 127.0516665597954
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-19",
@@ -802,20 +568,7 @@
         "lat": -33.86061346702456,
         "lon": 151.20464577280953
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-20",
@@ -845,20 +598,7 @@
         "lat": 48.852732048617526,
         "lon": 2.344297462850479
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     },
     {
       "titleId": "title-21",
@@ -888,20 +628,7 @@
         "lat": 37.4265427761131,
         "lon": 25.323836556104606
       },
-      "images": [
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        },
-        {
-          "src": "https://picsum.photos/297/198",
-          "alt": "some image alt description"
-        }
-      ]
+      "images": []
     }
   ]
 }

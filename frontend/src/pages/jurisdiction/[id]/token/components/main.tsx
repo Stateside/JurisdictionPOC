@@ -1,23 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Box, HStack, Spacer } from '@chakra-ui/layout';
-import {
-  Image,
-  Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Grid,
-  GridItem,
-  Flex,
-  Text,
-  Skeleton,
-  SkeletonText,
-  useToast,
-  AlertStatus,
-} from '@chakra-ui/react';
+import { Image, Button, Grid, GridItem, Flex, Text, Skeleton, SkeletonText, useToast, AlertStatus, Tooltip } from '@chakra-ui/react';
 import Tag from '@/components/Tag';
 import RealStateAgentIcon from '@/components/icons/realStateAgentIcon';
-import ArrowBack from '@/components/icons/smallArrowBackIcon';
 import CallReceivedIcon from '@/components/icons/callReceivedIcon';
 import PropertyDetailsModal from '../modal';
 import PropertyDetailsModalHeader from '../modal/modalHeader';
@@ -32,6 +17,9 @@ import { useWeb3React } from '@web3-react/core';
 import MemberOnlyButton from '@/components/MemberOnlyButton';
 import { EditIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
+import Breadcrumb from '@/components/Breadcrumb';
+import ImageViewer from 'react-simple-image-viewer';
+import usePersona from '@/store/usePersona';
 
 const gridLayout = 'repeat(12, 1fr)';
 
@@ -76,8 +64,11 @@ export default function PropertyDetailsMain() {
   } = useContext(PropertyDetailsContext);
   const router = useRouter();
   const [ isOwner, setIsOwner ] = useState<boolean>(false);
+  const { isMemberPersona } = usePersona()
   const { account } = useWeb3React()
   const toast = useToast();
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const allOffers = useMemo(() => {
     const all = [...offersToBuy, ...offersToSell]
@@ -98,6 +89,16 @@ export default function PropertyDetailsMain() {
     })
   }
 
+  const openImageViewer = useCallback((index:number) => {
+    setCurrentImage(index);
+    setIsViewerOpen(true);
+  }, []);
+
+  const closeImageViewer = useCallback(() => {
+    setCurrentImage(0);
+    setIsViewerOpen(false);
+  }, []);
+  
   return (
     <>
       <Grid
@@ -110,21 +111,12 @@ export default function PropertyDetailsMain() {
         gap={6}
       >
         <GridItem colSpan={12}>
-          <Skeleton h={{ base: '30px' }} w={{base: '100%', md: '300px'}} isLoaded={dataReady}>
-            <Breadcrumb fontWeight="700" fontSize={{ base: '15px' }}>
-              <BreadcrumbItem h={{ base: '30px' }}>
-                <Link href="/" display='flex' h='30px' style={{alignItems: 'center'}}>
-                    <ArrowBack w={{ base: '23px' }} style={{display: 'flex', height: '30px', paddingTop: '5px'}} />
-                    Back to dashboard
-                </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem h={{ base: '30px' }}>
-                <BreadcrumbLink href="#" isCurrentPage>
-                  Your Properties
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </Breadcrumb>
-          </Skeleton>  
+        <Breadcrumb items={[
+              isMemberPersona()
+                ? {label:"Jurisdiction", href:`/jurisdiction/${jurisdiction}`}
+                : {label:"Properties", href:`/jurisdiction/${jurisdiction}/properties`},
+              {label:propertyId, href:""},
+              ]}/>
         </GridItem>
         <GridItem colSpan={12}>
           <Box as="span" fontWeight="400" fontSize={{ base: '80px' }} lineHeight={{base: '.63'}}>
@@ -228,14 +220,23 @@ export default function PropertyDetailsMain() {
                 <Skeleton isLoaded={dataReady} display={{base: 'inline-block'}} w='32.3333%' h='150px' m={{base: '0 .5%'}}></Skeleton>
               </GridItem>
             }
-            {propertyImages.map(({ src, alt }, i) => {
+            {propertyImages.map(({ thumbSrc, alt }, i) => {
               return (
                 <GridItem colSpan={12 / propertyImages.length} key={i}>
-                  <Image
-                    src={src}
-                    alt={alt}
-                    borderRadius="3px"
-                  />
+                  <Tooltip label={alt}>
+                    <Image
+                      src={thumbSrc}
+                      alt={alt}
+                      borderRadius="3px"
+                      onClick={ () => openImageViewer(i) }
+                      border="2px solid white"
+                      _hover={{
+                        borderColor: "brand.coralRed",
+                        borderWidth: "2px",
+                        borderStyle: "solid"
+                      }}
+                    />
+                  </Tooltip>
                 </GridItem>
               );
             })}
@@ -327,6 +328,16 @@ export default function PropertyDetailsMain() {
         }
         modalFooter={<PropertyDetailsModalActions type={actionName} onDone={showToast} actionButtonDisabled={actionButtonDisabled}/>}
       />
+
+      {isViewerOpen && (
+        <ImageViewer
+          src={ propertyImages.map(img => img.src) }
+          currentIndex={ currentImage }
+          disableScroll={ false }
+          closeOnClickOutside={ true }
+          onClose={ closeImageViewer }
+        />
+      )}
     </>
   );
 }

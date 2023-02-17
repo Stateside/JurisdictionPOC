@@ -1,9 +1,8 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Button, CircularProgress, Divider, Heading, HStack, Text, useToast, VStack } from '@chakra-ui/react';
+import { Box, CircularProgress, Divider, Heading, HStack, Text, useToast, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import FavoriteProposalButton from '@/components/FavoriteProposalButton';
-import { ArrowBackIcon } from '@chakra-ui/icons';
 import { useWeb3React } from '@web3-react/core';
 import { useJurisdictions } from '@/store/useJurisdictions';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -14,6 +13,7 @@ import RevisionModal from './RevisionModal';
 import { ProposalState, VoteType } from '@/utils/types';
 import MemberOnlyButton from '@/components/MemberOnlyButton';
 import { ethers } from 'ethers';
+import Breadcrumb from '@/components/Breadcrumb';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number, blocks:number) => {
@@ -60,13 +60,12 @@ const Proposal: NextPage = () => {
   const [selectedRevision, setSelectedRevision] = useState<IRevisionDetails|undefined>()
   const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
   const proposalId = (router.query.pid as string).toLowerCase();
-  const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
   
   const jurisdictionName = useJurisdictions(state => state.infos[jurisdictionAddress]?.name)
-  const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
+  const isGovernorInitialized = useGovernors(state => state.isInitialized)
   const loadGovernorDetails = useGovernors(state => state.get)
-  const jscGovernorDetails = useGovernors(state => state.governors[jscGovernorAddress])
-  const proposal = useGovernors(state => state.governors[jscGovernorAddress]?.proposals?.[proposalId])
+  const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
+  const proposal = useGovernors(state => state.governors[jurisdictionAddress]?.proposals?.[proposalId])
 
   const [hasVoted, setHasVoted] = useState(true)
 
@@ -93,19 +92,17 @@ const Proposal: NextPage = () => {
     getBlockNumber()
   }, [library])
 
-  // Load contracts from jurisdiciton
-  useEffect(() => { jurisdictionsLoaded && loadContracts(jurisdictionAddress, library) },
-    [jurisdictionAddress, jurisdictionsLoaded, library]);
-
   // Load governor details
-  useEffect(() => { jscGovernorAddress && !jscGovernorDetails && loadGovernorDetails(jscGovernorAddress, library) }, 
-    [jscGovernorAddress, jscGovernorDetails, library]);
+  useEffect(() => { 
+    if (jurisdictionAddress && library && isGovernorInitialized())
+      loadGovernorDetails(jurisdictionAddress, library) 
+    }, [jurisdictionAddress, isGovernorInitialized(), jscGovernorDetails, library]);
 
-  // Load proposal
+    // Load proposal
   useEffect(() => { jscGovernorDetails && jscGovernorDetails.loadProposal(proposalId) }, 
     [jscGovernorDetails, proposalId]);
 
-  // Load proposal details
+    // Load proposal details
   useEffect(() => { proposal && proposal.loadDetails() }, [proposal]);
 
   const canVote = useMemo(() => {
@@ -177,10 +174,10 @@ const Proposal: NextPage = () => {
       <Head>
         <title>Proposal</title>
       </Head>
-      <Link onClick={() => router.back()} display="flex" fontWeight="bold">
-        <ArrowBackIcon marginRight="10px" marginTop="5px" />
-        <Text>Back to Dashboard / Jurisdiction</Text>
-      </Link>
+      <Breadcrumb items={[
+        {label:"Jurisdiction", href:`/jurisdiction/${jurisdictionAddress}`},
+        {label:"Proposal", href:""},
+        ]}></Breadcrumb>
       <Heading whiteSpace="pre-line" variant={'80'} my={4} marginBottom="48px">
         Proposal{' '}
         <FavoriteProposalButton

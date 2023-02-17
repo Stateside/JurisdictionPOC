@@ -106,15 +106,16 @@ const PropertyDetailsProvider = function ({
 }: PropertyDetailsContextProps) {
   
   const { query } = useRouter();
-  const { id = '', titleId = '' } = query;
+  const id = (query.id as string) || "";
+  const titleId = (query.titleId as string) || "";
 
-  const tid = titleId as string;
   const jurisdictionAddress = id as string;
 
   const { library } = useWeb3React();
   const isTokensInitialized = useTitleTokens(state => state.isInitialized);
   const getTokensContractDetails = useTitleTokens(state => state.get);
-  const tokenInfo:Token = useTitleTokens(state => state.tokenContracts[jurisdictionAddress]?.tokens.tokensById[tid]);
+  const [tokenId, setTokenId] = useState<string>('');
+  const tokenInfo:Token = useTitleTokens(state => state.tokenContracts[jurisdictionAddress]?.tokens.tokensById[tokenId]);
   const { aliasesByAddress } = useAliases();
   const [getJurisdictionInfo] = useJSCJurisdiction();
 
@@ -127,8 +128,6 @@ const PropertyDetailsProvider = function ({
     useState<boolean>(true);
   const [sellFormModel, setSellFormModel] =
     useState<SellFormModel>(newSellFormModel);
-  const [tokenId, setTokenId] = useState<string>('');
-  const [propertyId, setPropertyId] = useState<string>('');
   const [propertyInfo, setPropertyInfo] = useState<PropertyInfo[]>([]);
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [offersToBuy, setOffersToBuy] = useState<OfferInfo[]>([]);
@@ -286,7 +285,7 @@ const PropertyDetailsProvider = function ({
       const other = address?.valid ? aliasesByAddress?.[address.value]?.alias || address.value : address?.value || 'Unknown';
       let msg = 'Please fill in all fields'
       let status:AlertStatus = "success";
-      console.log(`Performing ${actionName} on ${propertyId} from ${other} for ${price.value}`, price);
+      
       if (titleTokenContract && price.valid) {
         try {
 	        const priceETH = ethers.utils.parseEther(price.value)
@@ -294,46 +293,46 @@ const PropertyDetailsProvider = function ({
 	          case 'OfferToBuy':
 	            if (price.valid) {
 	              await titleTokenContract?.offerToBuy(tokenId, priceETH, { value: priceETH })
-	              msg = `Sent offer to buy ${propertyId} from ${other} for ${price.value} ETH`
+	              msg = `Sent offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'OfferToSell':
 	            if (price.valid && address.valid) {
 	              await titleTokenContract?.offerToSell(tokenId, address.value, priceETH)
-	              msg = `Sent offer to sell ${propertyId} to ${other} for ${price.value} ETH`
+	              msg = `Sent offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToBuy':
 	            if (address.valid) {
 	              await titleTokenContract?.acceptOfferToBuy(tokenId, address.value)
-	              msg = `Accepted offer to buy ${propertyId} from ${other} for ${price.value} ETH`
+	              msg = `Accepted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToSell':
 	            if (price.valid) {
 	              await titleTokenContract?.acceptOfferToSell(tokenId, { value: priceETH })
-	              msg = `Accepted offer to sell ${propertyId} to ${other} for ${price.value} ETH`
+	              msg = `Accepted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'RetractOfferToBuy':
 	            await titleTokenContract?.cancelOfferToBuy(tokenId)
-	            msg = `Retracted offer to buy ${propertyId} from ${other} for ${price.value} ETH`
+	            msg = `Retracted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            break;
 	          case 'RetractOfferToSell':
 	            if (address.valid) {
 	              await titleTokenContract?.cancelOfferToSell(tokenId, address.value)
-	              msg = `Retracted offer to sell ${propertyId} to ${other} for ${price.value} ETH`
+	              msg = `Retracted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          default:
-	            msg = `Failed to ${actionName2Description(actionName, propertyId, price.value, other)}`
+	            msg = `Failed to ${actionName2Description(actionName, titleId, price.value, other)}`
 	            status = 'error'
 	            break;
 	        }
 	        closeModal()	
         } catch (error) {
           status = 'error'
-          msg = `Failed to ${actionName2Description(actionName, propertyId, price.value, other)}` 
+          msg = `Failed to ${actionName2Description(actionName, titleId, price.value, other)}` 
         }      
       }
       else
@@ -341,7 +340,7 @@ const PropertyDetailsProvider = function ({
       onDone(msg, status)
     }
     doAction()
-  }, [actionName, propertyId, tokenId, titleTokenContract, sellFormModel, aliasesByAddress, closeModal])
+  }, [actionName, titleId, tokenId, titleTokenContract, sellFormModel, aliasesByAddress, closeModal])
 
   const showModal = useCallback((action:ActionNames, offer?:OfferInfo) => {
     validateFields(action, sellFormModel);
@@ -369,18 +368,20 @@ const PropertyDetailsProvider = function ({
   // Effects
   // ----------------------------------------------------------------
   useEffect(() => {
-    if (isTokensInitialized()) {
+    if (isTokensInitialized() && titleId) {
       const loadDetails = async () => {
         const { loadToken, instance } = await getTokensContractDetails(jurisdictionAddress, library.getSigner());
         const jurisdictionInfo = await getJurisdictionInfo(jurisdictionAddress);
       
         setJscJurisdictionInfo(jurisdictionInfo);  
         setTitleTokenContract(instance);
-        loadToken(tid);
-      }      
+        const tokenId = (await instance.titleToTokenId(titleId)).toHexString();
+        setTokenId(tokenId)
+        loadToken(tokenId);
+      }
       loadDetails();
     }
-  }, [jurisdictionAddress, library, isTokensInitialized()]);
+  }, [jurisdictionAddress, library, isTokensInitialized(), titleId]);
 
   useEffect(() => {
     if (tokenInfo !== undefined) {
@@ -420,8 +421,6 @@ const PropertyDetailsProvider = function ({
     if (tokenInfo && propertyDetails) {
       const pInfo = buildPropertyInfo(tokenInfo, propertyDetails,  jurisdictionAddress, jscJurisdictionInfo, aliasesByAddress[tokenInfo?.owner?.toLowerCase() || '']?.alias);
 
-      setTokenId(tokenInfo.tokenId);
-      setPropertyId(tid);
       setPropertyInfo(pInfo);
       setOffersToBuy(buildActiveOffersInfo(tokenInfo,'OfferToBuy'));
       setOffersToSell(buildActiveOffersInfo(tokenInfo,'OfferToSell'));
@@ -438,7 +437,7 @@ const PropertyDetailsProvider = function ({
         actionName,
         tokenId,
         jurisdiction: jurisdictionAddress,
-        propertyId,
+        propertyId: titleId,
         ownerAddress: tokenInfo?.owner || '',
         propertyInfo,
         propertyImages,
@@ -460,7 +459,7 @@ const PropertyDetailsProvider = function ({
       }}
     >
       <Head>
-        <title>{propertyId}</title>
+        <title>Property Details: {titleId}</title>
       </Head>
       {children}
     </PropertyDetailsContext.Provider>

@@ -1,23 +1,4 @@
-import { MenuItemInterface, SiteLayoutData, SiteLabel, HomeLabels } from '@/interfaces/index';
-import { mineBlocks } from '@/utils/mine-blocks';
-
-const blocksPerDay = 5*60*24
-
-export const siteMainMenu:Array<MenuItemInterface> = [
-    {label: 'My Properties', url: '/my-properties', command: '⌘T'},
-    {label: 'Create a Jurisdiction', url: '/jurisdiction/create', command: '⌘J'},
-    {label: 'Show Sample Accounts', url: '/accounts', command: '⌘A'},
-    {label: 'divider1', chainIds: [31337] },
-    {label: 'Time Travel', chainIds: [31337], children: [
-        {label: 'Mine 1 Block', url: '', action:() => mineBlocks(1), actionMsg:"Mined 1 block", command: '⌘1', chainIds: [31337]},
-        {label: 'Mine 2 Blocks', url: '', action:() => mineBlocks(2), actionMsg:"Mined 2 blocks", command: '⌘2', chainIds: [31337]},
-        {label: 'Mine 4 Blocks', url: '', action:() => mineBlocks(4), actionMsg:"Mined 4 blocks", command: '⌘4', chainIds: [31337]},
-        {label: 'Mine 8 Blocks', url: '', action:() => mineBlocks(8), actionMsg:"Mined 8 blocks", command: '⌘8', chainIds: [31337]},
-        {label: 'Mine 16 Blocks', url: '', action:() => mineBlocks(16), actionMsg:"Mined 16 blocks", command: '⌘6', chainIds: [31337]},
-        {label: 'Mine 32 Blocks', url: '', action:() => mineBlocks(32), actionMsg:"Mined 32 blocks", command: '⌘3', chainIds: [31337]},
-    ]}
-
-]
+import { SiteLayoutData, SiteLabel, HomeLabels } from '@/interfaces/index';
 
 export const siteLayoutData:SiteLayoutData = {
     title: `Blockchain Jurisdictions & Land Registries`,
@@ -31,8 +12,8 @@ export const homeLabels:HomeLabels = {
         Please connect your 
         wallet to access the 
         platform`,
-        vip: `Welcome to your
-        digital registries`
+        vip: `Welcome to the
+        Blockchain Estate Registry`
     },
     ctaConnect: 'Connect with your Wallet'
 }

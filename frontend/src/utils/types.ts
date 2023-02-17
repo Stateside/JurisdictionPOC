@@ -88,6 +88,7 @@ export type locationData = {
 
 export type imageInfo = {
     src: string,
+    thumbSrc: string,
     alt: string
 }
 

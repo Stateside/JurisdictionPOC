@@ -1,3 +1,4 @@
+import usePersona from "@/store/usePersona";
 import React, { useCallback, useEffect, useMemo } from 'react'
 import Head from 'next/head'
 import Connect from '@/components/ConnectButton'
@@ -9,16 +10,21 @@ import { SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
-import { JurisdictionMap, useLikes } from '@/store/useLikes';
+import { JurisdictionMap, LikeAction, useLikes } from '@/store/useLikes';
 import { ILike } from 'db/interfaces/ILike';
 import { Link } from '@/components/Link';
 import { JurisdictionInfo, JurisdictionStatus, useJurisdictions } from '@/store/useJurisdictions';
+import MyProperties from "@/components/MyProperties";
+import { useTitleTokens } from "@/store/useTitleTokens";
+import { useGovernors } from "@/store/useGovernors";
+import { ProposalState } from "@/utils/types";
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
 const MissingCaret = () => <SmallCloseIcon marginRight=".5em" color="brand.coralRed" />
 
 type LikeURLCreator = (itemId:string, jurisdiction:string) => string
+type DefaultLikesCreator = (count:number) => Promise<LikeAction[]>
 const TokenURLCreator:LikeURLCreator = (titleId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/token/${titleId}/` // should be ${jurisdiction} but component not finished
 const ProposalURLCreator:LikeURLCreator = (proposalId:string, jurisdiction:string) => `/jurisdiction/${jurisdiction}/proposal/${proposalId}`
 
@@ -28,20 +34,26 @@ const sortDescending = (a:Sortable,b:Sortable) => {
 }
 
 const Home: NextPage = () => {
-  const { active, chainId, library: web3Provider } = useWeb3React();
+  const { isMemberPersona: isMember } = usePersona()
+  const { active, library: web3Provider } = useWeb3React();
   //To-do: Get Recent Activity Filtered from custom hook useJSCTitleToken
   const { loaded: likesReady, likedProposals, likedTokens } = useLikes()
   const { isOpen: isOpenConfirmDeleteJurisdiction, onOpen: onOpenConfirmDeleteJurisdiction, onClose: onCloseConfirmDeleteJurisdiction } = useDisclosure()
   const cancelDeleteJurisdictionRef = React.useRef<HTMLButtonElement|null>(null)
   const [deletingJurisdictionName, setDeletingJurisdictionName] = React.useState("")
   const [deletingJurisdictionAddress, setDeletingJurisdictionAddress] = React.useState("")
+
+  const isTokensInitialized = useTitleTokens(state => state.isInitialized)
+  const getTokensContractDetails = useTitleTokens(state => state.get)
+  const [ sampleTokenLikes, setSampleTokenLikes ] = React.useState<LikeAction[]|undefined>()
+
+  const loadGovernorDetails = useGovernors(state => state.get)
+  const [ sampleProposalLikes, setSampleProposalLikes ] = React.useState<LikeAction[]|undefined>()
   
-  const { 
-    loaded: jurisdictionsLoaded, 
-    infos: jurisdictionInfos, 
-    confirm: confirmJurisdictionsExist,
-    remove: removeJurisdiction
-  } = useJurisdictions()
+  const jurisdictionsLoaded = useJurisdictions(state => state.loaded)
+  const jurisdictionInfos = useJurisdictions(state => state.infos)
+  const confirmJurisdictionsExist = useJurisdictions(state => state.confirm)
+  const removeJurisdiction = useJurisdictions(state => state.remove)
 
   const sortedJurisdictions:JurisdictionInfo[] = useMemo(() => 
     Object.values(jurisdictionInfos).sort(sortDescending), [jurisdictionInfos])
@@ -61,23 +73,84 @@ const Home: NextPage = () => {
     confirmJurisdictionsExist(web3Provider)
   }, [web3Provider, jurisdictionInfos])
 
+  useEffect(() => {
+    if (isTokensInitialized() && sortedJurisdictions.length > 0) {
+      const getSampleTokenLikes = async () => {
+        const likes:LikeAction[] = []
+        let attempts = 0
+        while (attempts++ < 5) {
+          const ji = Math.random() * sortedJurisdictions.length
+          const jurisdictionInfo = sortedJurisdictions[Math.floor(ji)]
+          const tokenContractInfo = await getTokensContractDetails(jurisdictionInfo.address, web3Provider)
+          const ti = Math.random() * tokenContractInfo.tokenCount
+          const tokenId = await tokenContractInfo.instance.tokenAtIndex(Math.floor(ti))
+          const token = await tokenContractInfo.loadToken(tokenId.toHexString())
+          if (token) 
+            likes.push({ 
+              jurisdiction: jurisdictionInfo.address.toLowerCase(), 
+              itemId: token.titleId, 
+              name: token.titleId 
+            })
+        } 
+        setSampleTokenLikes(likes)
+      }
+      getSampleTokenLikes()
+    }
+  }, [isTokensInitialized(), sortedJurisdictions, web3Provider])
+
+  useEffect(() => {
+    if (sortedJurisdictions.length > 0) {
+      const getSampleProposalLikes = async () => {
+        const likes:LikeAction[] = []
+        let attempts = 0
+        while (attempts++ < 5) {
+          const ji = Math.random() * sortedJurisdictions.length
+          const jurisdictionInfo = sortedJurisdictions[Math.floor(ji)]
+          const governorContractInfo = await loadGovernorDetails(jurisdictionInfo.address, web3Provider)
+          const proposalData = await governorContractInfo.loadAllProposals()
+          if (proposalData && proposalData.proposalIds && proposalData.proposals) {
+            const proposals = Object.values(proposalData.proposals).filter(p => p.status !== ProposalState.Expired)
+            if (proposals.length > 0) {
+              const pi = Math.random() * proposals.length
+              const proposalIndex = Math.floor(pi)
+              const proposal = proposals[proposalIndex]
+              await proposal.loadDetails()
+              if (proposal.description) 
+                likes.push({ 
+                  jurisdiction: jurisdictionInfo.address.toLowerCase(), 
+                  itemId: proposal.id, 
+                  name: proposal.description 
+                })
+              }
+            }
+        } 
+        setSampleProposalLikes(likes)
+      }
+      getSampleProposalLikes()
+    }
+  }, [isTokensInitialized(), sortedJurisdictions, web3Provider])
+
   const getJurisdictionTag = useCallback((jurisdiction:JurisdictionInfo) => {
+    const jurisdictionAddress = jurisdiction.address.toLowerCase()
+    let url = isMember() 
+      ? `/jurisdiction/${jurisdictionAddress}`
+      : `/jurisdiction/${jurisdictionAddress}/properties`
     if (jurisdiction.status === JurisdictionStatus.Exists)
       return (
-        <Link href={`/jurisdiction/${jurisdiction.address}`} variant={'13/16'} key={jurisdiction.address}>
-          <Tag key={jurisdiction.address}>
+        <Link href={url} variant={'13/16'} key={jurisdictionAddress}>
+          <Tag key={jurisdictionAddress}>
             <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
           </Tag>
         </Link>)
     if (jurisdiction.status === JurisdictionStatus.NotFound)
       return (
-        <Link key={jurisdiction.address} variant={'13/16'} onClick={async () => confirmRemoveJurisdiction(jurisdiction.address, `${jurisdiction.name} v${jurisdiction.version}`)}>
+        <Link key={jurisdictionAddress} variant={'13/16'} onClick={async () => confirmRemoveJurisdiction(jurisdictionAddress, `${jurisdiction.name} v${jurisdiction.version}`)}>
           <Tag caret={<MissingCaret/>}>
             <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
           </Tag>
         </Link>)
     return (
-      <Tag key={jurisdiction.address} caret={<LoadingCaret/>}>
+      <Tag key={jurisdictionAddress} caret={<LoadingCaret/>}>
         <Text>{jurisdiction.name} v{jurisdiction.version}</Text>
       </Tag>)
   }, [])
@@ -89,7 +162,7 @@ const Home: NextPage = () => {
     { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
   ]
 
-  const getFavourites = useCallback((jurisdictionMap:JurisdictionMap, getURL:LikeURLCreator, defaultItems:any[]) => {
+  const getFavourites = useCallback((jurisdictionMap:JurisdictionMap, getURL:LikeURLCreator, defaultItems:LikeAction[]|undefined) => {
     if (!likesReady)
       return <Tag justify='center'><LoadingIcon/></Tag>
 
@@ -101,6 +174,7 @@ const Home: NextPage = () => {
       </Link>)
 
     const items:JSX.Element[] = []
+    const keys:{[key:string]: boolean} = {}
     const displayLikedItems: ILike[] = []
     const likedJurisdictions = Object.keys(jurisdictionMap)
 
@@ -113,13 +187,30 @@ const Home: NextPage = () => {
     // Sort by createdAt date
     displayLikedItems.sort(sortDescending)
     displayLikedItems.forEach(like => {
-      items.push(getTag(like.itemId, like.name, like.jurisdiction))
+      if (!keys[like.jurisdiction+like.itemId]) {
+        items.push(getTag(like.itemId, like.name, like.jurisdiction))
+        keys[like.jurisdiction+like.itemId] = true
+      }
     })
 
     // If none, then show some "interesting" ones
-    if (items.length === 0) {
-      defaultItems.forEach(i => items.push(getTag(i.id, i.name, i.jurisdiction)))
-      items.push(<Text variant={'13/16'} key="0">You have no favorite properties. Try the above.</Text>)
+    if (items.length < 3) {
+      if (defaultItems && defaultItems.length > 0) {
+        if (items.length === 0)
+          items.push(<Text variant={'13/16'} key="99" mb="1rem">You have no favorites. Try some of these...</Text>)
+        else
+          items.push(<Text variant={'13/16'} key="99" mb="1rem">You can also try these...</Text>)
+        defaultItems.slice(0, 4 - items.length).forEach(l => {
+          if (!keys[l.jurisdiction+l.itemId]) {
+            items.push(getTag(l.itemId, l.name, l.jurisdiction))
+            keys[l.jurisdiction+l.itemId] = true
+          }
+        })
+      }
+      else if (defaultItems === undefined)
+        items.push(<Tag justify='center' key="199"><LoadingIcon/></Tag>)
+      else
+        items.push(<Text variant={'13/16'} key="199">No data found</Text>)
     }
 
     return items
@@ -127,7 +218,7 @@ const Home: NextPage = () => {
 
   return (
     <Box width='100%'>
-      <Head> <title>{homeLabels.pageTitle}</title></Head>
+      <Head><title>{homeLabels.pageTitle}</title></Head>
       <Flex
         width='100%'
         margin={0}
@@ -170,15 +261,23 @@ const Home: NextPage = () => {
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}
                 ml={{ base: '0', md: '30px' }}
                 mr={{ base: '0', md: '30px' }}
-              >
-                <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
-                {getFavourites(likedProposals, ProposalURLCreator, [{ id: "1", name: 'Add new Member James', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
+                >
+                  {isMember() 
+                    ? <>
+                        <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite proposals</Text>
+                        {getFavourites(likedProposals, ProposalURLCreator, sampleProposalLikes)}
+                      </>
+                    : <>
+                        <Link href="/my-properties"><Text variant={'15/20-BOLD'} margin='0 0 20px 0'>My properties</Text></Link>
+                        <MyProperties hidePrice={true} maxItems={5}/>
+                      </>
+                  }
               </Box>
               <Box
                 width={'100%'}
                 maxWidth={{ base: '100%', sm: '100%', md: '100%', lg: '330px' }}>
                 <Text variant={'15/20-BOLD'} margin='0 0 20px 0'>Favorite properties</Text>
-                {getFavourites(likedTokens, TokenURLCreator, [{ id:"title-1", name: '001-456-87654-E', jurisdiction: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' }])}
+                {getFavourites(likedTokens, TokenURLCreator, sampleTokenLikes)}
               </Box>
             </Flex>
           </VStack>
@@ -227,5 +326,4 @@ const Home: NextPage = () => {
     </Box>
   )
 }
-
 export default Home

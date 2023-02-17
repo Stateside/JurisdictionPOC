@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers';
 import { IRevisionParameter, ParamType } from 'db/interfaces/IRevisionParameter';
 import { BigNumber, ethers, Signer } from 'ethers';
 import create from 'zustand'
-import { IJSCGovernor, IJSCGovernor__factory } from '../../typechain-types';
+import { IJSCGovernor, IJSCGovernor__factory, IJSCJurisdiction__factory } from '../../typechain-types';
 
 export interface IRevisionDetails {
   id: number
@@ -24,7 +24,7 @@ export type WhoHasVotedMap = { [account: string]: boolean }
 
 /** 
  * Details of a proposal for a governor contract. All of these wil be loaded from our database where all proposal details are stored except for the IRevision objects
- * which cme from the target contracts
+ * which come from the target contracts
  */
 export interface IProposalDetails {
   id: string
@@ -47,17 +47,19 @@ export interface IProposalDetails {
 }
 
 export type ProposalMap = { [id: string]: IProposalDetails }
-
-export type IGovernorDetails = { 
-  address: string 
-  instance: IJSCGovernor
+export type ProposalData = { 
   proposalIds?: string[]
   proposals?: ProposalMap
-  proposalsLoading: boolean
+}
+
+export type IGovernorDetails = ProposalData & { 
+  address: string 
+  instance: IJSCGovernor
+  proposalsLoading: null|Promise<ProposalData>
   allProposalsLoaded?: boolean
 
   /** Loads or reloads the proposals. Once loaded, any existing proposals cached for this governor will be replaced. */
-  loadAllProposals: () => Promise<void>
+  loadAllProposals: () => Promise<ProposalData>
 
   /** Returns an individual proposal */
   loadProposal: (proposalId:string) => Promise<void>
@@ -83,17 +85,19 @@ export interface IGovernorsState {
   /** Sets the chainId if the blockchain and clears any existing data if the id changes */
   init: (chainId:number) => Promise<void>,
 
+  isInitialized: () => boolean,
+
   /** Returns details of the Governor contract stored at the given address */
-  get: (address:string, provider:Provider) => IGovernorDetails,
+  get: (jurisdictionAddress:string, provider:Provider) => Promise<IGovernorDetails>,
   
   /** Clears details about the governer stored at the given address */
-  refresh: (address:string) => void,
+  refresh: (jurisdictionAddress:string) => void,
 }
 
-const updateProposalDetails = (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string, newDetails:Partial<IProposalDetails>) => {
+const updateProposalDetails = (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, jurisdictionAddress:string, proposalId:string, newDetails:Partial<IProposalDetails>) => {
   proposalId = proposalId.toLowerCase()
   const governors = get().governors
-  const governorDetails = governors[instance.address]
+  const governorDetails = governors[jurisdictionAddress]
   const proposals = governorDetails.proposals
   const proposalDetails = proposals && proposals[proposalId]
 
@@ -103,7 +107,7 @@ const updateProposalDetails = (get:() => IGovernorsState, set: (state:Partial<IG
   const newProposalDetails = { ...proposalDetails, ...newDetails }
   const newProposals = { ...proposals, [proposalId]: newProposalDetails }
   const newGovernorDetails = { ...governorDetails, proposals: newProposals }
-  const newGovernors = { ...governors, [instance.address]: newGovernorDetails }
+  const newGovernors = { ...governors, [jurisdictionAddress]: newGovernorDetails }
   const newState = { governors: newGovernors }
   
   set(newState)
@@ -114,17 +118,17 @@ const getVotes = async (instance:IJSCGovernor, proposalId:string) => {
   return { againstVotes, forVotes, abstainVotes }
 }
 
-const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string) => {
+const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, jurisdictionAddress:string, proposalId:string) => {
   proposalId = proposalId.toLowerCase()
-  if (get().governors[instance.address].proposals?.[proposalId]?.revisions !== undefined)
+  if (get().governors[jurisdictionAddress].proposals?.[proposalId]?.revisions !== undefined)
     return; // Don't load again if we already have the details
-  if (get().governors[instance.address].proposals?.[proposalId]?.detailsLoading)
+  if (get().governors[jurisdictionAddress].proposals?.[proposalId]?.detailsLoading)
     return; // Don't load again if already loading
 
-  updateProposalDetails(get, set, instance, proposalId, { detailsLoading: true })
+  updateProposalDetails(get, set, instance, jurisdictionAddress, proposalId, { detailsLoading: true })
 
   // Load the proposal details from the database
-  fetch(`/api/proposals/get?governor=${instance.address}&chainId=${get().chainId}&id=${proposalId}`).then(r => r.json()).then(async p => {
+  return fetch(`/api/proposals/get?governor=${instance.address}&chainId=${get().chainId}&id=${proposalId}`).then(r => r.json()).then(async p => {
     if (p && p.length === 1) {
       const newProposal:Partial<IProposalDetails> = p[0]
       try {
@@ -152,7 +156,7 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
             })),
           }))
         }
-        updateProposalDetails(get, set, instance, proposalId, newProposalDetails)
+        updateProposalDetails(get, set, instance, jurisdictionAddress, proposalId, newProposalDetails)
       } catch (e) {
         console.log("Error loading proposal details", e)
       }
@@ -173,36 +177,36 @@ const loadProposalDetails = async (get:() => IGovernorsState, set: (state:Partia
         },
         revisions: []
       }
-      updateProposalDetails(get, set, instance, proposalId, newProposalDetails)
+      updateProposalDetails(get, set, instance, jurisdictionAddress, proposalId, newProposalDetails)
     }
   })
 }
 
 /** Updates the details of the given governor in the Zustand state */
-const updateGovernorDetails = (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, newDetails:Partial<IGovernorDetails>) => {
+const updateGovernorDetails = (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, jurisdictionAddress:string, newDetails:Partial<IGovernorDetails>) => {
   const governors = get().governors
-  const governorDetails = governors[instance.address]
+  const governorDetails = governors[jurisdictionAddress]
 
   if (!governorDetails)
     return
 
   const newGovernorDetails = { ...governorDetails, ...newDetails }
-  const newGovernors = { ...governors, [instance.address]: newGovernorDetails }
+  const newGovernors = { ...governors, [jurisdictionAddress]: newGovernorDetails }
   const newState = { governors: newGovernors }
   
   set(newState)
 }
 
-const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string, account:string) => {
+const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, jurisdictionAddress:string, proposalId:string, account:string) => {
   // If we know the answer return it immediately.
   // If we don't know the answer return undefined immediately but start querying the contract for the answer so it is available the next time this method is called
   account = account.toLowerCase()
   proposalId = proposalId.toLowerCase()
-  let hasVoted = get().governors[instance.address].proposals?.[proposalId]?.whoHasVoted[account]
+  let hasVoted = get().governors[jurisdictionAddress].proposals?.[proposalId]?.whoHasVoted[account]
   if (hasVoted === undefined)
     try {
       instance.hasVoted(proposalId, account).then(hasVoted => {
-        updateProposalDetails(get, set, instance, proposalId, { whoHasVoted: { [account]: hasVoted } })
+        updateProposalDetails(get, set, instance, jurisdictionAddress, proposalId, { whoHasVoted: { [account]: hasVoted } })
       })
     } catch (e) {
       console.log("Error checking if has voted", e)
@@ -212,11 +216,11 @@ const hasVoted = async (get:() => IGovernorsState, set: (state:Partial<IGovernor
 }
 
 /** Loads the given proposal for the given governor unless the proposals are already loading */
-const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, proposalId:string) => {
+const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, jurisdictionAddress:string, proposalId:string) => {
   proposalId = proposalId.toLowerCase()
-  const governorDetails = get().governors[instance.address]
+  const governorDetails = get().governors[jurisdictionAddress]
   if (governorDetails) {
-    if (governorDetails.proposalsLoading)
+    if (governorDetails.proposalsLoading !== null)
       return // Don't load again if already loading
     if (governorDetails.proposals?.[proposalId])
       return // Don't load again if we already have the details
@@ -229,8 +233,8 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
         id: proposalId,
         detailsLoading: false,
         whoHasVoted: {},
-        loadDetails: async () => loadProposalDetails(get, set, instance, proposalId),
-        hasVoted: async (account:string) => hasVoted(get, set, instance, proposalId, account)
+        loadDetails: async () => loadProposalDetails(get, set, instance, jurisdictionAddress, proposalId),
+        hasVoted: async (account:string) => hasVoted(get, set, instance, jurisdictionAddress, proposalId, account)
       }
   } catch (e) {
     console.log("Error checking if proposal exists", e)
@@ -260,90 +264,99 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
   const proposalIds:string[] = [...(governorDetails.proposalIds||[]), proposalId]
   const proposals:ProposalMap = { ...(governorDetails.proposals||{}), [proposalId]: proposalDetails }
 
-  updateGovernorDetails(get, set, instance, { proposalIds, proposals, proposalsLoading: false })
+  updateGovernorDetails(get, set, instance, jurisdictionAddress, { proposalIds, proposals, proposalsLoading: undefined })
 }
 
 /** Asynchronously loads proposals for the given governor */
-const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor) => {
-  const governorDetails = get().governors[instance.address]
+const loadAllProposals = async (get:() => IGovernorsState, set: (state:Partial<IGovernorsState>) => void, instance:IJSCGovernor, jurisdictionAddress:string):Promise<ProposalData> => {
+  let governorDetails = get().governors[jurisdictionAddress]
   if (governorDetails?.proposalsLoading)
-    return
+    return governorDetails?.proposalsLoading
 
-  updateGovernorDetails(get, set, instance, { ...governorDetails, proposalsLoading: true })
+  if (governorDetails?.proposalIds?.length)
+    return { proposalIds: governorDetails.proposalIds, proposals: governorDetails.proposals }
 
-  // Load the proposal IDs from the governor contract
-  const proposalIds:string[] = [...(governorDetails.proposalIds||[]) ]
-  const proposals:ProposalMap = { ...(governorDetails.proposals||{}) }
-  try {
-    const cnt = (await instance.proposalCount()).toNumber()
-    if (cnt > proposalIds.length) {
-      const createProposalDetails = (hex:string):IProposalDetails => {
-        return {
-          id: hex,
-          detailsLoading: false,
-          whoHasVoted: {},
-          loadDetails: async () => loadProposalDetails(get, set, instance, hex),
-          hasVoted: async (account:string) => hasVoted(get, set, instance, hex, account)
-        }
-      }
-      for (let pi = 0; pi < cnt; pi++) {
-        const p = await instance.proposalAtIndex(pi)
-        const hex = p.toHexString()
-        if (!proposalIds.includes(hex)) {
-          proposalIds.push(hex)
-          proposals[hex] = createProposalDetails(hex)
-        }
-      }
-
-      // Add sample expired proposals
-      for (let i = 16; i < 46; i++) {
-        const hex = '0x00000000000000000000000000000000000000000000000000000000000000' + i.toString(16)
-        if (!proposalIds.includes(hex)) {
-          proposalIds.push(hex)
-          proposals[hex] = { 
+  const getDetails = async () => {
+    // Load the proposal IDs from the governor contract
+    let governorDetails = get().governors[jurisdictionAddress]
+    const proposalIds:string[] = [...(governorDetails.proposalIds||[]) ]
+    const proposals:ProposalMap = { ...(governorDetails.proposals||{}) }
+    try {
+      const cnt = (await instance.proposalCount()).toNumber()
+      if (cnt > proposalIds.length) {
+        const createProposalDetails = (hex:string):IProposalDetails => {
+          return {
             id: hex,
             detailsLoading: false,
-            startBlock: 0,
-            deadline: 0,
-            proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
-            version: 0,
-            status: ProposalState.Expired,
-            description: "Sample expired proposal",
             whoHasVoted: {},
-            votes: {
-              againstVotes: ethers.constants.Zero,
-              forVotes: ethers.constants.Zero,
-              abstainVotes: ethers.constants.Zero,
-            },
-            revisions: [{
-              id:0,
-              target: '0x0000000000000000000000000000000000000000000000000000000000000000',
-              description: "Sample revision",
-              name: "SampleRevision",
-              pdata: "",
-              parameters: [{
-                name: "SampleParameter",
-                type: ParamType.t_string,
-                hint: "Sample parameter",
-                value: "Sample value",
-              }],
-            }],
-            loadDetails: async () => {},
-            hasVoted: async (account:string) => false
+            loadDetails: async () => loadProposalDetails(get, set, instance, jurisdictionAddress, hex),
+            hasVoted: async (account:string) => hasVoted(get, set, instance, jurisdictionAddress, hex, account)
           }
         }
+        for (let pi = 0; pi < cnt; pi++) {
+          const p = await instance.proposalAtIndex(pi)
+          const hex = p.toHexString()
+          if (!proposalIds.includes(hex)) {
+            proposalIds.push(hex)
+            proposals[hex] = createProposalDetails(hex)
+          }
+        }
+
+        // Add sample expired proposals
+        for (let i = 16; i < 46; i++) {
+          const hex = '0x00000000000000000000000000000000000000000000000000000000000000' + i.toString(16)
+          if (!proposalIds.includes(hex)) {
+            proposalIds.push(hex)
+            proposals[hex] = { 
+              id: hex,
+              detailsLoading: false,
+              startBlock: 0,
+              deadline: 0,
+              proposer: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              version: 0,
+              status: ProposalState.Expired,
+              description: "Sample expired proposal",
+              whoHasVoted: {},
+              votes: {
+                againstVotes: ethers.constants.Zero,
+                forVotes: ethers.constants.Zero,
+                abstainVotes: ethers.constants.Zero,
+              },
+              revisions: [{
+                id:0,
+                target: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                description: "Sample revision",
+                name: "SampleRevision",
+                pdata: "",
+                parameters: [{
+                  name: "SampleParameter",
+                  type: ParamType.t_string,
+                  hint: "Sample parameter",
+                  value: "Sample value",
+                }],
+              }],
+              loadDetails: async () => {},
+              hasVoted: async (account:string) => false
+            }
+          }
+        }
+        updateGovernorDetails(get, set, instance, jurisdictionAddress, { proposalIds, proposals, proposalsLoading: null, allProposalsLoaded: true })
       }
-      updateGovernorDetails(get, set, instance, { proposalIds, proposals, proposalsLoading: false, allProposalsLoaded: true })
+      else
+        updateGovernorDetails(get, set, instance, jurisdictionAddress, { proposalsLoading: null, allProposalsLoaded: true })
+    } catch (e) {
+      console.log("Error loading proposals", e)
+      updateGovernorDetails(get, set, instance, jurisdictionAddress, { proposalsLoading: null, allProposalsLoaded: true })
     }
-    else
-      updateGovernorDetails(get, set, instance, { proposalsLoading: false, allProposalsLoaded: true })
-  } catch (e) {
-    console.log("Error loading proposals", e)
-    updateGovernorDetails(get, set, instance, { proposalsLoading: false, allProposalsLoaded: true })
+    return { proposalIds, proposals }
   }
+
+  const promise = getDetails()
+  updateGovernorDetails(get, set, instance, jurisdictionAddress, { ...governorDetails, proposalsLoading: promise })
+  return promise
 }
 
-/** Create Zustand state with collection of all likes for current user */
+/** Create Zustand state with collection of all Governor contracts for current user */
 export const useGovernors = create<IGovernorsState>((set, get) => ({
   governors: {} as GovernorMap,
   chainId:0,
@@ -355,31 +368,35 @@ export const useGovernors = create<IGovernorsState>((set, get) => ({
     set({governors: {}, chainId})
   },
 
-  get: (address:string, provider:Provider|Signer) => {
+  isInitialized: () => get().chainId !== 0,
+
+  get: async (jurisdictionAddress:string, provider:Provider|Signer) => {
     if (get().chainId === 0)
       return {} as IGovernorDetails
 
-    address = address.toLowerCase()
-    let details:IGovernorDetails = get().governors[address]
+    jurisdictionAddress = jurisdictionAddress.toLowerCase()
+    let details:IGovernorDetails = get().governors[jurisdictionAddress]
     if (!details) {
-      const instance = IJSCGovernor__factory.connect(address, provider)
+      const jscJurisdiction = IJSCJurisdiction__factory.connect(jurisdictionAddress, provider);
+      const governorContractAddress = await jscJurisdiction.getContractParameter("jsc.contracts.governor")
+      const instance = IJSCGovernor__factory.connect(governorContractAddress, provider)
       details = {
-        address, 
+        address: governorContractAddress, 
         instance, 
-        proposalsLoading:false,
-        loadAllProposals: async () => await loadAllProposals(get, set, instance),
-        loadProposal: async (proposalId:string) => await loadProposal(get, set, instance, proposalId),
-        instanceWithSigner: (signer:Signer) => IJSCGovernor__factory.connect(address, signer)
+        proposalsLoading:null,
+        loadAllProposals: async () => await loadAllProposals(get, set, instance, jurisdictionAddress),
+        loadProposal: async (proposalId:string) => await loadProposal(get, set, instance, jurisdictionAddress, proposalId),
+        instanceWithSigner: (signer:Signer) => IJSCGovernor__factory.connect(governorContractAddress, signer)
       }
-      set({ governors: { ...get().governors, [address]: details } })
+      set({ governors: { ...get().governors, [jurisdictionAddress]: details } })
     }
     return details
   },
 
-  refresh: (address:string) => {
-    address = address.toLowerCase()
+  refresh: (jurisdictionAddress:string) => {
+    jurisdictionAddress = jurisdictionAddress.toLowerCase()
     const g = { ...get().governors }
-    delete g[address]
+    delete g[jurisdictionAddress]
     set({ governors: g })
   }
 }))

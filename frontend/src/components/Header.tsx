@@ -1,21 +1,22 @@
 import React from 'react'
 import { useWeb3React } from "@web3-react/core";
 import { Container, Text, HStack, Image, Flex } from '@chakra-ui/react'
-import { MenuItemInterface } from '@/interfaces/index'
 import Menu from '@/components/Menu'
 import Connect from '@/components/ConnectButton'
 import { Link } from './Link';
-
+import usePersona from '@/store/usePersona';
+import { useRouter } from 'next/router';
 
 type Props = {
     siteTitle: string
     ctaText: string
-    menu: Array<MenuItemInterface>
 }
 
 export function Header(props: Props) {
-    const { siteTitle, ctaText, menu } = props;
+    const { siteTitle, ctaText } = props;
     const { active } = useWeb3React();
+    const router = useRouter()
+    const { goHome } = usePersona()
 
     return (
         <HStack padding='30px 0' margin='0 0 40px 0'>
@@ -26,7 +27,7 @@ export function Header(props: Props) {
                 justifyContent='flex-start'
                 maxWidth={'100%'}
                 padding='0'>
-                <Link href='/' >
+                <Link onClick={() => goHome(router)}>
                     <Flex>
                         <Image 
                             src='/imgs/logo.svg' 
@@ -62,7 +63,7 @@ export function Header(props: Props) {
                     label={ctaText} />
                 { 
                     active &&
-                    <Menu items={menu} />
+                    <Menu />
                 }
             </Container>
         </HStack>

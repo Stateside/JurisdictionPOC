@@ -20,7 +20,7 @@ const roles = buildRoles(ethers)
 const ParameterDetails = ({param, width}:Props) => {
   const { simplifyValue } = useParameterSimplifier();
   const { aliasesByAddress } = useAliases()
-console.log(param)
+
   switch(param.type) {
     case ParamType.t_contract:
     case ParamType.t_account:
