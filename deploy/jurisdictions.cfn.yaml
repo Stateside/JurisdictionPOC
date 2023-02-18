@@ -338,7 +338,7 @@ Resources:
 
                 [Service]
                 Type=simple
-                ExecStart=/usr/bin/geth --dev --dev.period 13 --identity "JurisdictionsStage" --networkid ${ChainId} --http --http.addr 0.0.0.0 --http.vhosts "*" --http.api eth,web3,net --http.corsdomain "*" --datadir /root/.ethereum --password /root/.ethereum/Password
+                ExecStart=/usr/bin/geth --dev --identity "JurisdictionsStage" --networkid ${ChainId} --http --http.addr 0.0.0.0 --http.vhosts "*" --http.api eth,web3,net --http.corsdomain "*" --datadir /root/.ethereum --password /root/.ethereum/Password
                 [Install]
                 WantedBy=default.target
               mode: "000400"
@@ -359,7 +359,7 @@ Resources:
                     "istanbulBlock": 0,
                     "berlinBlock": 0,
                     "clique": {
-                      "period": 0,
+                      "period": 12,
                       "epoch": 30000
                     }
                   },
