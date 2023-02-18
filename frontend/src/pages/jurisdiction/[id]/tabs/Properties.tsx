@@ -70,8 +70,8 @@ const Properties = () => {
         })}
 
         {tokenIds.length>0 && tokenCount > 12 && paginator}
+        {tokenCount === 0 && <Text>No properties found</Text>}
       </Box>
-      {tokenCount === 0 && <Text>No properties found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
         <MemberOnlyButton 

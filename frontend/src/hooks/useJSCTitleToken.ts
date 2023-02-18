@@ -106,7 +106,7 @@ const getOffersToSell = async (jscTitleToken: any, token: any, aliasesByAddress:
     return offersToSell;
 }
 
-const getTotalTokens = async (jscTitleToken: any) => {
+const getTotalTokens = async (jscTitleToken: any):Promise<number> => {
     return (await jscTitleToken.totalSupply()).toNumber() || 0;
 }
 

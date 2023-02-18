@@ -32,6 +32,7 @@ const CreateProposal: NextPage = () => {
   let childContracts = useJurisdictions(state => state.contracts[jurisdictionAddress])?.list  
   const jscGovernorAddress = useJurisdictions(state => state.contracts[jurisdictionAddress]?.byName['jsc.contracts.governor']?.address)
   const loadGovernorDetails = useGovernors(state => state.get)
+  const isGovernorContractInitialized = useGovernors(state => state.isInitialized)
   const refreshGovernorDetails = useGovernors(state => state.refresh)
   const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const [contracts, setContracts] = useState<IContract[]>(childContracts)
@@ -53,8 +54,8 @@ const CreateProposal: NextPage = () => {
     [jurisdictionAddress, loadedJurisdictions, library]);
 
   // Load governor details
-  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
-    [jurisdictionAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && isGovernorContractInitialized() && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, isGovernorContractInitialized(), library]);
 
   // Builds a NewRevision object from the data requested in the URL
   const requestedRevision:NewRevision|undefined = useMemo(() => {

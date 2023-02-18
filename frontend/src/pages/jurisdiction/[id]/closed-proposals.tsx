@@ -24,6 +24,7 @@ const ClosedProposals: NextPage = () => {
   const jurisdictionAddress = (router.query.id as string)?.toLowerCase();
 
   const loadGovernorDetails = useGovernors(state => state.get)
+  const isGovernorContractInitialized = useGovernors(state => state.isInitialized)
   const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const proposalIds = jscGovernorDetails?.proposalIds
   const proposals = jscGovernorDetails?.proposals
@@ -31,12 +32,12 @@ const ClosedProposals: NextPage = () => {
   const activeOrLoading = (p:IProposalDetails) => p.status===ProposalState.Active || p.status === undefined
   const closedProposalIds = proposalIds?.filter(id => proposals&&!activeOrLoading(proposals[id]))
   const proposalCount = closedProposalIds?.length || 0
-
+  
   const [ page, setPage ] = useState(1)
-
+  
   // Load governor details
-  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
-    [jurisdictionAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && isGovernorContractInitialized() && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+  [jurisdictionAddress, jscGovernorDetails, isGovernorContractInitialized(), library]);
 
   // Load governor proposals
   useEffect(() => {
@@ -44,7 +45,7 @@ const ClosedProposals: NextPage = () => {
       jscGovernorDetails.loadAllProposals()
     }
   }, [jscGovernorDetails]);
-
+  
   // Load proposal details for each proposal if not loaded or loading
   useEffect(() => {
     if (proposalIds?.length) {
@@ -103,7 +104,7 @@ const ClosedProposals: NextPage = () => {
 
         {proposalCount > PAGE_SIZE && paginator}
       </Box>
-      {(closedProposalIds && closedProposalIds.length === 0) && <Text>No closed proposals found</Text>}
+      {(jscGovernorDetails?.allProposalsLoaded && (closedProposalIds === undefined || closedProposalIds.length === 0)) && <Text>No closed proposals found</Text>}
   </>
 );
 

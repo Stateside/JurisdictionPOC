@@ -27,6 +27,7 @@ const Config = () => {
   const { getAlias, aliasesByAddress } = useAliases()
 
   const loadGovernorDetails = useGovernors(state => state.get)
+  const isGovernorContractInitialized = useGovernors(state => state.isInitialized)
   const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const jscGovernor = jscGovernorDetails?.instance
 
@@ -37,8 +38,8 @@ const Config = () => {
   const [jscVotingRole, setJscVotingRole] = useState<string|undefined>()
 
   // Load governor details
-  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
-    [jurisdictionAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && isGovernorContractInitialized() && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, isGovernorContractInitialized(), library]);
 
   useEffect(() => {
     if (jscGovernor) {
