@@ -204,7 +204,6 @@ export class Jurisdiction implements IJurisdiction {
     const linkedByteCode = this.linkLibrary(artifact.bytecode, deploymentAddresses)
     const contractFactory = new ethers.ContractFactory(artifact.abi, linkedByteCode, signer);
     const contract = await contractFactory.deploy()
-    await contract.deployTransaction.wait()
     return {
       contract,
       definition: cd
@@ -373,9 +372,14 @@ export class Jurisdiction implements IJurisdiction {
       for (let s = 0; s < deploySteps.length && this.continueDeployment; s++) {
         stepCounter++;
         const step = deploySteps[s];
+
         l.startingStep(this, 0, `Deploying ${step.solidityType}`)
         const result = await this.deployContract(signer, step, deploymentAddressesByLink)
+
+        l.startingStep(this, 0, `Confirming ${step.solidityType}`)
+        await result.contract.deployTransaction.wait()
         l.onDeployed(this, stepCounter/totalSteps, result.definition.solidityType, result.definition.key||"", result.contract.address)
+
         await Jurisdiction.saveContractInfo(result.definition.name, result.definition.version, result.definition.solidityInterface, result.contract.address, result.definition.description, await signer.getChainId())
         deploymentsByInterface[result.definition.solidityInterface] = result
         if (result.definition.link)

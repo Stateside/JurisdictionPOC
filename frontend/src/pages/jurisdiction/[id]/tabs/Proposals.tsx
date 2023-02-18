@@ -24,6 +24,7 @@ const Proposals = () => {
   const { loaded:jurisdictionsLoaded, loadContracts } = useJurisdictions();
 
   const loadGovernorDetails = useGovernors(state => state.get)
+  const isGovernorContractInitialized = useGovernors(state => state.isInitialized)
   const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const proposalIds = jscGovernorDetails?.proposalIds
   const proposals = jscGovernorDetails?.proposals
@@ -33,8 +34,8 @@ const Proposals = () => {
     [jurisdictionAddress, jurisdictionsLoaded, library]);
 
   // Load governor details
-  useEffect(() => { jurisdictionAddress && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
-    [jurisdictionAddress, jscGovernorDetails, library]);
+  useEffect(() => { jurisdictionAddress && isGovernorContractInitialized() && !jscGovernorDetails && loadGovernorDetails(jurisdictionAddress, library) }, 
+    [jurisdictionAddress, jscGovernorDetails, isGovernorContractInitialized(), library]);
 
   // Load governor proposals
   useEffect(() => {
@@ -113,8 +114,8 @@ const Proposals = () => {
           </Box>
         </VStack>
       )}
-      {(jscGovernorDetails?.proposalsLoading || proposalIds === undefined) && <Tag justify="center" caret={null}><LoadingIcon /></Tag>}
-      {!jscGovernorDetails?.proposalsLoading && (proposalIds && proposalIds.length===0) && <Text>No proposals found</Text>}
+      {!jscGovernorDetails?.allProposalsLoaded && <Tag justify="center" caret={null}><LoadingIcon /></Tag>}
+      {jscGovernorDetails?.allProposalsLoaded && (proposalIds===undefined || proposalIds.length===0) && <Text>No proposals found</Text>}
       <Box>
         <Divider m="1rem 0rem"/>
         <MemberOnlyButton variant="Header" onClick={() => router.push(`${jurisdictionAddress}/proposal/create`)}>Create New Proposal</MemberOnlyButton>

@@ -100,7 +100,7 @@ const Parameter = (props: Props) => {
         )
       case ParamType.t_role:
         return (
-          <SelectRole value={props.value} onChange={role => props.onChange(role.id)} />
+          <SelectRole value={props.value} onChange={role => props.onChange(role && role.id)} />
         )
       default:
         return (
