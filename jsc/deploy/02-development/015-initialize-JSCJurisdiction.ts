@@ -4,7 +4,7 @@ import * as tc from "../../typechain-types"
 import { ParamType } from "../../utils/types"
 
 // @ts-ignore
-import { ethers } from "hardhat" 
+import { ethers } from "hardhat"
 
 const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // @ts-ignore
@@ -17,11 +17,12 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
 
   log(`----------------------------------------------------`)
   log("Initializing development_JSCJurisdiction...")
-  const jscJurisdiction:tc.IJSCJurisdiction = await ethers.getContractAt("JSCJurisdiction", jscJurisdictionContract.address)
-  await jscJurisdiction.init(
+  const jscJurisdiction: tc.IJSCJurisdiction = await ethers.getContractAt("JSCJurisdiction", jscJurisdictionContract.address)
+
+  const tx = await jscJurisdiction.init(
     "Our Jurisdiction",
-    ["jsc.contracts.cabinet",      "jsc.contracts.governor",      "jsc.contracts.tokens"],
-    [jscCabinetContract.address,  jscGovernorContract.address,  jscTitleTokenContract.address],
+    ["jsc.contracts.cabinet", "jsc.contracts.governor", "jsc.contracts.tokens"],
+    [jscCabinetContract.address, jscGovernorContract.address, jscTitleTokenContract.address],
     [
       "Manage the members of the jurisdiction and their roles",
       "Track proposals and votes",
@@ -29,18 +30,19 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
     ],
     true,
     {
-      votingPeriod: 50,
+      votingPeriod: 60, // 5 mins
       approvals: 1,
       majority: 0,
       quorum: 0,
       role: ethers.constants.HashZero,
     }
   )
+  await tx.wait()
 
   log(`development_JSCJurisdiction Initialized with the following contracts:`)
   log("/-------------------------------------------------------------------\\")
   let i = await jscJurisdiction.iterateParameters()
-  while(await jscJurisdiction.isValidParameterIterator(i)){
+  while (await jscJurisdiction.isValidParameterIterator(i)) {
     const p = await jscJurisdiction.parameterIteratorGet(i);
     if (p.ptype == ParamType.t_contract) {
       let a = await jscJurisdiction.getContractParameter(p.name);
@@ -49,7 +51,6 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
     i = await jscJurisdiction.nextParameter(i)
   }
   log("\\-------------------------------------------------------------------/")
-}
 
-export default initializeJSCJurisdiction
-initializeJSCJurisdiction.tags = ["all", "development"]
+  export default initializeJSCJurisdiction
+  initializeJSCJurisdiction.tags = ["all", "development"]

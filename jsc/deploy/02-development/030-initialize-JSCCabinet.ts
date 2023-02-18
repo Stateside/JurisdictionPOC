@@ -19,7 +19,7 @@ const initializeJSCCabinet: DeployFunction = async function (hre: HardhatRuntime
   log(`----------------------------------------------------`)
   log("Initializing development_JSCCabinet...")
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
-  await jscCabinet.init(jscJurisdiction.address,
+  const tx = await jscCabinet.init(jscJurisdiction.address,
     [accountsByName["Bob"].address,  accountsByName["Jane"].address, accountsByName["Sara"].address],
     [roles.JUDICIAL_ROLE.id,         roles.LEGISLATIVE_ROLE.id,      roles.EXECUTIVE_ROLE.id],
     jscGovernorContract.address,
@@ -31,20 +31,7 @@ const initializeJSCCabinet: DeployFunction = async function (hre: HardhatRuntime
       role: ethers.constants.HashZero,
     }
   )
-  
-  log(`development_JSCCabinet Initialized with the following roles:`)
-  log("/----------------------------------------------------------\\")
-  const roleCount = await (await jscCabinet.getRoleCount()).toNumber();
-  for (let r = 0; r < roleCount; r++) {
-    const roleId = await jscCabinet.getRoleAt(r);
-    log(`Role: ${roleId} (${roles.rolesById[roleId.toLowerCase()].name})`)
-    const roleMemberCount = await (await jscCabinet.getRoleMemberCount(roleId)).toNumber();
-    for (let rm = 0; rm < roleMemberCount; rm++) {
-      const acc = await jscCabinet.getRoleMember(roleId, rm);
-      log(`    ${acc} (${accountsByAddress[acc.toLowerCase()].name})`)
-    }    
-  }
-  log("\\----------------------------------------------------------/")
+  await tx.wait()
 }
 
 export default initializeJSCCabinet

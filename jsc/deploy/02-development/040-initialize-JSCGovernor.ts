@@ -22,7 +22,7 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
   const jscTitleToken:tc.IJSCTitleToken = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
   const jscGovernor:tc.IJSCGovernor = await ethers.getContractAt("JSCGovernor", jscGovernorContract.address)
   const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
-  await jscGovernor.init(jscJurisdiction.address, true,
+  const tx = await jscGovernor.init(jscJurisdiction.address, true,
     {
       votingPeriod: 50,
       approvals: 1,
@@ -30,7 +30,9 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
       quorum: 0,
       role: ethers.constants.HashZero,
     })
+  await tx.wait()
 
+  let transactions: any[] = []
   const proposalMap:{[hash:string]: PreparedProposal} = {}
   try {
     const wallets = buildWallets(ethers)
@@ -39,8 +41,15 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
     for (let i = 0; i < sampleProposals.length; i++) {
       const p = sampleProposals[i];
       console.log(`Proposing ${p.description}...`)
-      await jscGovernor.propose(p.revs, p.description, p.version)
+      transactions.push(await jscGovernor.propose(p.revs, p.description, p.version))
       proposalMap[p.proposalHash.toHexString().toLowerCase()] = p
+    }
+
+    for (let i = 0; i < transactions.length; i++)
+      await transactions[i].wait();
+
+    for (let i = 0; i < sampleProposals.length; i++) {
+      const p = sampleProposals[i];
       
       console.log(`Voting on ${p.description}...`)
       const voters = Object.keys(p.whoHasVoted)
@@ -53,14 +62,6 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
     console.log(error)
   }
 
-  log(`development_JSCGovernor Initialized with the following tokens:`)
-  log("/------------------------------------------------------------\\")
-  const pCount = await (await jscGovernor.proposalCount()).toNumber();
-  for (let pi = 0; pi < pCount; pi++) {
-    const p = await (await jscGovernor.proposalAtIndex(pi)).toHexString().toLowerCase();
-    log(`Proposal: ${proposalMap[p].description} (${p})`)
-  }
-  log("\\------------------------------------------------------------/")
 }
 
 export default initializeJSCGovernor

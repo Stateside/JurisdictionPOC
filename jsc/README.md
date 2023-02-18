@@ -107,7 +107,7 @@ yarn hardhat save-proposals --network staging --prefix development
 # TO DO
 
 - Calculate quorum from number of members in cabinet - currently hardcoded to 3
-- 
+- Add a page that shows all of my properties in all jurisdictions
 - Some buttons do not have a hover or click style
 - SpecialSelect should include the address field beside it always
   - changing alias dropdown should update the address field

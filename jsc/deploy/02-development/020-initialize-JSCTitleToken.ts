@@ -22,9 +22,10 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   log(`----------------------------------------------------`)
   log("Initializing development_JSCTitleTokenTest...")
   const jscTitleToken:tc.JSCTitleTokenTest = await ethers.getContractAt("JSCTitleTokenTest", jscTitleTokenContract.address)
+  let transactions: any[] = []
   
   try {
-	  await jscTitleToken.init(
+	  const tx = await jscTitleToken.init(
 	    "Our Title Token",
 	    "OTT",
 	    chainId === 41506 ? "https://jurisdictions.stateside.agency/api/token/" : "http://localhost:3000/api/token/",
@@ -43,9 +44,11 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
         role: ethers.constants.HashZero,
       }
     )
+    await tx.wait()
   } catch (error) {
     console.log(error)
   }
+
   const { Bob, Sara, Jane, Bryan, Rich, Alex, Peter } = accountsByName
 
   type Offer = { buyer: Account, amt: number }
@@ -170,60 +173,54 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
     ],
   }
 
-  try {
-	  const wallets = buildWallets(ethers)
-	  for (const name in tokens) {
-	      const titles = tokens[name];
-	      for (let i = 0; i < titles.length; i++) {
-	        const t = titles[i];
-	        const owner = accountsByName[name]
-	        await jscTitleToken.mint(owner.address, t.titleId)
-	        const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
-	        for (let b = 0; b < t.offersToBuy.length; b++) {
-	          const o = t.offersToBuy[b];
-	          await jscTitleToken.connect(wallets[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
-	        }
-	        for (let s = 0; s < t.offersToSell.length; s++) {
-	          const o = t.offersToSell[s];
-	          await jscTitleToken.connect(wallets[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
-	        }
-	      }
-	  }
-	
-  } catch (error) {
-    console.log(error)
+  // First mint the tokens and wait until they are all confirmed
+  const wallets = buildWallets(ethers)
+  for (const name in tokens) {
+      const titles = tokens[name];
+      for (let i = 0; i < titles.length; i++) {
+        const t = titles[i];
+        const owner = accountsByName[name]
+        console.log(`Minting ${t.titleId} for ${name}`)
+        transactions.push(await jscTitleToken.mint(owner.address, t.titleId))
+      }
   }
+
+  // Wait for all transactions to be confirmed
+  console.log(`Waiting for tokens...`)
+  for (let i = 0; i < transactions.length; i++)
+    await transactions[i].wait();
+
+  for (const name in tokens) {
+    const titles = tokens[name];
+    for (let i = 0; i < titles.length; i++) {
+      const t = titles[i];
+      const owner = accountsByName[name]
+      const tokenId = await jscTitleToken.titleToTokenId(t.titleId);
+      for (let b = 0; b < t.offersToBuy.length; b++) {
+        const o = t.offersToBuy[b];
+        console.log(`Offering to buy ${t.titleId} from ${name} for ${o.amt} by ${o.buyer.name}`)
+        await jscTitleToken.connect(wallets[o.buyer.name]).offerToBuy(tokenId, eth2WEI(o.amt/1000), payETH(o.amt/1000))
+      }
+      for (let s = 0; s < t.offersToSell.length; s++) {
+        const o = t.offersToSell[s];
+        console.log(`Offering to sell ${t.titleId} from ${name} for ${o.amt} to ${o.buyer.name}`)
+        await jscTitleToken.connect(wallets[owner.name]).offerToSell(tokenId, o.buyer.address, eth2WEI(o.amt/1000))
+      }
+    }
+  }
+
+  transactions = []
+
   // In development we will freeze Peters account for testing
-  await jscTitleToken.setFrozenOwner(Peter.address, true);
+  console.log(`Freezing Peter's account`)
+  transactions.push(await jscTitleToken.setFrozenOwner(Peter.address, true))
   const tokenId = await jscTitleToken.titleToTokenId("title-14")
-  await jscTitleToken.setFrozenToken(tokenId, true);
+  console.log(`Freezing title-14`)
+  transactions.push(await jscTitleToken.setFrozenToken(tokenId, true))
+  transactions.push(await jscTitleToken.transferOwnership(jscGovernorContract.address))
 
-  log(`development_JSCTitleToken Initialized with the following tokens:`)
-  log("/--------------------------------------------------------------\\")
-  const cnt = await (await jscTitleToken.totalSupply()).toNumber();
-  for (let i = 0; i < cnt; i++) {
-    const tokenId = await jscTitleToken.tokenAtIndex(i)
-    const titleId = await jscTitleToken.tokenToTitleId(tokenId);
-    const owner = await jscTitleToken.ownerOf(tokenId);
-    log(`${titleId} owned by ${owner} (${accountsByAddress[owner.toLowerCase()].name})`)
-
-    log(`  Offers to Buy:`)
-    const obCnt = (await jscTitleToken.countOffersToBuy(tokenId)).toNumber()
-    for (let b = 0; b < obCnt; b++) {
-      const ob = await jscTitleToken.offerToBuyAtIndex(tokenId, b);
-      log(`    Offer to Buy: From ${ob.buyer} (${accountsByAddress[ob.buyer.toLowerCase()].name}) for ${ob.amount}`)
-    }
-
-    log(`  Offers to Sell:`)
-    const osCnt = (await jscTitleToken.countOffersToSell(tokenId)).toNumber()
-    for (let s = 0; s < osCnt; s++) {
-      const os = await jscTitleToken.offerToSellAtIndex(tokenId, s);
-      log(`    Offer to Sell: From ${os.buyer} (${accountsByAddress[os.buyer.toLowerCase()].name}) for ${os.amount}`)
-    }
-  }
-  log("\\--------------------------------------------------------------/")
-
-  jscTitleToken.transferOwnership(jscGovernorContract.address)
+  for (let i = 0; i < transactions.length; i++)
+    await transactions[i].wait();
 }
 
 export default initializeJSCTitleToken

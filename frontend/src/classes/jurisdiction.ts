@@ -203,8 +203,10 @@ export class Jurisdiction implements IJurisdiction {
     const artifact = await cd.loadArtifact() // Lazy load JSON 
     const linkedByteCode = this.linkLibrary(artifact.bytecode, deploymentAddresses)
     const contractFactory = new ethers.ContractFactory(artifact.abi, linkedByteCode, signer);
+    const contract = await contractFactory.deploy()
+    await contract.deployTransaction.wait()
     return {
-      contract: await contractFactory.deploy(),
+      contract,
       definition: cd
     }
   }
