@@ -1,7 +1,6 @@
-import { ParamType } from "@/utils/types"
 import { IRevisionParameter } from "./IRevisionParameter"
 
-export { ParamType } from "@/utils/types"
+export { ParamType } from "../../utils/types"
 
 export interface IRevision {
   id: number

@@ -1,6 +1,6 @@
 import { IRevision } from "./IRevision"
 
-export { ParamType } from "@/utils/types"
+export { ParamType } from "../../utils/types"
 
 export interface IProposal {
   id: string

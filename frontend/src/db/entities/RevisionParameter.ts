@@ -1,4 +1,4 @@
-import { IRevisionParameter, ParamType } from "db/interfaces/IRevisionParameter"
+import { IRevisionParameter, ParamType } from "../interfaces/IRevisionParameter"
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Relation } from "typeorm"
 import { Revision } from "./Revision"
 

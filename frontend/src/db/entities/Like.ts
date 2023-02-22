@@ -1,4 +1,4 @@
-import { ILike, LikableItem } from "db/interfaces/ILike"
+import { ILike, LikableItem } from "../interfaces/ILike"
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
 @Entity()

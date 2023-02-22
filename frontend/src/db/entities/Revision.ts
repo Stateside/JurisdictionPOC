@@ -1,4 +1,4 @@
-import { IRevision } from "db/interfaces/IRevision"
+import { IRevision } from "../interfaces/IRevision"
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Relation } from "typeorm"
 import { Proposal } from "./Proposal"
 import { RevisionParameter } from "./RevisionParameter"
