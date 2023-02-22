@@ -15,6 +15,7 @@ import { deepCopy } from 'utils/util';
 import SpecialSelect from '@/components/SpecialSelect';
 import { useAliases } from '@/store/useAliases';
 import { ActionNames } from '@/utils/property-types';
+import { useWeb3React } from '@web3-react/core';
 
 type PropertyModal = {
   gridLayout: string;
@@ -33,6 +34,7 @@ export default function PropertyModal({ gridLayout, type }: PropertyModal) {
   } = useContext(PropertyDetailsContext);
   const { aliasesByAddress } = useAliases()
   const [ recipientName, setRecipientName ] = useState('');
+  const { account } = useWeb3React();
 
   useEffect(() => {
     const modelCopy = deepCopy(sellFormModel);
@@ -50,6 +52,8 @@ export default function PropertyModal({ gridLayout, type }: PropertyModal) {
 
   let readOnly = ["OfferToSell", "OfferToBuy"].includes(type) == false
   let showRecipient = type !== "OfferToBuy"
+  if (!showRecipient)
+    sellFormModel.fields.recipientAddress.value = account||""
 
   return (
     <Grid templateColumns={gridLayout}>
