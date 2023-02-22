@@ -6,6 +6,7 @@ import { HardhatUserConfig } from "hardhat/config"
 import { accountsByName } from "./utils/accounts"
 import "./tasks/save-proposals"
 import "./tasks/save-contracts"
+import "./tasks/save-recent-activity"
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",

@@ -5,6 +5,7 @@ export enum ActivitiesItem {
   AcceptOfferToSell = "Accept offer to sell",
   RetractOfferToBuy = "Retract offer to buy",
   RetractOfferToSell = "Retract offer to sell",
+  CreateProposal = "Create Proposal",
   Vote = "Vote",
   ExecuteProposal = "Execute Proposal"
 }
