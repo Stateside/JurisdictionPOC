@@ -27,6 +27,7 @@ import { Token } from '@/store/useTitleTokens';
 import Head from 'next/head';
 import { IJSCTitleToken } from '../../../../../../typechain-types';
 import { ethers } from 'ethers';
+import { useRecentActivities } from '@/store/useRecentActivities';
 
 interface PropertyDetailsContextProps {
   children?: ReactNode;
@@ -111,13 +112,15 @@ const PropertyDetailsProvider = function ({
 
   const jurisdictionAddress = id as string;
 
-  const { library } = useWeb3React();
+  const { library, account } = useWeb3React();
   const isTokensInitialized = useTitleTokens(state => state.isInitialized);
   const getTokensContractDetails = useTitleTokens(state => state.get);
   const [tokenId, setTokenId] = useState<string>('');
   const tokenInfo:Token = useTitleTokens(state => state.tokenContracts[jurisdictionAddress]?.tokens.tokensById[tokenId]);
   const { aliasesByAddress } = useAliases();
   const [getJurisdictionInfo] = useJSCJurisdiction();
+
+  const { activityToken } = useRecentActivities();
 
   // ----------------------------------------------------------------
   // Context states
@@ -292,35 +295,35 @@ const PropertyDetailsProvider = function ({
 	        switch(actionName) {
 	          case 'OfferToBuy':
 	            if (price.valid) {
-	              await titleTokenContract?.offerToBuy(tokenId, priceETH, { value: priceETH })
+	              //await titleTokenContract?.offerToBuy(tokenId, priceETH, { value: priceETH })
 	              msg = `Sent offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'OfferToSell':
 	            if (price.valid && address.valid) {
-	              await titleTokenContract?.offerToSell(tokenId, address.value, priceETH)
+	              //await titleTokenContract?.offerToSell(tokenId, address.value, priceETH)
 	              msg = `Sent offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToBuy':
 	            if (address.valid) {
-	              await titleTokenContract?.acceptOfferToBuy(tokenId, address.value)
+	              //await titleTokenContract?.acceptOfferToBuy(tokenId, address.value)
 	              msg = `Accepted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToSell':
 	            if (price.valid) {
-	              await titleTokenContract?.acceptOfferToSell(tokenId, { value: priceETH })
+	              //await titleTokenContract?.acceptOfferToSell(tokenId, { value: priceETH })
 	              msg = `Accepted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'RetractOfferToBuy':
-	            await titleTokenContract?.cancelOfferToBuy(tokenId)
+	            //await titleTokenContract?.cancelOfferToBuy(tokenId)
 	            msg = `Retracted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            break;
 	          case 'RetractOfferToSell':
 	            if (address.valid) {
-	              await titleTokenContract?.cancelOfferToSell(tokenId, address.value)
+	              //await titleTokenContract?.cancelOfferToSell(tokenId, address.value)
 	              msg = `Retracted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
@@ -329,6 +332,7 @@ const PropertyDetailsProvider = function ({
 	            status = 'error'
 	            break;
 	        }
+          activityToken (msg, actionName, account, jurisdictionAddress, tokenInfo.titleId);
 	        closeModal()	
         } catch (error) {
           status = 'error'
