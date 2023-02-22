@@ -295,35 +295,35 @@ const PropertyDetailsProvider = function ({
 	        switch(actionName) {
 	          case 'OfferToBuy':
 	            if (price.valid) {
-	              //await titleTokenContract?.offerToBuy(tokenId, priceETH, { value: priceETH })
+	              await titleTokenContract?.offerToBuy(tokenId, priceETH, { value: priceETH })
 	              msg = `Sent offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'OfferToSell':
 	            if (price.valid && address.valid) {
-	              //await titleTokenContract?.offerToSell(tokenId, address.value, priceETH)
+	              await titleTokenContract?.offerToSell(tokenId, address.value, priceETH)
 	              msg = `Sent offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToBuy':
 	            if (address.valid) {
-	              //await titleTokenContract?.acceptOfferToBuy(tokenId, address.value)
+	              await titleTokenContract?.acceptOfferToBuy(tokenId, address.value)
 	              msg = `Accepted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToSell':
 	            if (price.valid) {
-	              //await titleTokenContract?.acceptOfferToSell(tokenId, { value: priceETH })
+	              await titleTokenContract?.acceptOfferToSell(tokenId, { value: priceETH })
 	              msg = `Accepted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'RetractOfferToBuy':
-	            //await titleTokenContract?.cancelOfferToBuy(tokenId)
+	            await titleTokenContract?.cancelOfferToBuy(tokenId)
 	            msg = `Retracted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            break;
 	          case 'RetractOfferToSell':
 	            if (address.valid) {
-	              //await titleTokenContract?.cancelOfferToSell(tokenId, address.value)
+	              await titleTokenContract?.cancelOfferToSell(tokenId, address.value)
 	              msg = `Retracted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
