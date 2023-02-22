@@ -285,7 +285,7 @@ const PropertyDetailsProvider = function ({
   const propertyDetailsModalAction = useCallback((onDone:OnDoneFunction) => {
     const doAction = async () => {
       const { price, recipientAddress: address } = sellFormModel.fields;
-      const other = address?.valid ? aliasesByAddress?.[address.value]?.alias || address.value : address?.value || 'Unknown';
+      const other = address?.valid ? aliasesByAddress?.[address.value.toLowerCase()]?.alias || address.value : address?.value || 'Unknown';
       let msg = 'Please fill in all fields'
       let status:AlertStatus = "success";
       
@@ -332,7 +332,7 @@ const PropertyDetailsProvider = function ({
 	            status = 'error'
 	            break;
 	        }
-          activityToken (msg, actionName, account, jurisdictionAddress, tokenInfo.titleId);
+          activityToken (msg, actionName, account?.toLowerCase()||"unknown", jurisdictionAddress, tokenInfo.titleId);
 	        closeModal()	
         } catch (error) {
           status = 'error'
@@ -344,7 +344,7 @@ const PropertyDetailsProvider = function ({
       onDone(msg, status)
     }
     doAction()
-  }, [actionName, titleId, tokenId, titleTokenContract, sellFormModel, aliasesByAddress, closeModal])
+  }, [actionName, titleId, tokenId, titleTokenContract, sellFormModel, aliasesByAddress, closeModal, account])
 
   const showModal = useCallback((action:ActionNames, offer?:OfferInfo) => {
     validateFields(action, sellFormModel);
