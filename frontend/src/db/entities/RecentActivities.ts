@@ -11,7 +11,7 @@ export class RecentActivities implements IRecentActivities {
   id: number
 
   @Column({
-    length: 128,
+    length: 255,
   })
   url: string
   

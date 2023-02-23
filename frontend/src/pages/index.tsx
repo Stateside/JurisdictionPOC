@@ -5,8 +5,8 @@ import Connect from '@/components/ConnectButton'
 import RecentActivity from "@/components/RecentActivity";
 import Tag from '@/components/Tag';
 import { Flex, Heading, Box, VStack } from "@chakra-ui/layout"
-import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button, CircularProgress, ListItem, Text, UnorderedList, useDisclosure } from '@chakra-ui/react'
-import { SmallCloseIcon } from '@chakra-ui/icons'
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button, CircularProgress, HStack, ListItem, Text, UnorderedList, useDisclosure } from '@chakra-ui/react'
+import { ChevronRightIcon, SmallCloseIcon } from '@chakra-ui/icons'
 import { homeLabels, getLabel } from '@/store/initial'
 import { useWeb3React } from "@web3-react/core";
 import type { NextPage } from 'next';
@@ -18,6 +18,9 @@ import MyProperties from "@/components/MyProperties";
 import { useTitleTokens } from "@/store/useTitleTokens";
 import { useGovernors } from "@/store/useGovernors";
 import { ProposalState } from "@/utils/types";
+import { useRecentActivities } from "@/store/useRecentActivities";
+import { IRecentActivities } from "db/interfaces/IRecentActivities";
+import shallow from "zustand/shallow";
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 const LoadingCaret = () => <CircularProgress isIndeterminate size="1em" marginRight=".5em" color='brand.java'/>
@@ -55,6 +58,10 @@ const Home: NextPage = () => {
   const confirmJurisdictionsExist = useJurisdictions(state => state.confirm)
   const removeJurisdiction = useJurisdictions(state => state.remove)
 
+  const { loadRecentActivities, isInitialized } = useRecentActivities(state => ({ loadRecentActivities: state.loadPage, isInitialized: state.isInitialized }), shallow )
+  const recentActivitiesLoading = useRecentActivities(state => state.loadingPages[0])
+  const recentActivities = useRecentActivities(state => state.pages[0])
+
   const sortedJurisdictions:JurisdictionInfo[] = useMemo(() => 
     Object.values(jurisdictionInfos).sort(sortDescending), [jurisdictionInfos])
 
@@ -72,6 +79,11 @@ const Home: NextPage = () => {
   useEffect(() => {
     confirmJurisdictionsExist(web3Provider)
   }, [web3Provider, jurisdictionInfos])
+
+  useEffect(() => {
+    if (recentActivities === undefined && !recentActivitiesLoading && isInitialized())
+      loadRecentActivities(0)
+  }, [recentActivities, recentActivitiesLoading, loadRecentActivities, isInitialized()])
 
   useEffect(() => {
     if (isTokensInitialized() && sortedJurisdictions.length > 0) {
@@ -157,13 +169,6 @@ const Home: NextPage = () => {
       </Tag>)
   }, [])
   
-  //To-do: Connect this to real Smart Contracts and BC
-  const fakeRecentActivity = [
-    { tokenID: '001-456-87654-E', price: '180 ETH', type: 'sellingMe', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
-    { tokenId: '001-456-87654-E', price: '130 ETH', type: 'received', account: '0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097' },
-    { tokenId: '001-456-876534-S', price: '57.4 ETH', type: 'made' },
-  ]
-
   const getFavourites = useCallback((jurisdictionMap:JurisdictionMap, getURL:LikeURLCreator, defaultItems:LikeAction[]|undefined) => {
     if (!likesReady)
       return <Tag justify='center'><LoadingIcon/></Tag>
@@ -242,8 +247,15 @@ const Home: NextPage = () => {
           :
           <VStack>
             <Box w='100%' margin='20px 0 30px 0'>
-              <Text marginBottom='20px' variant={'15/20-BOLD'}>Recent Activity</Text>
-              <RecentActivity activities={fakeRecentActivity} />
+            <HStack width="100%" marginBottom='20px' >
+              <Text flexGrow="1" variant={'15/20-BOLD'}>Recent Activity</Text>
+              <Link href={"/recent-activity"}>
+                <Text variant={'15/20-BOLD'} >
+                 View all <ChevronRightIcon h={6} w={6}/>
+                </Text>
+              </Link>
+            </HStack>
+            <RecentActivity activities={recentActivities?.slice(0,3)} />
             </Box>
             <Flex justify={'space-between'} w='100%' h='300px' direction={{ base: 'column', md: 'row', lg: 'row' }}>
               <Box

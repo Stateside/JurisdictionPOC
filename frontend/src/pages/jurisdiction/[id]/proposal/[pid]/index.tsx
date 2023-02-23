@@ -98,7 +98,7 @@ const Proposal: NextPage = () => {
       loadGovernorDetails(jurisdictionAddress, library) 
     }, [jurisdictionAddress, isGovernorInitialized(), jscGovernorDetails, library]);
 
-    // Load proposal
+  // Load proposal
   useEffect(() => { jscGovernorDetails && jscGovernorDetails.loadProposal(proposalId) }, 
     [jscGovernorDetails, proposalId]);
 

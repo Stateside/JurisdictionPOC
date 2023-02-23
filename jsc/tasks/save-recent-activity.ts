@@ -4,8 +4,9 @@ import { createSampleProposals } from "../utils/sample-proposals"
 import * as tc from "../typechain-types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { sampleTokensAndOffers } from '../utils/sample-offers';
-import accounts, { accountsByAddress } from "../utils/accounts"
+import accounts, { accountsByAddress, accountsByName } from "../utils/accounts"
 import { VoteType } from "../utils/types";
+import random from "../utils/random";
 
 declare global {
   const ethers: any
@@ -53,19 +54,22 @@ task("save-recent-activity", "Write activity records for sample data to the data
     const jscGovernor:tc.IJSCGovernor = await ethers.getContractAt("JSCGovernor", jscGovernorContract.address)
     const jscCabinet:tc.IJSCCabinet = await ethers.getContractAt("JSCCabinet", jscCabinetContract.address)
 
-    const activities:IRecentActivities[] = []
+    // randomly sort the activities but keep some activities before others
+    const firstActivities:IRecentActivities[] = []
+    const secondActivities:IRecentActivities[] = []
 
-      // Recent activity for offers
-      for (const name in sampleTokensAndOffers) {
+    // Recent activity for offers
+    for (const name in sampleTokensAndOffers) {
       const titles = sampleTokensAndOffers[name];
       for (let i = 0; i < titles.length; i++) {
+        const activities = random(2) < 1 ? firstActivities : secondActivities;
         const t = titles[i];
         for (let b = 0; b < t.offersToBuy.length; b++) {
           const o = t.offersToBuy[b];
           activities.push({
             account: o.buyer.address,
             url: `/jurisdiction/${jscJurisdictionContract.address}/token/${t.titleId}`,
-            text: `Sent offer to buy ${t.titleId} from ${name} for ${o.amt/1000} ETH`,
+            text: `${o.buyer.name} sent an offer to buy ${t.titleId} from ${t.owner.name} for ${o.amt/1000} ETH`,
             itemType: ActivitiesItem.OfferToBuy,
             frontend: frontend,
             chainId: chainId
@@ -75,9 +79,9 @@ task("save-recent-activity", "Write activity records for sample data to the data
         for (let s = 0; s < t.offersToSell.length; s++) {
           const o = t.offersToSell[s];
           activities.push({
-            account: o.buyer.address,
+            account: t.owner.address,
             url: `/jurisdiction/${jscJurisdictionContract.address}/token/${t.titleId}`,
-            text: `Sent offer to sell ${t.titleId} to ${name} for ${o.amt/1000} ETH`,
+            text: `${t.owner.name} sent an offer to sell ${t.titleId} to ${o.buyer.name} for ${o.amt/1000} ETH`,
             itemType: ActivitiesItem.OfferToSell,
             frontend: frontend,
             chainId: chainId
@@ -90,9 +94,9 @@ task("save-recent-activity", "Write activity records for sample data to the data
     const proposals = await createSampleProposals(ethers, jscGovernor, jscCabinet, jscTitleToken);
     for (let i = 0; i < proposals.length; i++) {
       const p = proposals[i];
-      activities.push({
+      firstActivities.push({
         account: accounts[0].address,
-        url: `/jurisdiction/${jscJurisdictionContract.address}/proposal/${p.proposalHash}`,
+        url: `/jurisdiction/${jscJurisdictionContract.address}/proposal/${p.proposalHash.toHexString()}`,
         text: `Proposal created by ${accounts[0].name}: ${p.description}`,
         itemType: ActivitiesItem.CreateProposal,
         frontend: frontend,
@@ -100,9 +104,9 @@ task("save-recent-activity", "Write activity records for sample data to the data
       })
       for (let acc in p.whoHasVoted) {
         const v = p.whoHasVoted[acc];
-        activities.push({
+        secondActivities.push({
           account: acc,
-          url: `/jurisdiction/${jscJurisdictionContract.address}/proposal/${p.proposalHash}`,
+          url: `/jurisdiction/${jscJurisdictionContract.address}/proposal/${p.proposalHash.toHexString()}`,
           text: `${accountsByAddress[acc].name} voted "${VoteType[v]}" on proposal "${p.description}"`,
           itemType: ActivitiesItem.Vote,
           frontend: frontend,
@@ -111,5 +115,20 @@ task("save-recent-activity", "Write activity records for sample data to the data
       }
     }
 
-    await saveActivitiesToDatabase(activities, website);
+    // randomly sort both arrays
+    randomize(firstActivities);
+    randomize(secondActivities);
+    
+    await saveActivitiesToDatabase([...firstActivities, ...secondActivities], website);
 });
+
+function randomize(arr: any[]) {
+  for (let i = 0; i < arr.length-1; i++) {
+    const j = random(arr.length-1);
+    if (i !== j) {
+      const temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+  }
+}
