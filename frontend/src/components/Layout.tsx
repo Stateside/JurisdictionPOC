@@ -12,6 +12,8 @@ import { useGovernors } from '@/store/useGovernors'
 import { useRevisions } from '@/store/useRevisions'
 import { useTitleTokens } from '@/store/useTitleTokens'
 import { useCabinets } from '@/store/useCabinets'
+import { useRecentActivities } from '@/store/useRecentActivities'
+import usePersona from '@/store/usePersona'
 
 type Props = {
   children: ReactNode
@@ -19,6 +21,7 @@ type Props = {
 
 export function Layout(props: Props) {
   const { account, chainId } = useWeb3React();
+  const { isOwnerPersona } = usePersona()
   const { title, ctaConnect } = siteLayoutData
 
   // Load the likes from the database, then reload when account or chainId changes
@@ -49,6 +52,11 @@ export function Layout(props: Props) {
   const cabinets = useCabinets();
   useEffect(() => { chainId && cabinets.init(chainId) }, [chainId])
 
+  // Initialize the useCabinets hook, then reload when chainId changes
+  const recentActivity = useRecentActivities();
+  useEffect(() => { chainId && recentActivity.init(chainId, isOwnerPersona()) }, 
+    [chainId, account, isOwnerPersona()])
+  
   return (
     <Box
       minHeight="100vh"

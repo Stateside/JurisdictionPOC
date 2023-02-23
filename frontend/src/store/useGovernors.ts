@@ -264,7 +264,7 @@ const loadProposal = async (get:() => IGovernorsState, set: (state:Partial<IGove
   const proposalIds:string[] = [...(governorDetails.proposalIds||[]), proposalId]
   const proposals:ProposalMap = { ...(governorDetails.proposals||{}), [proposalId]: proposalDetails }
 
-  updateGovernorDetails(get, set, instance, jurisdictionAddress, { proposalIds, proposals, proposalsLoading: undefined })
+  updateGovernorDetails(get, set, instance, jurisdictionAddress, { proposalIds, proposals, proposalsLoading: null })
 }
 
 /** Asynchronously loads proposals for the given governor */
