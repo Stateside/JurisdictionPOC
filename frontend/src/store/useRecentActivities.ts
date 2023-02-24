@@ -13,7 +13,7 @@ export type RecentActivityPromises = { [pageNo: number]: Promise<RecentActivityP
  * Zustand state is accessed with the useRecentActivities() hook. But it must be initialized with the init() function before it can be used.
  * (In our case in the Layout component.)
  * 
- * Recent Activities are created with the activityToken() function and passing in a IRecentActivities entity object.
+ * Recent Activities are created with the saveTokenActivity() function and passing in a IRecentActivities entity object.
  */
 interface IActivitiesState {
   pages: RecentActivityPages
@@ -29,7 +29,7 @@ interface IActivitiesState {
   isInitialized: () => boolean,
 
   /** Saves the given Recent Acytivity to the database */
-  activityToken: (msg:string, action:string, account: string, jurisdiction:string, title:string) => void,
+  saveTokenActivity: (msg:string, action:string, account: string, jurisdiction:string, title:string) => void,
 
   loadPage: (page:number) => Promise<RecentActivityPage>
 }
@@ -141,7 +141,7 @@ export const useRecentActivities = create<IActivitiesState>((set, get) => ({
     return promise
   },
 
-  activityToken: (msg, action, account, jurisdiction, title) => {
+  saveTokenActivity: (msg, action, account, jurisdiction, title) => {
     let url_property: string = '/jurisdiction/' + jurisdiction + '/token/' + title;
     const state = get()
     console.log(state)

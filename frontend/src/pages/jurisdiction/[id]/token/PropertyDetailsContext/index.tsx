@@ -120,7 +120,7 @@ const PropertyDetailsProvider = function ({
   const { aliasesByAddress } = useAliases();
   const [getJurisdictionInfo] = useJSCJurisdiction();
 
-  const { activityToken } = useRecentActivities();
+  const { saveTokenActivity } = useRecentActivities();
 
   // ----------------------------------------------------------------
   // Context states
@@ -333,7 +333,7 @@ const PropertyDetailsProvider = function ({
 	            status = 'error'
 	            break;
 	        }
-          activityToken (msg, actionName, account?.toLowerCase()||"unknown", jurisdictionAddress, tokenInfo.titleId);
+          saveTokenActivity (msg, actionName, account!, jurisdictionAddress, tokenInfo.titleId);
 	        closeModal()	
         } catch (error) {
           status = 'error'
