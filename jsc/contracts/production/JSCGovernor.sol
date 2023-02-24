@@ -115,7 +115,6 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
             return ProposalState.Active;
         }
 
-
         ProposalVote storage proposalvote = _proposalVotes[proposalId];
         if (
                 quorum(proposalId) <= proposalvote.forVotes + proposalvote.abstainVotes && 
@@ -312,7 +311,9 @@ contract JSCGovernor is IJSCGovernor, JSCConfigurable {
         ProposalCore storage proposal = _proposals[proposalId];
 
         // Quorum is reached when total votes > number of members * proposal quorum / 100
-        uint256 membersCount = 3; // TODO get member count from JSCCabinet
+        IJSCJurisdiction j = IJSCJurisdiction(_jurisdiction);
+        IJSCCabinet c = IJSCCabinet(j.getContractAddress("jsc.contracts.cabinet"));
+        uint256 membersCount = c.memberCount();
         return Math.ceilDiv(membersCount * proposal.params.quorum, 100);
     }
 
