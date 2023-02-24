@@ -14,6 +14,8 @@ import { ProposalState, VoteType } from '@/utils/types';
 import MemberOnlyButton from '@/components/MemberOnlyButton';
 import { ethers } from 'ethers';
 import Breadcrumb from '@/components/Breadcrumb';
+import { useRecentActivities } from '@/store/useRecentActivities';
+import { accountsByAddress } from '@/utils/accounts';
 
 // convert milliseconds to days, hours, minutes, seconds
 const msToTime = (duration:number, blocks:number) => {
@@ -68,6 +70,7 @@ const Proposal: NextPage = () => {
   const proposal = useGovernors(state => state.governors[jurisdictionAddress]?.proposals?.[proposalId])
 
   const [hasVoted, setHasVoted] = useState(true)
+  const { saveExecuteProposalActivity, saveVoteOnProposalActivity } = useRecentActivities();
 
   const onBlockEvent = useCallback((b:any) => {
     console.log("block event", b)
@@ -139,34 +142,58 @@ const Proposal: NextPage = () => {
   }
 
   const vote = async (vote:VoteType) => {
-    if (jscGovernorDetails) {
-      await jscGovernorDetails.instanceWithSigner(library.getSigner()).castVote(proposalId, vote)
+    try {
+	    if (jscGovernorDetails) {
+	      await jscGovernorDetails.instanceWithSigner(library.getSigner()).castVote(proposalId, vote)
+	      if (account)
+	        saveVoteOnProposalActivity(account, accountsByAddress[account.toLowerCase()]?.name||account||"Unknown", jurisdictionAddress, proposalId, proposal?.description||"", vote)
+	
+	      toast({
+	        title: 'Vote Submitted',
+	        description: "Your vote has been submitted to the blockchain. It may take a few minutes to be confirmed.",
+	        status: 'success',
+	        duration: 3000
+	      })
+	    }	
+    } catch (error:any) {
       toast({
-        title: 'Vote Submitted',
-        description: "Your vote has been submitted to the blockchain. It may take a few minutes to be confirmed.",
-        status: 'success',
-        duration: 3000
+        title: 'Vote Failed',
+        description: error.message,
+        status: 'error',
+        duration: 6000
       })
-    }
+    }  
   }
 
   const execute = async (proposal:IProposalDetails|undefined) => {
-    if (jscGovernorDetails && proposal && proposal.revisions && proposal.revisions.length > 0 && proposal.version && proposal.description) {
-      await jscGovernorDetails.instanceWithSigner(library.getSigner()).execute(
-        proposal.revisions?.map(r => ({
-          target: r.target,
-          name: r.name,
-          pdata: r.pdata,
-        })),
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes(proposal.description)),
-        proposal.version)
+    try {
+      if (jscGovernorDetails && proposal && proposal.revisions && proposal.revisions.length > 0 && proposal.version && proposal.description) {
+        await jscGovernorDetails.instanceWithSigner(library.getSigner()).execute(
+          proposal.revisions?.map(r => ({
+            target: r.target,
+            name: r.name,
+            pdata: r.pdata,
+          })),
+          ethers.utils.keccak256(ethers.utils.toUtf8Bytes(proposal.description)),
+          proposal.version)
+        if (account)
+          saveExecuteProposalActivity(account, accountsByAddress[account.toLowerCase()]?.name||account||"Unknown", jurisdictionAddress, proposalId, proposal?.description||"")
+
+        toast({
+          title: 'Proposal Executed',
+          description: "Your execution of this proposal has been submitted to the blockchain. It may take a few minutes to be confirmed.",
+          status: 'success',
+          duration: 8000
+        })
+      }
+    } catch (error:any) {
       toast({
-        title: 'Proposal Executed',
-        description: "Your execution of this proposal has been submitted to the blockchain. It may take a few minutes to be confirmed.",
-        status: 'success',
-        duration: 8000
+        title: 'Execution Failed',
+        description: error.message,
+        status: 'error',
+        duration: 6000
       })
-    }
+    }  
   }
 
   return (

@@ -1,3 +1,4 @@
+import { VoteType } from '@/utils/types';
 import create from 'zustand'
 import { ActivitiesItem, IRecentActivities } from "../db/interfaces/IRecentActivities";
 
@@ -26,17 +27,26 @@ interface IActivitiesState {
   /** Loads existing Recent Activities from the database. Must be called at least once when React app loads. If an ownerView is true then only activity related to title tokens. */
   init: (chainId:number, ownerView:boolean) => void,
 
+  reload: () => void,
+
   isInitialized: () => boolean,
 
   /** Saves the given Recent Acytivity to the database */
   saveTokenActivity: (msg:string, action:string, account: string, jurisdiction:string, title:string) => void,
 
+  /** Saves the given Recent Proposal Execution to the database */
+  saveCreateProposalActivity: (accountAddress:string, accountName:string, jurisdiction:string, proposalId:string, proposalDescription:string) => void
+
+  /** Saves the given Recent Vote to the database */
+  saveVoteOnProposalActivity: (accountAddress:string, accountName:string, jurisdiction:string, proposalId:string, proposalDescription:string, vote:VoteType) => void,
+
+  /** Saves the given Recent Proposal Execution to the database */
+  saveExecuteProposalActivity: (accountAddress:string, accountName:string, jurisdiction:string, proposalId:string, proposalDescription:string) => void
+
   loadPage: (page:number) => Promise<RecentActivityPage>
 }
 
 const saveActivityToDatabase = async (activity:IRecentActivities) => {
-  console.log("Guarda a BD");
-  console.log(activity);
   const response = await fetch('/api/recent_activities/save', {
       method: 'POST',
       headers: {
@@ -86,6 +96,13 @@ export const useRecentActivities = create<IActivitiesState>((set, get) => ({
   },
 
   isInitialized: () => get().chainId !== 0,
+
+  reload: () => {
+    set({
+      loadingPages: {},
+      pages: {},
+    })
+  },
 
   loadPage: async (page:number):Promise<RecentActivityPage> => {
     if (get().chainId === 0)
@@ -156,8 +173,56 @@ export const useRecentActivities = create<IActivitiesState>((set, get) => ({
         chainId: state.chainId
       } as IRecentActivities
 
-
-    // Save to DB
     saveActivityToDatabase(activityObject)
+    get().reload()
   },
+
+  saveCreateProposalActivity: (accountAddress:string, accountName:string, jurisdiction:string, proposalId:string, proposalDescription:string) => {
+    const chainId = get().chainId
+    const activityObject = {
+      url: `/jurisdiction/${jurisdiction}/proposal/${proposalId}`,
+      text: `${accountName} created the proposal "${proposalDescription}"`,
+      account: accountAddress,
+      itemType: ActivitiesItem.CreateProposal,
+      frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
+      chainId: chainId
+    } as IRecentActivities
+
+    saveActivityToDatabase(activityObject)
+    get().reload()
+  },
+
+  saveVoteOnProposalActivity: (accountAddress:string, accountName:string, jurisdiction:string, proposalId:string, proposalDescription:string, vote:VoteType) => {
+    const chainId = get().chainId
+    let msg = `${accountName} voted "${VoteType[vote]}" the proposal "${proposalDescription}"`
+    if (vote === VoteType.Abstain)
+      msg = `${accountName} abstained from voting on the proposal "${proposalDescription}"`
+
+    const activityObject = {
+      url: `/jurisdiction/${jurisdiction}/proposal/${proposalId}`,
+      text: msg,
+      account: accountAddress,
+      itemType: ActivitiesItem.Vote,
+      frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
+      chainId: chainId
+    } as IRecentActivities
+
+    saveActivityToDatabase(activityObject)
+    get().reload()
+  },
+
+  saveExecuteProposalActivity: (accountAddress:string, accountName:string, jurisdiction:string, proposalId:string, proposalDescription:string) => {
+    const chainId = get().chainId
+    const activityObject = {
+      url: `/jurisdiction/${jurisdiction}/proposal/${proposalId}`,
+      text: `${accountName} executed the proposal "${proposalDescription}"`,
+      account: accountAddress,
+      itemType: ActivitiesItem.ExecuteProposal,
+      frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
+      chainId: chainId
+    } as IRecentActivities
+
+    saveActivityToDatabase(activityObject)
+    get().reload()
+  }
 }))

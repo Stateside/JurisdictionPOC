@@ -14,6 +14,8 @@ import { createProposalVersion } from '@/utils/proposals';
 import { ethers } from 'ethers';
 import { ParamType, ParamType2SolidyType } from '@/utils/types';
 import Breadcrumb from '@/components/Breadcrumb';
+import { accountsByAddress } from '@/utils/accounts';
+import { useRecentActivities } from '@/store/useRecentActivities';
 
 const LoadingIcon = () => <CircularProgress isIndeterminate size="1.3em" color='brand.java'/>
 
@@ -36,6 +38,7 @@ const CreateProposal: NextPage = () => {
   const refreshGovernorDetails = useGovernors(state => state.refresh)
   const jscGovernorDetails = useGovernors(state => state.governors[jurisdictionAddress])
   const [contracts, setContracts] = useState<IContract[]>(childContracts)
+  const { saveCreateProposalActivity } = useRecentActivities();
 
   // Get list of contracts
   useEffect(() => {
@@ -105,7 +108,6 @@ const CreateProposal: NextPage = () => {
   }, [requestedRevision, autoOpenedRevisionModel])
 
   const isValidProposal = useCallback(() => {
-    console.log("isValidProposal", jscGovernorDetails, description, newRevisions.length)
     return (
       jscGovernorDetails?.instance &&
       description !== "" &&
@@ -232,6 +234,10 @@ const CreateProposal: NextPage = () => {
       const proposalId = await jscGovernorDetails?.instance.hashProposal(revs, descriptionHash, version)
       await saveProposalToDatabase(proposalId.toHexString(), newRevisions, description, version, allPdata)
 
+      // Save in recent activities
+      if (account)
+        saveCreateProposalActivity(account, accountsByAddress[account.toLowerCase()]?.name||account||"Unknown", jurisdictionAddress, proposalId.toHexString(), description)
+
       // Clear cache for this governor
       refreshGovernorDetails(jscGovernorAddress)
 
@@ -242,8 +248,13 @@ const CreateProposal: NextPage = () => {
         duration: 3000
       })
     router.push(`/jurisdiction/${jurisdictionAddress}/proposal/${proposalId.toHexString()}`)
-    } catch (e) {
-      console.log(e)
+    } catch (error:any) {
+      toast({
+        title: 'Creation Failed',
+        description: error.message,
+        status: 'error',
+        duration: 6000
+      })
     }
   }, [isValidProposal, description, newRevisions, jscGovernorDetails?.instance])
 
