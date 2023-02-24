@@ -1,5 +1,5 @@
 import create from 'zustand'
-import { IRecentActivities } from "../db/interfaces/IRecentActivities";
+import { ActivitiesItem, IRecentActivities } from "../db/interfaces/IRecentActivities";
 
 export type RecentActivityPage = IRecentActivities[]
 export type RecentActivityPages = { [pageNo: number]: RecentActivityPage }
@@ -144,11 +144,30 @@ export const useRecentActivities = create<IActivitiesState>((set, get) => ({
   activityToken: (msg, action, account, jurisdiction, title) => {
     let url_property: string = '/jurisdiction/' + jurisdiction + '/token/' + title;
     const state = get()
+    console.log(state)
+    let activity = ""
+    if (action === "OfferToBuy") 
+      activity = ActivitiesItem.OfferToBuy
+    if (action === "OfferToSell") 
+      activity = ActivitiesItem.OfferToSell
+    if (action === "AcceptOfferToBuy") 
+      activity = ActivitiesItem.AcceptOfferToBuy
+    if (action === "AcceptOfferToSell") 
+      activity = ActivitiesItem.AcceptOfferToSell
+    if (action === "RetractOfferToBuy") 
+      activity = ActivitiesItem.RetractOfferToBuy
+    if (action === "RetractOfferToSell") 
+      activity = ActivitiesItem.RetractOfferToSell
+    if (action === "Vote") 
+      activity = ActivitiesItem.Vote
+    if (action === "ExecuteProposal") 
+      activity = ActivitiesItem.ExecuteProposal
+
     const activityObject = {
         url:url_property,
         text: msg,
         account: account,
-        itemType: action,
+        itemType:activity,
         frontend: process.env.NEXT_PUBLIC_FRONTEND||"",
         chainId: state.chainId
       } as IRecentActivities
