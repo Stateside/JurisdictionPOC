@@ -109,6 +109,14 @@ contract JSCCabinet is
         }
     }
 
+    /** @dev See {IJSCCabinet-memberCount} */
+    function memberCount() external view returns (uint256) {
+        uint count = 0;
+        for (uint i = 0; i < _roles.length(); i++)
+            count += getRoleMemberCount(_roles.at(i));
+        return count;
+    }
+
     function _addCabinetRevisions() internal {
         _addRevision(
             _createRevisionForAddMemberRole(
