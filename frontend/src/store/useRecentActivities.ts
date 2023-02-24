@@ -145,23 +145,7 @@ export const useRecentActivities = create<IActivitiesState>((set, get) => ({
     let url_property: string = '/jurisdiction/' + jurisdiction + '/token/' + title;
     const state = get()
     console.log(state)
-    let activity = ""
-    if (action === "OfferToBuy") 
-      activity = ActivitiesItem.OfferToBuy
-    if (action === "OfferToSell") 
-      activity = ActivitiesItem.OfferToSell
-    if (action === "AcceptOfferToBuy") 
-      activity = ActivitiesItem.AcceptOfferToBuy
-    if (action === "AcceptOfferToSell") 
-      activity = ActivitiesItem.AcceptOfferToSell
-    if (action === "RetractOfferToBuy") 
-      activity = ActivitiesItem.RetractOfferToBuy
-    if (action === "RetractOfferToSell") 
-      activity = ActivitiesItem.RetractOfferToSell
-    if (action === "Vote") 
-      activity = ActivitiesItem.Vote
-    if (action === "ExecuteProposal") 
-      activity = ActivitiesItem.ExecuteProposal
+    let activity: ActivitiesItem = (<any>ActivitiesItem)[action];
 
     const activityObject = {
         url:url_property,
