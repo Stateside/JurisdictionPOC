@@ -51,6 +51,6 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
     i = await jscJurisdiction.nextParameter(i)
   }
   log("\\-------------------------------------------------------------------/")
-
+}
   export default initializeJSCJurisdiction
   initializeJSCJurisdiction.tags = ["all", "development"]

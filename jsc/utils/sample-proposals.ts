@@ -4,6 +4,7 @@ import { prepareProposal } from "./proposals";
 import accounts, { accountsByName } from "../utils/accounts"
 import { ParamType, VoteType } from "./types";
 import { WhoHasVotedMap } from "./proposals";
+import random from "./random";
 
 /*
     These are some sample proposals used to prepopulate the JSCGovernor contract during development.
@@ -11,26 +12,13 @@ import { WhoHasVotedMap } from "./proposals";
 
 const { Jane, Mary, Rich, Peter, Sara } = accountsByName
 
-let seed = 42023
-/** 
- * a javascript linear congruential generator (LCG) to generate a pseudo random number
- * https://en.wikipedia.org/wiki/Linear_congruential_generator
- */
-const lcg = () => {
-  const A: number = 1664543;    // multiplier
-  const C: number = 1013904223; // incrementer
-  const M: number = 2**31-1;    // modulus
-  seed = (A * seed + C) % M
-  return seed
-}
-
 // Pesudo random vote based on lcg() algorithm above
 const getVotes = () => {
   const voters = accounts.map(a => a.address) 
   const m = 3 * 2 // 50% of voters will vote on average
   const votes:WhoHasVotedMap = {}
   for (let i = 0; i < voters.length; i++) {
-    const v =  lcg() % m
+    const v =  random(m)
     if (v < 3)
       votes[voters[i]] = v as VoteType
   }

@@ -1,4 +1,4 @@
-import { ParamType } from "@/utils/types"
+import { ParamType } from "../../utils/types"
 
 export interface IRevisionParameter {
   name: string
@@ -7,4 +7,4 @@ export interface IRevisionParameter {
   value: string
 }
 
-export { ParamType } from "@/utils/types"
+export { ParamType } from "../../utils/types"

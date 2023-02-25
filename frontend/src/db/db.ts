@@ -7,6 +7,7 @@ import { Like } from './entities/Like';
 import { Proposal } from './entities/Proposal';
 import { Revision } from './entities/Revision';
 import { RevisionParameter } from './entities/RevisionParameter';
+import { RecentActivities } from './entities/RecentActivities';
 
 // Load environment variables using dotenv if we are running outside nextjs (i.e. for the typeorm CLI or for migrations)
 if (process.env.NODE_ENV === undefined) {	
@@ -26,7 +27,7 @@ const dbconfig:DataSourceOptions = {
   username: username,
   password: password,
   database: database,
-  entities: [Alias, DeployedContract, Like, Proposal, Revision, RevisionParameter],
+  entities: [Alias, DeployedContract, Like, Proposal, Revision, RevisionParameter, RecentActivities],
   synchronize: true,
   logging: false
 }

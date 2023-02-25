@@ -1,4 +1,4 @@
-import { IProposal } from "db/interfaces/IProposal"
+import { IProposal } from "../interfaces/IProposal"
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, Relation, UpdateDateColumn } from "typeorm"
 import { Revision } from "./Revision"
 

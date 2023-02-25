@@ -14,16 +14,6 @@ export interface HomeLabels {
   ctaConnect: string;
 }
 
-export interface RecentActivityInterface {
-  activities: Array<object>;
-}
-
-export interface ActivityInterface {
-  type: string;
-  tokenID: string;
-  price: string;
-  account?: string;
-}
 
 export interface TagInterface {
   type?: string;

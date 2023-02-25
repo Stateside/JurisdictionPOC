@@ -31,4 +31,7 @@ interface IJSCCabinet is IAccessControlEnumerable, IJSCConfigurable {
 
     /** @dev Returns the role at the given index */
     function getRoleAt(uint256 index) external view returns (bytes32);
+
+    /** @dev Returns the number of members in this cabinet */
+    function memberCount() external view returns (uint256);
 }

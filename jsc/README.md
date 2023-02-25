@@ -94,6 +94,10 @@ yarn hardhat save-contracts --network staging
 ```bash
 yarn hardhat save-proposals --network staging --prefix development
 ```
+4. Save the recent activity related to th sample data
+```bash
+yarn hardhat save-recent-activity --network staging --prefix development --frontend staging
+```
 
 # Tasks
 

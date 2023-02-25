@@ -27,6 +27,7 @@ import { Token } from '@/store/useTitleTokens';
 import Head from 'next/head';
 import { IJSCTitleToken } from '../../../../../../typechain-types';
 import { ethers } from 'ethers';
+import { useRecentActivities } from '@/store/useRecentActivities';
 
 interface PropertyDetailsContextProps {
   children?: ReactNode;
@@ -106,18 +107,20 @@ const PropertyDetailsProvider = function ({
 }: PropertyDetailsContextProps) {
   
   const { query } = useRouter();
-  const id = (query.id as string) || "";
+  const id = (query.id as string)?.toLowerCase() || "";
   const titleId = (query.titleId as string) || "";
 
   const jurisdictionAddress = id as string;
 
-  const { library } = useWeb3React();
+  const { library, account } = useWeb3React();
   const isTokensInitialized = useTitleTokens(state => state.isInitialized);
   const getTokensContractDetails = useTitleTokens(state => state.get);
   const [tokenId, setTokenId] = useState<string>('');
   const tokenInfo:Token = useTitleTokens(state => state.tokenContracts[jurisdictionAddress]?.tokens.tokensById[tokenId]);
   const { aliasesByAddress } = useAliases();
   const [getJurisdictionInfo] = useJSCJurisdiction();
+
+  const { saveTokenActivity } = useRecentActivities();
 
   // ----------------------------------------------------------------
   // Context states
@@ -281,8 +284,9 @@ const PropertyDetailsProvider = function ({
   
   const propertyDetailsModalAction = useCallback((onDone:OnDoneFunction) => {
     const doAction = async () => {
+      const currentUser = account && aliasesByAddress ? aliasesByAddress[account.toLowerCase()]?.alias || account || 'Unknown' : account || 'Unknown';
       const { price, recipientAddress: address } = sellFormModel.fields;
-      const other = address?.valid ? aliasesByAddress?.[address.value]?.alias || address.value : address?.value || 'Unknown';
+      const other = address?.valid ? aliasesByAddress?.[address.value.toLowerCase()]?.alias || address.value : address?.value || 'Unknown';
       let msg = 'Please fill in all fields'
       let status:AlertStatus = "success";
       
@@ -293,35 +297,35 @@ const PropertyDetailsProvider = function ({
 	          case 'OfferToBuy':
 	            if (price.valid) {
 	              await titleTokenContract?.offerToBuy(tokenId, priceETH, { value: priceETH })
-	              msg = `Sent offer to buy ${titleId} from ${other} for ${price.value} ETH`
+	              msg = `${currentUser} sent an offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'OfferToSell':
 	            if (price.valid && address.valid) {
 	              await titleTokenContract?.offerToSell(tokenId, address.value, priceETH)
-	              msg = `Sent offer to sell ${titleId} to ${other} for ${price.value} ETH`
+	              msg = `${currentUser} sent an offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToBuy':
 	            if (address.valid) {
 	              await titleTokenContract?.acceptOfferToBuy(tokenId, address.value)
-	              msg = `Accepted offer to buy ${titleId} from ${other} for ${price.value} ETH`
+	              msg = `${currentUser} accepted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'AcceptOfferToSell':
 	            if (price.valid) {
 	              await titleTokenContract?.acceptOfferToSell(tokenId, { value: priceETH })
-	              msg = `Accepted offer to sell ${titleId} to ${other} for ${price.value} ETH`
+	              msg = `${currentUser} accepted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          case 'RetractOfferToBuy':
 	            await titleTokenContract?.cancelOfferToBuy(tokenId)
-	            msg = `Retracted offer to buy ${titleId} from ${other} for ${price.value} ETH`
+	            msg = `${currentUser} retracted offer to buy ${titleId} from ${other} for ${price.value} ETH`
 	            break;
 	          case 'RetractOfferToSell':
 	            if (address.valid) {
 	              await titleTokenContract?.cancelOfferToSell(tokenId, address.value)
-	              msg = `Retracted offer to sell ${titleId} to ${other} for ${price.value} ETH`
+	              msg = `${currentUser} retracted offer to sell ${titleId} to ${other} for ${price.value} ETH`
 	            }
 	            break;
 	          default:
@@ -329,6 +333,7 @@ const PropertyDetailsProvider = function ({
 	            status = 'error'
 	            break;
 	        }
+          saveTokenActivity (msg, actionName, account!, jurisdictionAddress, tokenInfo.titleId);
 	        closeModal()	
         } catch (error) {
           status = 'error'
@@ -340,7 +345,7 @@ const PropertyDetailsProvider = function ({
       onDone(msg, status)
     }
     doAction()
-  }, [actionName, titleId, tokenId, titleTokenContract, sellFormModel, aliasesByAddress, closeModal])
+  }, [actionName, titleId, tokenId, titleTokenContract, sellFormModel, aliasesByAddress, closeModal, account])
 
   const showModal = useCallback((action:ActionNames, offer?:OfferInfo) => {
     validateFields(action, sellFormModel);
