@@ -121,22 +121,24 @@ const Home: NextPage = () => {
           const ji = Math.random() * sortedJurisdictions.length
           const jurisdictionInfo = sortedJurisdictions[Math.floor(ji)]
           const governorContractInfo = await loadGovernorDetails(jurisdictionInfo.address, web3Provider)
-          const proposalData = await governorContractInfo.loadAllProposals()
-          if (proposalData && proposalData.proposalIds && proposalData.proposals) {
-            const proposals = Object.values(proposalData.proposals).filter(p => p.status !== ProposalState.Expired)
-            if (proposals.length > 0) {
-              const pi = Math.random() * proposals.length
-              const proposalIndex = Math.floor(pi)
-              const proposal = proposals[proposalIndex]
-              await proposal.loadDetails()
-              if (proposal.description) 
-                likes.push({ 
-                  jurisdiction: jurisdictionInfo.address.toLowerCase(), 
-                  itemId: proposal.id, 
-                  name: proposal.description 
-                })
+          if (governorContractInfo?.loadAllProposals) {
+            const proposalData = await governorContractInfo.loadAllProposals()
+            if (proposalData && proposalData.proposalIds && proposalData.proposals) {
+              const proposals = Object.values(proposalData.proposals).filter(p => p.status !== ProposalState.Expired)
+              if (proposals.length > 0) {
+                const pi = Math.random() * proposals.length
+                const proposalIndex = Math.floor(pi)
+                const proposal = proposals[proposalIndex]
+                await proposal.loadDetails()
+                if (proposal.description) 
+                  likes.push({ 
+                    jurisdiction: jurisdictionInfo.address.toLowerCase(), 
+                    itemId: proposal.id, 
+                    name: proposal.description 
+                  })
               }
             }
+          }
         } 
         setSampleProposalLikes(likes)
       }

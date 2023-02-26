@@ -377,18 +377,22 @@ export const useGovernors = create<IGovernorsState>((set, get) => ({
     jurisdictionAddress = jurisdictionAddress.toLowerCase()
     let details:IGovernorDetails = get().governors[jurisdictionAddress]
     if (!details) {
-      const jscJurisdiction = IJSCJurisdiction__factory.connect(jurisdictionAddress, provider);
-      const governorContractAddress = await jscJurisdiction.getContractParameter("jsc.contracts.governor")
-      const instance = IJSCGovernor__factory.connect(governorContractAddress, provider)
-      details = {
-        address: governorContractAddress, 
-        instance, 
-        proposalsLoading:null,
-        loadAllProposals: async () => await loadAllProposals(get, set, instance, jurisdictionAddress),
-        loadProposal: async (proposalId:string) => await loadProposal(get, set, instance, jurisdictionAddress, proposalId),
-        instanceWithSigner: (signer:Signer) => IJSCGovernor__factory.connect(governorContractAddress, signer)
+      try {
+	      const jscJurisdiction = IJSCJurisdiction__factory.connect(jurisdictionAddress, provider);
+	      const governorContractAddress = await jscJurisdiction.getContractParameter("jsc.contracts.governor")
+	      const instance = IJSCGovernor__factory.connect(governorContractAddress, provider)
+	      details = {
+	        address: governorContractAddress, 
+	        instance, 
+	        proposalsLoading:null,
+	        loadAllProposals: async () => await loadAllProposals(get, set, instance, jurisdictionAddress),
+	        loadProposal: async (proposalId:string) => await loadProposal(get, set, instance, jurisdictionAddress, proposalId),
+	        instanceWithSigner: (signer:Signer) => IJSCGovernor__factory.connect(governorContractAddress, signer)
+	      }
+	      set({ governors: { ...get().governors, [jurisdictionAddress]: details } })	
+      } catch (error) {
+        console.log("No Jurisdiction found at " + jurisdictionAddress, error)
       }
-      set({ governors: { ...get().governors, [jurisdictionAddress]: details } })
     }
     return details
   },
