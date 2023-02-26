@@ -32,3 +32,9 @@ Sample commands to test Geth server
 
 curl --data '{"jsonrpc":"2.0","method":"eth_chainId", "id":2}' -H "Content-Type: application/json" https://jurisdictions-geth.stateside.agency
 curl --data '{"jsonrpc":"2.0","method":"eth_getBalance", "params": ["0x5820cc389afc7BBE624924d6f0726e39Fb19900e", "latest"], "id":2}' -H "Content-Type: application/json" https://jurisdictions-geth.stateside.agency
+
+## Instructions to limit internet inbound connects to CloudFront
+
+https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/
+
+We need to add this Security Group to the CFN template and remove the permissive access to port 8545

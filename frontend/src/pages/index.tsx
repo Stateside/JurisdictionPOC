@@ -94,7 +94,7 @@ const Home: NextPage = () => {
           const ji = Math.random() * sortedJurisdictions.length
           const jurisdictionInfo = sortedJurisdictions[Math.floor(ji)]
           const tokenContractInfo = await getTokensContractDetails(jurisdictionInfo.address, web3Provider)
-          if (tokenContractInfo.tokenCount > 0) {
+          if (tokenContractInfo && tokenContractInfo.tokenCount > 0) {
             const ti = Math.random() * tokenContractInfo.tokenCount
             const tokenId = await tokenContractInfo.instance.tokenAtIndex(Math.floor(ti))
             const token = await tokenContractInfo.loadToken(tokenId.toHexString())
