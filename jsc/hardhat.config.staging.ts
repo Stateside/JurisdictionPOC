@@ -19,7 +19,7 @@ const config: HardhatUserConfig = {
     staging: {
       chainId: 41506,
       url: "https://jurisdictions-geth.stateside.agency",
-      accounts: [accountsByName["Oscar"].privateKey]
+      accounts: [accountsByName["Ernie"].privateKey]
     },
   },
   solidity: {

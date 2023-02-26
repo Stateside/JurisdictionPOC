@@ -45,7 +45,8 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
         role: ethers.constants.HashZero,
       }
     )
-    await tx.wait()
+    const receipt = await tx.wait()
+    log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
   } catch (error) {
     console.log(error)
   }
@@ -66,8 +67,10 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
 
   // Wait for all transactions to be confirmed
   console.log(`Waiting for tokens...`)
-  for (let i = 0; i < transactions.length; i++)
-    await transactions[i].wait();
+  for (let i = 0; i < transactions.length; i++) {
+    const receipt = await transactions[i].wait();
+    log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
+  }
 
   for (const name in sampleTokensAndOffers) {
     const titles = sampleTokensAndOffers[name];
@@ -98,8 +101,10 @@ const initializeJSCTitleToken: DeployFunction = async function (hre: HardhatRunt
   transactions.push(await jscTitleToken.setFrozenToken(tokenId, true))
   transactions.push(await jscTitleToken.transferOwnership(jscGovernorContract.address))
 
-  for (let i = 0; i < transactions.length; i++)
-    await transactions[i].wait();
+  for (let i = 0; i < transactions.length; i++) {
+    const receipt = await transactions[i].wait();
+    log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
+  }
 }
 
 export default initializeJSCTitleToken

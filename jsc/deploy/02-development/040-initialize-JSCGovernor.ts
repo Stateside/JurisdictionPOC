@@ -30,7 +30,8 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
       quorum: 0,
       role: ethers.constants.HashZero,
     })
-  await tx.wait()
+  const receipt = await tx.wait()
+  log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
 
   let transactions: any[] = []
   const proposalMap:{[hash:string]: PreparedProposal} = {}
@@ -45,8 +46,10 @@ const initializeJSCGovernor: DeployFunction = async function (hre: HardhatRuntim
       proposalMap[p.proposalHash.toHexString().toLowerCase()] = p
     }
 
-    for (let i = 0; i < transactions.length; i++)
-      await transactions[i].wait();
+    for (let i = 0; i < transactions.length; i++) {
+      const receipt = await transactions[i].wait();
+      log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
+    }
 
     for (let i = 0; i < sampleProposals.length; i++) {
       const p = sampleProposals[i];

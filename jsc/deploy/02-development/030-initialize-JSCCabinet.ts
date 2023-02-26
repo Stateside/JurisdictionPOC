@@ -31,7 +31,8 @@ const initializeJSCCabinet: DeployFunction = async function (hre: HardhatRuntime
       role: ethers.constants.HashZero,
     }
   )
-  await tx.wait()
+  const receipt = await tx.wait()
+  log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
 }
 
 export default initializeJSCCabinet
