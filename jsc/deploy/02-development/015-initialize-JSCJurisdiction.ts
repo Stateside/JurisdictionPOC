@@ -37,7 +37,8 @@ const initializeJSCJurisdiction: DeployFunction = async function (hre: HardhatRu
       role: ethers.constants.HashZero,
     }
   )
-  await tx.wait()
+  const receipt = await tx.wait()
+  log('Transaction cost: ', ethers.utils.formatEther(ethers.BigNumber.from(receipt.gasUsed).mul(receipt.effectiveGasPrice)))
 
   log(`development_JSCJurisdiction Initialized with the following contracts:`)
   log("/-------------------------------------------------------------------\\")
