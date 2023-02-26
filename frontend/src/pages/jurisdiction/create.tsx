@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Role, buildRoles } from "../../utils/roles"
 import DeleteIcon from '@/components/icons/deleteIcon';
 import SpecialSelect from '@/components/SpecialSelect';
-import { Deployments, IMember, Jurisdiction, JurisdictionId } from 'classes/jurisdiction';
+import { Deployments, IMember, ITitle, Jurisdiction, JurisdictionId } from 'classes/jurisdiction';
 import create from 'zustand'
 import shallow from 'zustand/shallow'
 import useBlockchain from 'hooks/useBlockchain';
@@ -42,7 +42,10 @@ interface IJurisdictionState {
   replaceMember: (index: number, member: IMember) => void,
   addContract: (contract: ContractDefinition) => void,
   removeContract: (index: number) => void,
-  replaceContract: (index: number, contract: ContractDefinition) => void
+  replaceContract: (index: number, contract: ContractDefinition) => void,
+  addTitle: (title: ITitle) => void,
+  removeTitle: (index: number) => void,
+  replaceTitle: (index: number, title: ITitle) => void,
 }
 
 /** Create Zustand state with instance of Jurisdiction class and methods to update it. This lets us optimize the rendering */
@@ -69,7 +72,10 @@ const useNewJurisdiction = create<IJurisdictionState>((set) => ({
   replaceMember: (index: number, member: IMember) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, members: state.jurisdiction.members.map((m, i) => i === index ? member : m) }), modified: true })),
   addContract: (contract: ContractDefinition) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: [...state.jurisdiction.contracts, contract] }), modified: true })),
   removeContract: (index: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: state.jurisdiction.contracts.filter((_, i) => i !== index) }), modified: true })),
-  replaceContract: (index: number, contract: ContractDefinition) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c) }), modified: true }))
+  replaceContract: (index: number, contract: ContractDefinition) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, contracts: state.jurisdiction.contracts.map((c, i) => i === index ? contract : c) }), modified: true })),
+  addTitle: (title: ITitle) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, titles: [...state.jurisdiction.titles, title] }), modified: true })),
+  removeTitle: (index: number) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, titles: state.jurisdiction.titles.filter((_: ITitle, i: number) => i !== index) }), modified: true })),
+  replaceTitle: (index: number, title: ITitle) => set(state => ({ jurisdiction: Jurisdiction.copy({ ...state.jurisdiction, titles: state.jurisdiction.titles.map((t, i) => i === index ? title : t) }), modified: true })),
 }))
 
 const greenButtonProps = { _hover: { background: "brand.javaHover" }, variant: 'Header' }
@@ -109,6 +115,9 @@ const CreateJurisdiction: NextPage = () => {
   const addMember = useNewJurisdiction(state => state.addMember)
   const removeMember = useNewJurisdiction(state => state.removeMember)
   const replaceMember = useNewJurisdiction(state => state.replaceMember)
+  const addTitle = useNewJurisdiction(state => state.addTitle)
+  const removeTitle = useNewJurisdiction(state => state.removeTitle)
+  const replaceTitle = useNewJurisdiction(state => state.replaceTitle)
 
   const { isOpen: isErrorAlertOpen, onOpen: onErrorAlertOpen, onClose: onCloseErrorAlert } = useDisclosure()
   const cancelErrorRef = useRef<HTMLButtonElement | null>(null)
@@ -122,6 +131,10 @@ const CreateJurisdiction: NextPage = () => {
   const [newMemberName, setNewMemberName] = useState("")
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<Role>()
+
+  const [newTitleOwnerName, setNewTitleOwnerName] = useState("")
+  const [newTitleOwnerAddress, setNewTitleOwnerAddress] = useState("")
+  const [newTitleId, setNewTitleId] = useState("")
 
   const { aliases, aliasesByAddress, aliasesByName, addAliases, loaded: aliasesLoaded } = useAliases()
   const [successfulDeployments, setSuccessfulDeployments] = useState<Deployments | undefined>()
@@ -137,6 +150,16 @@ const CreateJurisdiction: NextPage = () => {
         })
     }
   }, [addMember, jurisdiction.members, aliases, aliasesLoaded])
+
+  useEffect(() => {
+    if (aliasesLoaded) {
+      // Add some sample titles to the new jurisdictions
+      if (jurisdiction.titles.length === 0 && !isJurisdictionModified)
+        aliases.slice(5, 10).forEach((a,i) => {
+          addTitle({ address: a.address, name:a.alias, titleId: "title-"+(i+1)})
+        })
+    }
+  }, [addTitle, jurisdiction.titles, aliases, aliasesLoaded])
 
   // Memoized callbacks
 
@@ -290,6 +313,35 @@ const CreateJurisdiction: NextPage = () => {
     setMaintainerFeeUI(value)
   }, [])
 
+  const updateTitleOwnerAddress = useCallback((index: number, t: ITitle, value: string): void => {
+    // Update name if it is the default name, if it is a new name then leave it as is
+    let expectedName: string = getNameForAddress(t.address)
+    let newName: string = getNameForAddress(value)
+    if (t.name !== "" && t.name !== expectedName)
+      newName = t.name
+    replaceTitle(index, { ...t, address: value, name: newName })
+  }, [replaceTitle, getNameForAddress])
+
+  const updateNewTitleOwnerAddress = useCallback((value: string): void => {
+    // Update name if it is the default name, if it is a new name then leave it as is
+    let expectedName: string = getNameForAddress(newTitleOwnerAddress)
+    let newName: string = getNameForAddress(value)
+    if (newTitleOwnerName !== "" && newTitleOwnerName !== expectedName)
+      newName = newTitleOwnerName
+    setNewTitleOwnerName(newName)
+    setNewTitleOwnerAddress(value)
+  }, [newTitleOwnerAddress, newTitleOwnerName, getNameForAddress])
+
+  const updateNewTitleOwnerName = useCallback((value: string): void => {
+    // Update address if it is empty or if it matches the address for the previous value of the name
+    let expectedAddress: string = getAddressForName(newTitleOwnerName)
+    let newAddress: string = getAddressForName(value)
+    if (newTitleOwnerAddress !== "" && newTitleOwnerAddress !== expectedAddress)
+      newAddress = newTitleOwnerAddress
+    setNewTitleOwnerName(value)
+    setNewTitleOwnerAddress(newAddress)
+  }, [jurisdiction.maintainerAddress, getAddressForName])
+
   const updateVotingPeriod = useCallback((value: string) => {
     value = cleanNumber(value)
     if (isValidNumber(value))
@@ -347,12 +399,6 @@ const CreateJurisdiction: NextPage = () => {
       !jurisdiction.existsMemberAddress(newMemberAddress)
   }, [newMemberAddress, newMemberRole, jurisdiction.members, jurisdiction.isValidAddress, jurisdiction.existsMemberAddress])
 
-  const isValidAddress = useCallback((): boolean => {
-    return newMemberAddress !== "" &&
-      jurisdiction.isValidAddress(newMemberAddress) &&
-      !jurisdiction.existsMemberAddress(newMemberAddress)
-  }, [newMemberAddress, jurisdiction.members, jurisdiction.isValidAddress, jurisdiction.existsMemberAddress])
-
   const addNewMember = useCallback((): void => {
     if (isValidNewMember() && newMemberRole !== undefined) {
       addMember({ name: newMemberName, address: newMemberAddress, role: newMemberRole })
@@ -362,17 +408,38 @@ const CreateJurisdiction: NextPage = () => {
     }
   }, [addMember, newMemberName, newMemberAddress, newMemberRole, isValidNewMember])
 
-  const isValidForm = useCallback((): boolean => {
+  const isEmptyNewTitle = useCallback((): boolean => {
+    return newTitleOwnerName === "" && newTitleOwnerAddress === "" && newTitleId === ""
+  }, [newTitleOwnerName, newTitleOwnerAddress, newTitleId])
+
+  const isValidNewTitle = useCallback((): boolean => {
+    return newTitleOwnerAddress !== "" &&
+      newTitleId !== "" &&
+      jurisdiction.isValidAddress(newTitleOwnerAddress) &&
+      !jurisdiction.existsTitleId(newTitleId)
+  }, [newTitleOwnerAddress, newTitleId, jurisdiction.titles, jurisdiction.isValidAddress, jurisdiction.existsTitleId])
+
+  const addNewTitle = useCallback((): void => {
+    if (isValidNewTitle()) {
+      addTitle({ name: newTitleOwnerName, address: newTitleOwnerAddress, titleId: newTitleId })
+      setNewTitleOwnerName("")
+      setNewTitleOwnerAddress("")
+      setNewTitleId("")
+    }
+  }, [addTitle, newTitleOwnerName, newTitleOwnerAddress, newTitleId, isValidNewTitle])
+
+  const isValidForm = (): boolean => {
     return (
       jurisdiction.isValid()
       && (isValidNewMember() || isEmptyNewMember())
+      && (isValidNewTitle() || isEmptyNewTitle())
       && (isValidMaintainerAddress() || isEmptyMaintainerAddress())
       && (isValidRegistryAddress() || isEmptyRegistryAddress())
       && isValidGwei(registryFeeUI)
       && isValidGwei(maintainerFeeUI)
       && web3Provider
     )
-  }, [jurisdiction, isValidNewMember, isEmptyNewMember, web3Provider])
+  }
 
   const onClickCancelDeployment = useCallback(() => {
     onCloseProgressAlert()
@@ -448,6 +515,9 @@ const CreateJurisdiction: NextPage = () => {
     setNewMemberName("")
     setNewMemberAddress("")
     setNewMemberRole(undefined)
+    setNewTitleOwnerName("")
+    setNewTitleOwnerAddress("")
+    setNewTitleId("")
   }, [resetJurisdiction])
 
   // Memoized components
@@ -669,15 +739,15 @@ const CreateJurisdiction: NextPage = () => {
       <SelectRole width="15%" value={newMemberRole?.id || ""} onChange={setNewMemberRole} />
       <Button width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
     </HStack>
-}, [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
+  }, [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
 
   const newMemberMaxReached = useMemo(() => (
     <HStack width="100%">
-      <Input disabled width="15%" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} />
-      <Input disabled width="55%" value={newMemberAddress} onChange={(e) => updateNewMemberAddress(e.target.value)} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidProps} />
-      <SelectRole disabled isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" value={newMemberRole?.id || ""} onChange={setNewMemberRole} />
+      <Input disabled width="15%" value={newMemberName} />
+      <Input disabled width="55%" value={newMemberAddress} {...(isValidNewMember() || isEmptyNewMember()) ? {} : invalidProps} />
+      <SelectRole disabled isValid={newMemberRole !== undefined || isEmptyNewMember()} width="15%" value={newMemberRole?.id || ""} onChange={() => {}} />
       <Tooltip label={`You've reached maximum number of members`}>
-        <Button disabled width="15%" {...isValidNewMember() ? greenButtonProps : ""} onClick={() => addNewMember()}>Add</Button>
+        <Button disabled width="15%" {...isValidNewMember() ? greenButtonProps : ""} >Add</Button>
       </Tooltip>
     </HStack>
   ), [newMemberName, newMemberAddress, newMemberRole, jurisdiction.members])
@@ -730,10 +800,76 @@ const CreateJurisdiction: NextPage = () => {
         </HStack>
       ))}
       <HStack width="100%" justifyContent="flex-start">
-        <Button onClick={async () => Jurisdiction.saveMemberInfo(jurisdiction.members)}>Add new contract</Button>
+        <Button onClick={async () => {}}>Add new contract</Button>
       </HStack>
     </VStack>
   ), [jurisdiction.contracts, deploy])
+
+  const newTitleRow = useMemo(() => {
+    return <HStack width="100%">
+      <SpecialSelect
+            width='20%'
+            value={(newTitleOwnerName || newTitleOwnerAddress) ? { label: newTitleOwnerName, value: newTitleOwnerAddress } : undefined}
+            options={aliasesByAddress}
+            onChange={(selectedOption: any) => {
+              if (selectedOption === undefined) {
+                updateNewTitleOwnerName("")
+                updateNewTitleOwnerAddress("")
+              }
+              else if (selectedOption.label === selectedOption.value) {
+                updateNewTitleOwnerName(selectedOption.label)
+              } else {
+                updateNewTitleOwnerName(selectedOption.label)
+                updateNewTitleOwnerAddress(selectedOption.value)
+              }
+            }}
+          />
+      <Input width="55%" value={newTitleOwnerAddress} onChange={(e) => updateNewTitleOwnerAddress(e.target.value)} {...(isValidNewTitle() || isEmptyNewTitle()) ? {} : invalidProps} placeholder="-"/>
+      <Input width="10%" value={newTitleId} onChange={(e) => setNewTitleId(e.target.value)} {...(isValidNewTitle() || isEmptyNewTitle()) ? {} : invalidProps} placeholder="-"/>
+      <Button width="15%" {...isValidNewTitle() ? greenButtonProps : ""} onClick={() => addNewTitle()}>Add</Button>
+    </HStack>
+  }, [newTitleOwnerName, newTitleOwnerAddress, newTitleId, jurisdiction.titles])
+
+  const newTitleMaxReached = useMemo(() => (
+    <HStack width="100%">
+      <Input disabled width="15%" value={newTitleOwnerName} />
+      <Input disabled width="55%" value={newTitleOwnerAddress} {...(isValidNewTitle() || isEmptyNewTitle()) ? {} : invalidProps} />
+      <Input width="10%" value={newTitleId} placeholder="-"/>
+      <Tooltip label={`You've reached maximum number of titles`}>
+        <Button disabled width="15%" {...isValidNewTitle() ? greenButtonProps : ""} >Add</Button>
+      </Tooltip>
+    </HStack>
+  ), [newTitleOwnerName, newTitleOwnerAddress, newTitleId, jurisdiction.titles])
+
+  const titlesRows = useMemo(() => (
+    <VStack spacing={4}>
+      {jurisdiction.titles.map((t: ITitle, i: number) => (
+        <HStack width="100%" key={i}>
+          <SpecialSelect
+            width='20%'
+            value={(t.name || t.address) ? { label: t.name, value: t.address } : undefined}
+            options={aliasesByAddress}
+            onChange={(selectedOption: any) => {
+              if (selectedOption === undefined) {
+                replaceTitle(i, { ...t, address: "", name: "" })
+              }
+              else if (selectedOption.label === selectedOption.value) {
+                replaceTitle(i, { ...t, name: selectedOption.label })
+              } else {
+                replaceTitle(i, { ...t, name: selectedOption.label })
+                updateTitleOwnerAddress(i, t, selectedOption.value)
+              }
+
+            }}
+          />
+          <Input width="55%" value={t.address} onChange={(e) => updateTitleOwnerAddress(i, t, e.target.value)}  {...(jurisdiction.isValidAddress(t.address)) ? {} : invalidProps} placeholder="-"/>
+          <Input width="10%" value={t.titleId} onChange={(e) => replaceTitle(i, { ...t, titleId: e.target.value })} {...(jurisdiction.isValidTitleId(t.titleId) && !jurisdiction.existsTitleId(t.titleId, 2)) ? {} : invalidProps} placeholder="-"/>
+          <Button width="15%" rightIcon={<DeleteIcon height={7} width={7} />} onClick={() => removeTitle(i)}>Remove</Button>
+        </HStack>
+      ))}
+      {jurisdiction.titles.length <= 9 ? newTitleRow : newTitleMaxReached}
+    </VStack>
+  ), [jurisdiction.titles, newTitleRow])
 
   const configSection = useMemo(() => (
     <VStack alignItems="flex-start" spacing={4}>
@@ -750,10 +886,13 @@ const CreateJurisdiction: NextPage = () => {
 
   const contractsSection = useMemo(() => contractsRows, [contractsRows])
 
+  const titlesSection = useMemo(() => titlesRows, [titlesRows])
+
   const sections = [
     { name: "Configuration", content: configSection },
     { name: "Members", content: membersSection },
     { name: "Contracts", content: contractsSection },
+    { name: "Title Tokens", content: titlesSection },
   ]
 
   const submitButtons = useMemo(() => {

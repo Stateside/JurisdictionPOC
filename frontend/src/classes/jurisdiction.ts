@@ -31,8 +31,13 @@ export type InitializationResult = {
   definition: ContractDefinition
 }
   
-type InitializationMethod = (signer:ethers.Signer, deployments:Deployments)=>Promise<InitializationResult>
-type ConfirmationHandler = (address:string) => Promise<void>
+type InitializationMethod = (signer:ethers.Signer, deployments:Deployments, l:DeploymentListener)=>Promise<InitializationResult>
+
+export interface ITitle {
+  name: string
+  address: string
+  titleId: string
+}
 
 export interface IMember {
   name: string
@@ -58,13 +63,14 @@ export interface IJurisdiction {
   contractId: string
   members: IMember[]
   contracts: ContractDefinition[]
+  titles: ITitle[]
 }
 
 export interface Jurisdictions {
   jurisdictions: IJurisdiction[]
 }
 
-export const JurisdictionId = "JSCJurisdiction v0.5"
+export const JurisdictionId = "JSCJurisdiction v0.6"
 
 /** 
  * This class describes the content of a Jurisdiction being created in the frontend plus the code needed to deploy it
@@ -73,6 +79,7 @@ export class Jurisdiction implements IJurisdiction {
   jurisdictionName: string
   contractId: string
   members: IMember[]
+  titles: ITitle[]
   contracts: ContractDefinition[]
   titleTokenName: string
   titleTokenSymbol: string
@@ -89,7 +96,7 @@ export class Jurisdiction implements IJurisdiction {
   votingRole: string
   continueDeployment: boolean = false
 
-  constructor(name:string, contractId:string, members:IMember[], contracts:ContractDefinition[], titleTokenName:string, titleTokenSymbol:string, titleTokenURI:string,
+  constructor(name:string, contractId:string, members:IMember[], titles:ITitle[], contracts:ContractDefinition[], titleTokenName:string, titleTokenSymbol:string, titleTokenURI:string,
     registryAddress: string, registryFee: ethers.BigNumber, maintainerAddress: string, maintainerFee: ethers.BigNumber, nftSupport: boolean,
     votingPeriod: number, votingApprovals: number, votingMajority: number, votingQuorum: number, votingRole: string
   ) {
@@ -97,6 +104,7 @@ export class Jurisdiction implements IJurisdiction {
     this.contractId = contractId
     this.members = members
     this.contracts = contracts
+    this.titles = titles
     this.titleTokenName = titleTokenName
     this.titleTokenSymbol = titleTokenSymbol
     this.titleTokenURI = titleTokenURI
@@ -113,7 +121,7 @@ export class Jurisdiction implements IJurisdiction {
   }
 
   static copy(other:IJurisdiction) {
-    return new Jurisdiction(other.jurisdictionName, other.contractId, other.members, other.contracts, other.titleTokenName, other.titleTokenSymbol, other.titleTokenURI,
+    return new Jurisdiction(other.jurisdictionName, other.contractId, other.members, other.titles, other.contracts, other.titleTokenName, other.titleTokenSymbol, other.titleTokenURI,
       other.registryAddress, other.registryFee, other.maintainerAddress, other.maintainerFee, other.nftSupport, 
       other.votingPeriod, other.votingApprovals, other.votingMajority, other.votingQuorum, other.votingRole)
   }
@@ -142,6 +150,20 @@ export class Jurisdiction implements IJurisdiction {
     return this.members.filter((m:IMember) => m.address === value).length >= min
   }
 
+  existsTitleId(value:string, min:number = 1):boolean {
+    return this.titles.filter((t:ITitle) => t.titleId === value).length >= min
+  }
+
+  addTitle(t:ITitle) {
+    if (!this.isValidNewTitle(t))
+      throw new Error("Invalid title")
+    this.titles.push(t)
+  }
+  
+  removeTitle(titleId:string) {
+    this.titles = this.titles.filter((t:ITitle) => t.titleId !== titleId)
+  }
+
   isValidAddress(value:string):boolean {
     return value.length === 42
   }
@@ -150,8 +172,20 @@ export class Jurisdiction implements IJurisdiction {
     return value.length > 0
   }
 
+  isValidOwnerName(value:string):boolean {
+    return value.length > 0
+  }
+
+  isValidTitleId(value:string):boolean {
+    return value.length > 0
+  }
+
   isValidNewMember(m:IMember):boolean {
     return this.isValidAddress(m.address) && this.isValidMemberName(m.name) && !this.existsMemberAddress(m.address)
+  }
+
+  isValidNewTitle(t:ITitle):boolean {
+    return this.isValidAddress(t.address) && this.isValidOwnerName(t.name) && this.isValidTitleId(t.titleId) && !this.existsTitleId(t.titleId)
   }
 
   addContract(name:string, version:string) {
@@ -181,6 +215,7 @@ export class Jurisdiction implements IJurisdiction {
     return new Jurisdiction(
       "Our Jurisdiction",
       JurisdictionId,
+      [],
       [],
       supportedContracts.filter((c:ContractDefinition) => c.key !== undefined),
       "Our Title Token",
@@ -248,11 +283,18 @@ export class Jurisdiction implements IJurisdiction {
     }
   }
 
-  async initTitleToken(signer:ethers.Signer, deployments:Deployments):Promise<InitializationResult> {
-    console.log("Initializing Title Token")
+  async initTitleToken(signer:ethers.Signer, deployments:Deployments, l:DeploymentListener):Promise<InitializationResult> {
+    console.log("Initializing Title Token Contract")
     const { contract, definition } = deployments["IJSCTitleToken"]
     const instance = await tc.IJSCTitleToken__factory.connect(contract.address, signer)
 
+    for (let i = 0; i < this.titles.length; i++) {
+      const t = this.titles[i];
+      l.startingStep(this, 0, "Minting title token: " + t.titleId + " to " + t.name)
+      await instance.mint(t.address, t.titleId)
+    }
+
+    l.startingStep(this, 0, `Initializing IJSCTitleToken`)
     await instance.init(
       this.titleTokenName,
       this.titleTokenSymbol,
@@ -391,7 +433,7 @@ export class Jurisdiction implements IJurisdiction {
         stepCounter++;
         const step = initSteps[s];
         l.startingStep(this, 0, `Initializing ${step.name}`)
-        const result = await step.func.bind(this)(signer, deploymentsByInterface)
+        const result = await step.func.bind(this)(signer, deploymentsByInterface, l)
         l.onInitialized(this, stepCounter/totalSteps, result.definition.solidityType, result.definition.key||"", result.contract.address)
       }
       
