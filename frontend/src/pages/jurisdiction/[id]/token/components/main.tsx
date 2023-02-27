@@ -248,7 +248,7 @@ export default function PropertyDetailsMain() {
           </Box>
         </GridItem>
         <GridItem colSpan={12}>
-          {true&& (
+          {allOffers.length <= 0 && (
             <>
               <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}>No offers found.</Skeleton>
               <Skeleton isLoaded={dataReady} w='100%' h='40px' m={{base: '.5% 0'}}></Skeleton>
