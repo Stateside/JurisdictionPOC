@@ -229,7 +229,7 @@ export const useTitleTokens = create<ITitleTokensState>((set, get) => ({
                 } 
               }
             }))
-        },
+          },
         }
         
         set({ tokenContracts: { ...get().tokenContracts, [jurisdictionAddress]: details } })
