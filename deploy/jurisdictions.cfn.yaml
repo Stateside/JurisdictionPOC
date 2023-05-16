@@ -17,6 +17,10 @@ Parameters:
     Type: String
     Default: Stateside/JurisdictionPOC
     Description: owner/repository
+  GmapsApiKey:
+    Type: String
+    Default: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    Description: API Key for Google Maps 
   InstanceType:
     Description: Server EC2 instance type
     Type: String
@@ -832,6 +836,12 @@ Resources:
           SslSupportMethod: sni-only
 
 # Parameter Store
+  GmapsApiKeyParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: GMAPS_API
+      Type: String
+      Value: !Sub ${GmapsApiKey}
   RdsDomainNameParam:
     Type: AWS::SSM::Parameter
     Properties:
