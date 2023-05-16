@@ -110,8 +110,6 @@ yarn hardhat save-recent-activity --network staging --prefix development --front
 
 # TO DO
 
-- Calculate quorum from number of members in cabinet - currently hardcoded to 3
-- Add a page that shows all of my properties in all jurisdictions
 - Some buttons do not have a hover or click style
 - SpecialSelect should include the address field beside it always
   - changing alias dropdown should update the address field
@@ -138,7 +136,6 @@ yarn hardhat save-recent-activity --network staging --prefix development --front
     using the EIP-712 standard. An example is implemented in @openzeppelin\contracts\governance\Governor.sol
 - add jurisdiction to titletoken and cabinet and make sure this is is validated properly inside contracts
 - add function to validate jurisdictions (make sure they are properly initialized and secured)
-- Add support for parameter types: token id
 - Add button to jump forward in time to the next voting period for Geth
 Payments
 1. Pay registry fees

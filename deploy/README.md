@@ -37,4 +37,4 @@ curl --data '{"jsonrpc":"2.0","method":"eth_getBalance", "params": ["0x5820cc389
 
 https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/
 
-We need to add this Security Group to the CFN template and remove the permissive access to port 8545
+We need to add this Security Group to the CFN template and remove the permissive access to port 8545 to prevent bots from detecting the dev mode Geth instance.

@@ -175,17 +175,20 @@ describe("JSCGovernor", async () => {
         ]
       }], "Freeze the jurisdiction contract", ++proposalVersion)
 
-    await basicProposalTests(proposal, ceilDiv(3*51, 100))
+    await basicProposalTests(proposal, ceilDiv(6*51, 100))
   });
 
   const testWinningProposal = async (proposal:PreparedProposal) => {
     await expect(governor.connect(bryan).propose(proposal.revs, proposal.description, proposal.version)).to.not.be.reverted;
     let bn = await ethers.provider.getBlockNumber();
 
+    await expect(governor.connect(jane).castVote(proposal.proposalHash, VoteType.For)).to.not.be.reverted;
+    await expect(governor.connect(sara).castVote(proposal.proposalHash, VoteType.For)).to.not.be.reverted;
     await expect(governor.connect(bryan).castVote(proposal.proposalHash, VoteType.Against)).to.not.be.reverted;
+    await expect(governor.connect(bob).castVote(proposal.proposalHash, VoteType.Abstain)).to.not.be.reverted;
     await expect(governor.connect(paul).castVote(proposal.proposalHash, VoteType.For)).to.not.be.reverted;
     await expect(governor.connect(alex).castVote(proposal.proposalHash, VoteType.For)).to.not.be.reverted;
-    await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(2), BigNumber.from(0)]);
+    await expect(await governor.proposalVotes(proposal.proposalHash)).to.deep.equal([BigNumber.from(1), BigNumber.from(4), BigNumber.from(1)]);
 
     let deadline = await governor.proposalDeadline(proposal.proposalHash);
     bn = await ethers.provider.getBlockNumber();
@@ -432,7 +435,7 @@ describe("JSCGovernor", async () => {
       }
     ], "Freeze and unfreeze the jurisdiction contract", ++proposalVersion)
 
-    await basicProposalTests(proposal, ceilDiv(3*51, 100))
+    await basicProposalTests(proposal, ceilDiv(6*51, 100))
   });
 
   it('rejects simple proposal with unknown contract', async function() {

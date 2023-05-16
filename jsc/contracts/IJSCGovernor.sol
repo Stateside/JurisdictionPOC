@@ -18,7 +18,7 @@ import {JSCRevisionsLib as rlib} from "../libraries/JSCRevisionsLib.sol";
  * - Proposals can be created, cancelled, voted on, and executed
  * - Proposals contain an id, a description, a proposer, one or more target contracts with one or more "revisions" for each contract
  * - Votes can be For, Against, or Abstain. Every member has a single vote. All votes have the same weight.
- * - Emits events: ProposalCanceled, ProposalCreated, VoteCast
+ * - Emits events: ProposalExecuted, ProposalCreated, VoteCast
  *
  * Detailed differences from OpenZeppelin and Compound
  * - Contacts must be in the jurisdiction and revisions must be supported by the contracts (they are not arbitrary operations)
